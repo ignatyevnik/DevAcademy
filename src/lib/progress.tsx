@@ -11,9 +11,10 @@ export interface ProgressState {
   lastVisited: Record<string, { lessonId: string; stepIndex: number; ts: number }>;
   quizResults: Record<string, 'ok' | 'partial' | 'fail'>;
   bookmarks: Record<string, true>; // ключ: `${courseSlug}:${lessonId}`
+  notes: Record<string, string>; // <-- ДОБАВИТЬ: ключ `${courseSlug}:${stepId}`
 }
 
-const empty: ProgressState = { done: {}, lastVisited: {}, quizResults: {}, bookmarks: {} };
+const empty: ProgressState = { done: {}, lastVisited: {}, quizResults: {}, bookmarks: {}, notes: {} };
 
 export function stepKey(slug: string, stepId: string) {
   return `${slug}:${stepId}`;
@@ -46,6 +47,8 @@ interface ProgressApi {
   totalStats: () => { started: number; donePct: number };
   isBookmarked: (slug: string, lessonId: string) => boolean;
   toggleBookmark: (slug: string, lessonId: string) => void;  
+  getNote: (slug: string, stepId: string) => string;
+  setNote: (slug: string, stepId: string, text: string) => void;
 }
 
 const Ctx = createContext<ProgressApi | null>(null);
@@ -103,6 +106,16 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       setQuizResult,
       quizResult: (slug, stepId) => state.quizResults[stepKey(slug, stepId)],
       visit,
+      replaceState: (newState) => {
+        setState({
+          done: newState.done ?? {},
+          lastVisited: newState.lastVisited ?? {},
+          quizResults: newState.quizResults ?? {},
+          bookmarks: newState.bookmarks ?? {},
+          notes: newState.notes ?? {},
+        });
+      },
+      
       courseProgress: (slug) => {
         const { done, total } = countDoneInCourse(slug);
         return { done, total, pct: total ? Math.round((done / total) * 100) : 0 };
@@ -111,14 +124,6 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
         if (!stepIds.length) return 0;
         const done = stepIds.filter((id) => state.done[stepKey(slug, id)]).length;
         return done / stepIds.length;
-      },
-      replaceState: (newState) => {
-        setState({
-          done: newState.done ?? {},
-          lastVisited: newState.lastVisited ?? {},
-          quizResults: newState.quizResults ?? {},
-          bookmarks: newState.bookmarks ?? {},
-        });
       },
       resetCourse: (slug) => {
         setState((s) => {
@@ -130,26 +135,18 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
           const lastVisited = { ...s.lastVisited };
           delete lastVisited[slug];
 
-          // Удаляем закладки этого курса, остальные сохраняем
           const bookmarks = { ...s.bookmarks };
           for (const k of Object.keys(bookmarks)) {
             if (k.startsWith(slug + ':')) delete bookmarks[k];
           }
 
-          return { done, quizResults, lastVisited, bookmarks };
-        });
-      },
-            isBookmarked: (slug, lessonId) => !!state.bookmarks[`${slug}:${lessonId}`],
-      toggleBookmark: (slug, lessonId) => {
-        const key = `${slug}:${lessonId}`;
-        setState((s) => {
-          const next = { ...s.bookmarks };
-          if (next[key]) {
-            delete next[key];
-          } else {
-            next[key] = true;
+          // Удаляем заметки этого курса
+          const notes = { ...s.notes };
+          for (const k of Object.keys(notes)) {
+            if (k.startsWith(slug + ':')) delete notes[k];
           }
-          return { ...s, bookmarks: next };
+
+          return { done, quizResults, lastVisited, bookmarks, notes };
         });
       },
       totalStats: () => {
@@ -162,6 +159,32 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
           total += s.total;
         }
         return { started, donePct: total ? Math.round((done / total) * 100) : 0 };
+      },
+      isBookmarked: (slug, lessonId) => !!state.bookmarks[`${slug}:${lessonId}`],
+      toggleBookmark: (slug, lessonId) => {
+        const key = `${slug}:${lessonId}`;
+        setState((s) => {
+          const next = { ...s.bookmarks };
+          if (next[key]) {
+            delete next[key];
+          } else {
+            next[key] = true;
+          }
+          return { ...s, bookmarks: next };
+        });
+      },
+      getNote: (slug, stepId) => state.notes[`${slug}:${stepId}`] || '',
+      setNote: (slug, stepId, text) => {
+        const key = `${slug}:${stepId}`;
+        setState((s) => {
+          const nextNotes = { ...s.notes };
+          if (!text.trim()) {
+            delete nextNotes[key];
+          } else {
+            nextNotes[key] = text;
+          }
+          return { ...s, notes: nextNotes };
+        });
       },
     };
   }, [state, completeStep, setQuizResult, visit]);

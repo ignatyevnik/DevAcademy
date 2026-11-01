@@ -1,7 +1,7 @@
 import { Link, useParams, useSearchParams, Navigate, useNavigate } from 'react-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ArrowLeft, ArrowRight, Check, CheckCircle2, CircleHelp, FileText, ListTree, X, Bookmark, BookmarkCheck
+  ArrowLeft, ArrowRight, Check, CheckCircle2, CircleHelp, FileText, ListTree, X, Bookmark, BookmarkCheck, StickyNote 
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getCourse, findLesson, allLessons } from '@/data';
@@ -10,6 +10,45 @@ import { useProgress, stepKey } from '@/lib/progress';
 import { TextBlocks, QuizView } from '@/components/StepContent';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { ThemeToggle } from '@/components/ThemeToggle';
+
+function StepNotes({ slug, stepId }: { slug: string; stepId: string }) {
+  const { getNote, setNote } = useProgress();
+  const [text, setText] = useState(() => getNote(slug, stepId));
+  const [saved, setSaved] = useState(false);
+
+  // Синхронизация при смене шага
+  useEffect(() => {
+    setText(getNote(slug, stepId));
+    setSaved(false);
+  }, [slug, stepId, getNote]);
+
+  const handleSave = () => {
+    setNote(slug, stepId, text);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  return (
+    <div className="mt-8 rounded-xl border border-border bg-card p-4 sm:p-5">
+      <div className="flex items-center gap-2 text-sm font-semibold mb-3">
+        <StickyNote className="h-4 w-4 text-primary" />
+        Мои заметки
+      </div>
+      <textarea
+        value={text}
+        onChange={(e) => { setText(e.target.value); setSaved(false); }}
+        onBlur={handleSave}
+        placeholder="Запишите важное: команды, ссылки, свои мысли..."
+        className="w-full min-h-[100px] resize-y rounded-lg border border-input bg-background p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      />
+      <div className="mt-2 flex justify-between items-center text-xs text-muted-foreground">
+        <span>Сохраняется автоматически при клике вне поля</span>
+        {saved && <span className="text-primary font-medium flex items-center gap-1"><Check className="h-3 w-3" /> Сохранено</span>}
+      </div>
+    </div>
+  );
+}
 
 export default function LessonPage() {
   const { slug, lessonId } = useParams();
@@ -184,6 +223,13 @@ export default function LessonPage() {
             </div>
             <span className="text-xs font-semibold text-muted-foreground">{lessonPct}%</span>
           </div>
+          <ThemeToggle />
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
+            aria-label="Открыть список шагов"
+          ></button>
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
@@ -215,7 +261,9 @@ export default function LessonPage() {
           <div className="mt-6">
             {step.type === 'theory' ? <TextBlocks blocks={step.blocks} /> : <QuizView slug={course.slug} step={step} />}
           </div>
-
+          
+          <StepNotes slug={course.slug} stepId={step.id} />
+          
           <div className="mt-10 flex items-center justify-between gap-3 border-t border-border pt-6">
             {nav?.prev ? (
               <Button asChild variant="outline" className="min-h-[44px]">

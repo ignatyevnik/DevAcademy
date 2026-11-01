@@ -18,6 +18,7 @@ const sample: ProgressState = {
     'py:step-3': 'fail',
   },
   bookmarks: { 'python-basics:py-l1': true },
+  notes: { 'python-basics:py-l1-s1': 'Это моя заметка' },
 };
 
 describe('serializeProgress', () => {
@@ -91,7 +92,7 @@ describe('parseProgressJson', () => {
   });
 
   it('принимает пустое состояние', () => {
-    const empty: ProgressState = { done: {}, lastVisited: {}, quizResults: {}, bookmarks: {} };
+    const empty: ProgressState = { done: {}, lastVisited: {}, quizResults: {}, bookmarks: {}, notes: {} };
     const json = serializeProgress(empty);
     expect(parseProgressJson(json)).toEqual(empty);
   });

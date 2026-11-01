@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router';
 import { useState } from 'react';
 import { Search, GraduationCap, Menu, X } from 'lucide-react';
 import { useSearch } from '@/components/SearchProvider';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export function Header() {
   const navigate = useNavigate();
@@ -26,7 +27,6 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-6">
-        {/* Логотип заменяет кнопку "Каталог" */}
         <Link to="/" className="flex min-h-[44px] items-center gap-2.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary">
             <GraduationCap className="h-5 w-5 text-primary-foreground" aria-hidden="true" />
@@ -36,7 +36,6 @@ export function Header() {
           </span>
         </Link>
 
-        {/* Кнопка поиска (десктоп) */}
         <button
           type="button"
           onClick={openSearch}
@@ -49,7 +48,6 @@ export function Header() {
           </kbd>
         </button>
 
-        {/* Навигация (десктоп) */}
         <nav className="ml-auto hidden items-center gap-1 md:flex">
           <button
             type="button"
@@ -58,9 +56,11 @@ export function Header() {
           >
             Моё обучение
           </button>
+          
+          {/* ВОЗВРАЩАЕМ ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ СЮДА */}
+          <ThemeToggle />
         </nav>
 
-        {/* Кнопка мобильного меню */}
         <button
           type="button"
           className="ml-auto grid h-11 w-11 place-items-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
@@ -72,7 +72,6 @@ export function Header() {
         </button>
       </div>
 
-      {/* Мобильное меню */}
       {mobileOpen && (
         <div className="border-t border-border bg-card px-4 pb-4 pt-3 md:hidden">
           <button
@@ -94,6 +93,11 @@ export function Header() {
             >
               Моё обучение
             </button>
+            {/* Переключатель в мобильном меню */}
+            <div className="flex items-center px-3 py-1">
+               <ThemeToggle />
+               <span className="ml-2 text-sm font-medium">Сменить тему</span>
+            </div>
           </div>
         </div>
       )}
