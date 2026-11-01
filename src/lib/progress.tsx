@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { courses } from '@/data';
+import { courses, type Step } from '@/data';
+import type { SrsCard } from './srs';
+import { calculateSrs } from './srs';
 
 const STORAGE_KEY = 'devlearn-progress-v1';
 
@@ -12,9 +14,10 @@ export interface ProgressState {
   quizResults: Record<string, 'ok' | 'partial' | 'fail'>;
   bookmarks: Record<string, true>; // ключ: `${courseSlug}:${lessonId}`
   notes: Record<string, string>; // <-- ДОБАВИТЬ: ключ `${courseSlug}:${stepId}`
+  srs: Record<string, SrsCard>;
 }
 
-const empty: ProgressState = { done: {}, lastVisited: {}, quizResults: {}, bookmarks: {}, notes: {} };
+const empty: ProgressState = { done: {}, lastVisited: {}, quizResults: {}, bookmarks: {}, notes: {}, srs: {} };
 
 export function stepKey(slug: string, stepId: string) {
   return `${slug}:${stepId}`;
@@ -49,6 +52,8 @@ interface ProgressApi {
   toggleBookmark: (slug: string, lessonId: string) => void;  
   getNote: (slug: string, stepId: string) => string;
   setNote: (slug: string, stepId: string, text: string) => void;
+  recordSrsAnswer: (slug: string, stepId: string, isCorrect: boolean) => void;
+  getDueReviews: () => { slug: string; lessonId: string; step: Step; courseTitle: string }[];
 }
 
 const Ctx = createContext<ProgressApi | null>(null);
@@ -113,6 +118,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
           quizResults: newState.quizResults ?? {},
           bookmarks: newState.bookmarks ?? {},
           notes: newState.notes ?? {},
+          srs: newState.srs ?? {}
         });
       },
       
@@ -146,7 +152,13 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
             if (k.startsWith(slug + ':')) delete notes[k];
           }
 
-          return { done, quizResults, lastVisited, bookmarks, notes };
+          // Удаляем заметки этого курса
+          const srs = { ...s.srs };
+          for (const k of Object.keys(srs)) {
+            if (k.startsWith(slug + ':')) delete srs[k];
+          }
+
+          return { done, quizResults, lastVisited, bookmarks, notes, srs };
         });
       },
       totalStats: () => {
@@ -160,6 +172,39 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
         }
         return { started, donePct: total ? Math.round((done / total) * 100) : 0 };
       },
+
+      recordSrsAnswer: (slug, stepId, isCorrect) => {
+        const key = stepKey(slug, stepId);
+        setState((s) => {
+          const nextSrs = { ...s.srs };
+          nextSrs[key] = calculateSrs(isCorrect, nextSrs[key]);
+          return { ...s, srs: nextSrs };
+        });
+      },
+      getDueReviews: () => {
+        const now = Date.now();
+        const due: { slug: string; lessonId: string; step: Step; courseTitle: string }[] = [];
+        
+        for (const course of courses) {
+          for (const mod of course.modules) {
+            for (const lesson of mod.lessons) {
+              for (const step of lesson.steps) {
+                if (step.type !== 'quiz') continue;
+                const key = stepKey(course.slug, step.id);
+                const card = state.srs[key];
+                const result = state.quizResults[key];
+
+                // Если карточка есть и пришло время, ИЛИ если нет карточки, но квиз уже был пройден верно
+                if ((card && card.nextReview <= now) || (!card && result === 'ok')) {
+                  due.push({ slug: course.slug, lessonId: lesson.id, step, courseTitle: course.title });
+                }
+              }
+            }
+          }
+        }
+        return due;
+      },
+
       isBookmarked: (slug, lessonId) => !!state.bookmarks[`${slug}:${lessonId}`],
       toggleBookmark: (slug, lessonId) => {
         const key = `${slug}:${lessonId}`;

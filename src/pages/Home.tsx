@@ -9,6 +9,7 @@ import { coursesWord } from '@/lib/pluralize';
 import { tracks } from '@/data/tracks';
 import { TrackCard } from '@/components/TrackCard';
 import { ProgressExport } from '@/components/ProgressExport';
+import { Button } from '@/components/ui/button';
 
 const ALL_TAGS = ['Все', ...Array.from(new Set(courses.flatMap((c) => c.tags)))];
 
@@ -17,7 +18,8 @@ export default function Home() {
   const [query, setQuery] = useState(params.get('q') ?? '');
   const [tag, setTag] = useState('Все');
   const deferredQuery = useDeferredValue(query);
-  const { totalStats, courseProgress } = useProgress();
+  const { totalStats, courseProgress, getDueReviews } = useProgress();
+  const dueCount = useMemo(() => getDueReviews().length, [getDueReviews]);
 
   // URL → state
   useEffect(() => {
@@ -110,6 +112,20 @@ export default function Home() {
             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {startedCourses.map((c) => <CourseCard key={c.slug} course={c} />)}
             </div>
+          </section>
+        )}
+
+        {dueCount > 0 && (
+          <section className="mb-8 rounded-xl border border-primary/30 bg-accent/20 p-5 sm:flex sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-primary">Пора повторить!</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                У вас {dueCount} вопросов на сегодня для закрепления знаний.
+              </p>
+            </div>
+            <Button asChild className="mt-4 sm:mt-0">
+              <Link to="/review">Начать повторение</Link>
+            </Button>
           </section>
         )}
 

@@ -12,10 +12,11 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
+type ResultType = 'ok' | 'partial' | 'fail';
+
 /** Оборачивает текст между `backticks` в <code> */
 function InlineText({ text }: { text: string }) {
   if (!text) return null;
-  // Разбиваем по backticks, сохраняя сами backticks в split
   const parts = text.split(/(`[^`]+`)/g);
   return (
     <>
@@ -103,43 +104,46 @@ export function TextBlocks({ blocks }: { blocks: TextBlock[] }) {
 interface QuizViewProps {
   slug: string;
   step: Step;
+  onResult?: (result: ResultType) => void;
 }
 
-export function QuizView({ slug, step }: QuizViewProps) {
+export function QuizView({ slug, step, onResult }: QuizViewProps) {
   if (step.type !== 'quiz') return null;
   const quiz = step.quiz;
   switch (quiz.kind) {
     case 'single':
     case 'multiple':
-      return <ChoiceQuiz slug={slug} stepId={step.id} quiz={quiz} />;
+      return <ChoiceQuiz slug={slug} stepId={step.id} quiz={quiz} onResult={onResult} />;
     case 'fill':
-      return <FillStep slug={slug} stepId={step.id} quiz={quiz} />;
+      return <FillStep slug={slug} stepId={step.id} quiz={quiz} onResult={onResult} />;
     case 'matching':
-      return <MatchingStep slug={slug} stepId={step.id} quiz={quiz} />;
+      return <MatchingStep slug={slug} stepId={step.id} quiz={quiz} onResult={onResult} />;
     case 'sorting':
-      return <SortingStep slug={slug} stepId={step.id} quiz={quiz} />;
+      return <SortingStep slug={slug} stepId={step.id} quiz={quiz} onResult={onResult} />;
     case 'table':
-      return <TableStep slug={slug} stepId={step.id} quiz={quiz} />;
+      return <TableStep slug={slug} stepId={step.id} quiz={quiz} onResult={onResult} />;
     case 'number':
-      return <NumberStep slug={slug} stepId={step.id} quiz={quiz} />;
+      return <NumberStep slug={slug} stepId={step.id} quiz={quiz} onResult={onResult} />;
     case 'cloze':
-      return <ClozeStep slug={slug} stepId={step.id} quiz={quiz} />;
+      return <ClozeStep slug={slug} stepId={step.id} quiz={quiz} onResult={onResult} />;
     case 'code':
-      return <CodeStep slug={slug} stepId={step.id} quiz={quiz} />;
+      return <CodeStep slug={slug} stepId={step.id} quiz={quiz} onResult={onResult} />;
   }
 }
 
-function useQuizState(slug: string, stepId: string) {
-  const { quizResult, setQuizResult, completeStep } = useProgress();
+function useQuizState(slug: string, stepId: string, onResult?: (result: ResultType) => void) {
+  const { quizResult, setQuizResult, completeStep, recordSrsAnswer } = useProgress();
   const prev = quizResult(slug, stepId);
-  const finish = (result: 'ok' | 'partial' | 'fail') => {
+  const finish = (result: ResultType) => {
     setQuizResult(slug, stepId, result);
+    recordSrsAnswer(slug, stepId, result === 'ok');
     if (result === 'ok') {
       completeStep(slug, stepId);
       toast.success('Верно! Шаг засчитан');
     } else if (result === 'partial') {
       toast.message('Частично верно — попробуйте ещё раз для полного зачёта');
     }
+    onResult?.(result);
   };
   return { prev, finish };
 }
@@ -148,15 +152,17 @@ function ChoiceQuiz({
   slug,
   stepId,
   quiz,
+  onResult,
 }: {
   slug: string;
   stepId: string;
   quiz: Quiz & { kind: 'single' | 'multiple' };
+  onResult?: (result: ResultType) => void;
 }) {
-  const { prev, finish } = useQuizState(slug, stepId);
+  const { prev, finish } = useQuizState(slug, stepId, onResult);
   const [selected, setSelected] = useState<string[]>([]);
   const [checked, setChecked] = useState(false);
-  const [result, setResult] = useState<'ok' | 'partial' | 'fail' | null>(null);
+  const [result, setResult] = useState<ResultType | null>(null);
 
   useEffect(() => {
     setSelected([]);
@@ -180,7 +186,7 @@ function ChoiceQuiz({
     const correctSet = new Set(quiz.correct);
     const right = selected.filter((id) => correctSet.has(id)).length;
     const wrong = selected.filter((id) => !correctSet.has(id)).length;
-    let r: 'ok' | 'partial' | 'fail' = 'fail';
+    let r: ResultType = 'fail';
     if (right === quiz.correct.length && wrong === 0) r = 'ok';
     else if (partialEnabled && wrong === 0 && right > 0) r = 'partial';
     setResult(r);
@@ -188,11 +194,9 @@ function ChoiceQuiz({
     finish(r);
   };
 
-  // Горячие клавиши: 1-9 для выбора, Enter для проверки
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-
       const num = parseInt(e.key, 10);
       if (num >= 1 && num <= quiz.options.length) {
         const opt = quiz.options[num - 1];
@@ -295,8 +299,8 @@ function ChoiceQuiz({
   );
 }
 
-function FillStep({ slug, stepId, quiz }: { slug: string; stepId: string; quiz: FillQuiz }) {
-  const { prev, finish } = useQuizState(slug, stepId);
+function FillStep({ slug, stepId, quiz, onResult }: { slug: string; stepId: string; quiz: FillQuiz; onResult?: (result: ResultType) => void }) {
+  const { prev, finish } = useQuizState(slug, stepId, onResult);
   const [value, setValue] = useState('');
   const [checked, setChecked] = useState(false);
   const [ok, setOk] = useState(false);
@@ -322,9 +326,7 @@ function FillStep({ slug, stepId, quiz }: { slug: string; stepId: string; quiz: 
           <CircleHelp className="h-5 w-5 text-primary" aria-hidden="true" />
         </span>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Введите ответ
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Введите ответ</p>
           <h3 className="mt-1 text-base font-bold leading-snug sm:text-lg"><InlineText text={quiz.question} /></h3>
           {quiz.hint && (
             <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -334,10 +336,7 @@ function FillStep({ slug, stepId, quiz }: { slug: string; stepId: string; quiz: 
         </div>
       </div>
 
-      <form
-        className="mt-5 flex flex-col gap-2 sm:flex-row"
-        onSubmit={(e) => { e.preventDefault(); check(); }}
-      >
+      <form className="mt-5 flex flex-col gap-2 sm:flex-row" onSubmit={(e) => { e.preventDefault(); check(); }}>
         <Input
           value={value}
           onChange={(e) => { setValue(e.target.value); setChecked(false); }}
@@ -351,17 +350,8 @@ function FillStep({ slug, stepId, quiz }: { slug: string; stepId: string; quiz: 
       </form>
 
       {checked && (
-        <div
-          className={cn(
-            'mt-4 rounded-lg border p-4 text-sm leading-relaxed',
-            ok ? 'border-primary/30 bg-accent/50' : 'border-destructive/30 bg-destructive/5'
-          )}
-          role="status"
-          aria-live="polite"
-        >
-          <p className={cn('font-bold', ok ? 'text-primary' : 'text-destructive')}>
-            {ok ? 'Верно!' : 'Пока неверно.'}
-          </p>
+        <div className={cn('mt-4 rounded-lg border p-4 text-sm leading-relaxed', ok ? 'border-primary/30 bg-accent/50' : 'border-destructive/30 bg-destructive/5')} role="status" aria-live="polite">
+          <p className={cn('font-bold', ok ? 'text-primary' : 'text-destructive')}>{ok ? 'Верно!' : 'Пока неверно.'}</p>
           <p className="mt-1.5"><InlineText text={quiz.explanation} /></p>
         </div>
       )}
@@ -375,8 +365,8 @@ function FillStep({ slug, stepId, quiz }: { slug: string; stepId: string; quiz: 
   );
 }
 
-function MatchingStep({ slug, stepId, quiz }: { slug: string; stepId: string; quiz: MatchingQuiz }) {
-  const { prev, finish } = useQuizState(slug, stepId);
+function MatchingStep({ slug, stepId, quiz, onResult }: { slug: string; stepId: string; quiz: MatchingQuiz; onResult?: (result: ResultType) => void }) {
+  const { prev, finish } = useQuizState(slug, stepId, onResult);
   const rights = useMemo(() => {
     const arr = quiz.pairs.map((p) => p.right);
     if (quiz.shuffle === false) return arr;
@@ -418,9 +408,7 @@ function MatchingStep({ slug, stepId, quiz }: { slug: string; stepId: string; qu
           <CircleHelp className="h-5 w-5 text-primary" aria-hidden="true" />
         </span>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Сопоставьте пары
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Сопоставьте пары</p>
           <h3 className="mt-1 text-base font-bold leading-snug sm:text-lg"><InlineText text={quiz.question} /></h3>
         </div>
       </div>
@@ -431,14 +419,7 @@ function MatchingStep({ slug, stepId, quiz }: { slug: string; stepId: string; qu
           const isRight = checked && value === pair.right;
           const isWrong = checked && value !== pair.right;
           return (
-            <div
-              key={i}
-              className={cn(
-                'grid grid-cols-1 gap-2 rounded-lg border p-3 sm:grid-cols-2',
-                isRight && 'border-primary/40 bg-accent/40',
-                isWrong && 'border-destructive/40 bg-destructive/5'
-              )}
-            >
+            <div key={i} className={cn('grid grid-cols-1 gap-2 rounded-lg border p-3 sm:grid-cols-2', isRight && 'border-primary/40 bg-accent/40', isWrong && 'border-destructive/40 bg-destructive/5')}>
               <span className="flex items-center text-sm font-medium"><InlineText text={pair.left} /></span>
               <select
                 value={value}
@@ -455,22 +436,8 @@ function MatchingStep({ slug, stepId, quiz }: { slug: string; stepId: string; qu
       </div>
 
       {checked && score && (
-        <div
-          className={cn(
-            'mt-4 rounded-lg border p-4 text-sm leading-relaxed',
-            score.right === score.total ? 'border-primary/30 bg-accent/50' :
-            score.right > 0 ? 'border-amber-500/30 bg-amber-500/10' :
-            'border-destructive/30 bg-destructive/5'
-          )}
-          role="status"
-          aria-live="polite"
-        >
-          <p className={cn(
-            'font-bold',
-            score.right === score.total ? 'text-primary' :
-            score.right > 0 ? 'text-amber-700 dark:text-amber-400' :
-            'text-destructive'
-          )}>
+        <div className={cn('mt-4 rounded-lg border p-4 text-sm leading-relaxed', score.right === score.total ? 'border-primary/30 bg-accent/50' : score.right > 0 ? 'border-amber-500/30 bg-amber-500/10' : 'border-destructive/30 bg-destructive/5')} role="status" aria-live="polite">
+          <p className={cn('font-bold', score.right === score.total ? 'text-primary' : score.right > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-destructive')}>
             Верно {score.right} из {score.total}.
           </p>
           <p className="mt-1.5"><InlineText text={quiz.explanation} /></p>
@@ -478,13 +445,10 @@ function MatchingStep({ slug, stepId, quiz }: { slug: string; stepId: string; qu
       )}
 
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        <Button onClick={check} disabled={!allAssigned || (checked && score?.right === score?.total)} className="min-h-[44px] px-6">
-          Проверить
-        </Button>
+        <Button onClick={check} disabled={!allAssigned || (checked && score?.right === score?.total)} className="min-h-[44px] px-6">Проверить</Button>
         {prev && prev !== 'fail' && !checked && (
           <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-            <Check className="h-4 w-4" aria-hidden="true" />
-            {prev === 'ok' ? 'Решено ранее' : 'Был частичный зачёт'}
+            <Check className="h-4 w-4" aria-hidden="true" />{prev === 'ok' ? 'Решено ранее' : 'Был частичный зачёт'}
           </span>
         )}
       </div>
@@ -492,8 +456,8 @@ function MatchingStep({ slug, stepId, quiz }: { slug: string; stepId: string; qu
   );
 }
 
-function SortingStep({ slug, stepId, quiz }: { slug: string; stepId: string; quiz: SortingQuiz }) {
-  const { prev, finish } = useQuizState(slug, stepId);
+function SortingStep({ slug, stepId, quiz, onResult }: { slug: string; stepId: string; quiz: SortingQuiz; onResult?: (result: ResultType) => void }) {
+  const { prev, finish } = useQuizState(slug, stepId, onResult);
   const [items, setItems] = useState(() => [...quiz.items]);
   const [checked, setChecked] = useState(false);
   const [ok, setOk] = useState(false);
@@ -554,8 +518,8 @@ function SortingStep({ slug, stepId, quiz }: { slug: string; stepId: string; qui
   );
 }
 
-function TableStep({ slug, stepId, quiz }: { slug: string; stepId: string; quiz: TableQuiz }) {
-  const { prev, finish } = useQuizState(slug, stepId);
+function TableStep({ slug, stepId, quiz, onResult }: { slug: string; stepId: string; quiz: TableQuiz; onResult?: (result: ResultType) => void }) {
+  const { prev, finish } = useQuizState(slug, stepId, onResult);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [checked, setChecked] = useState(false);
   const [ok, setOk] = useState(false);
@@ -638,8 +602,8 @@ function TableStep({ slug, stepId, quiz }: { slug: string; stepId: string; quiz:
   );
 }
 
-function NumberStep({ slug, stepId, quiz }: { slug: string; stepId: string; quiz: NumberQuiz }) {
-  const { prev, finish } = useQuizState(slug, stepId);
+function NumberStep({ slug, stepId, quiz, onResult }: { slug: string; stepId: string; quiz: NumberQuiz; onResult?: (result: ResultType) => void }) {
+  const { prev, finish } = useQuizState(slug, stepId, onResult);
   const [val, setVal] = useState('');
   const [checked, setChecked] = useState(false);
   const [ok, setOk] = useState(false);
@@ -690,8 +654,8 @@ function NumberStep({ slug, stepId, quiz }: { slug: string; stepId: string; quiz
   );
 }
 
-function ClozeStep({ slug, stepId, quiz }: { slug: string; stepId: string; quiz: ClozeQuiz }) {
-  const { prev, finish } = useQuizState(slug, stepId);
+function ClozeStep({ slug, stepId, quiz, onResult }: { slug: string; stepId: string; quiz: ClozeQuiz; onResult?: (result: ResultType) => void }) {
+  const { prev, finish } = useQuizState(slug, stepId, onResult);
   const [vals, setVals] = useState<string[]>(() => Array(quiz.blanks.length).fill(''));
   const [checked, setChecked] = useState(false);
   const [ok, setOk] = useState(false);
@@ -751,8 +715,8 @@ function ClozeStep({ slug, stepId, quiz }: { slug: string; stepId: string; quiz:
   );
 }
 
-function CodeStep({ slug, stepId, quiz }: { slug: string; stepId: string; quiz: CodeQuiz }) {
-  const { prev, finish } = useQuizState(slug, stepId);
+function CodeStep({ slug, stepId, quiz, onResult }: { slug: string; stepId: string; quiz: CodeQuiz; onResult?: (result: ResultType) => void }) {
+  const { prev, finish } = useQuizState(slug, stepId, onResult);
   const [code, setCode] = useState(quiz.starterCode || '');
   const [checked, setChecked] = useState(false);
   const [ok, setOk] = useState(false);
