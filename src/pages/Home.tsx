@@ -1,0 +1,165 @@
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router';
+import { BookOpenCheck, WifiOff } from 'lucide-react';
+import { courses, courseStats } from '@/data';
+import { useProgress } from '@/lib/progress';
+import { Header } from '@/components/Header';
+import { CourseCard } from '@/components/CourseCard';
+import { coursesWord } from '@/lib/pluralize';
+import { tracks } from '@/data/tracks';
+import { TrackCard } from '@/components/TrackCard';
+import { ProgressExport } from '@/components/ProgressExport';
+
+const ALL_TAGS = ['Все', ...Array.from(new Set(courses.flatMap((c) => c.tags)))];
+
+export default function Home() {
+  const [params, setParams] = useSearchParams();
+  const [query, setQuery] = useState(params.get('q') ?? '');
+  const [tag, setTag] = useState('Все');
+  const deferredQuery = useDeferredValue(query);
+  const { totalStats, courseProgress } = useProgress();
+
+  // URL → state
+  useEffect(() => {
+    setQuery(params.get('q') ?? '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.get('q')]);
+
+  // state → URL (replace)
+  useEffect(() => {
+    const next = new URLSearchParams(params);
+    if (query) next.set('q', query); else next.delete('q');
+    if (next.toString() !== params.toString()) setParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query]);
+
+  const stats = useMemo(() => totalStats(), [totalStats]);
+  const startedCourses = useMemo(
+    () => courses.filter((c) => courseProgress(c.slug).done > 0),
+    [courseProgress]
+  );
+
+  const filtered = useMemo(() => {
+    const q = deferredQuery.trim().toLowerCase();
+    return courses.filter((c) => {
+      const byTag = tag === 'Все' || c.tags.includes(tag);
+      const byQuery =
+        !q || [c.title, c.subtitle, c.description, ...c.tags].join(' ').toLowerCase().includes(q);
+      return byTag && byQuery;
+    });
+  }, [deferredQuery, tag]);
+
+  const totalSteps = useMemo(() => courses.reduce((a, c) => a + courseStats(c).steps, 0), []);
+
+  return (
+    <div className="min-h-dvh">
+      <Header query={query} onSearch={setQuery} />
+
+      <main className="mx-auto max-w-6xl px-4 pb-20">
+        <section className="py-10 sm:py-14">
+          <p className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-accent/50 px-3.5 py-1.5 text-xs font-semibold text-primary">
+            <WifiOff className="h-3.5 w-3.5" aria-hidden="true" />
+            Работает полностью офлайн
+          </p>
+          <h1 className="mt-4 max-w-2xl text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
+            Инженерная база знаний: тестирование, Python, Docker, Kubernetes и ИИ-агенты
+          </h1>
+          <p className="mt-3 max-w-xl text-base leading-relaxed text-muted-foreground">
+            Пошаговые уроки с проверочными вопросами. Прогресс сохраняется на устройстве — учитесь
+            дома, в метро или на даче без интернета.
+          </p>
+
+          <div className="mt-6 flex flex-wrap gap-6 text-sm">
+            <div>
+              <p className="text-2xl font-extrabold tracking-tight text-primary">{courses.length}</p>
+              <p className="text-muted-foreground">{coursesWord(courses.length)} в базе</p>
+            </div>
+            <div>
+              <p className="text-2xl font-extrabold tracking-tight text-primary">{totalSteps}</p>
+              <p className="text-muted-foreground">шагов обучения</p>
+            </div>
+            <div>
+              <p className="text-2xl font-extrabold tracking-tight text-primary">{stats.donePct}%</p>
+              <p className="text-muted-foreground">пройдено вами</p>
+            </div>
+          </div>
+        </section>
+
+        {startedCourses.length > 0 && (
+          <section id="my-courses" className="scroll-mt-20">
+            <div className="flex items-center gap-2.5">
+              <BookOpenCheck className="h-5 w-5 text-primary" aria-hidden="true" />
+              <h2 className="text-xl font-bold tracking-tight">Моё обучение</h2>
+            </div>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {startedCourses.map((c) => <CourseCard key={c.slug} course={c} />)}
+            </div>
+          </section>
+        )}
+
+        {/* Треки */}
+        <section id="tracks" className="mt-12 scroll-mt-20">
+          <div className="flex items-center gap-2.5">
+            <h2 className="text-xl font-bold tracking-tight">Треки обучения</h2>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Наборы курсов под разные роли — порядок слева направо
+          </p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {tracks.map((t) => (
+              <TrackCard key={t.slug} track={t} />
+            ))}
+          </div>
+        </section>
+
+        <section id="catalog" className="mt-12 scroll-mt-20">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-xl font-bold tracking-tight">Каталог курсов</h2>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Фильтр по темам">
+              {ALL_TAGS.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setTag(t)}
+                  aria-pressed={tag === t}
+                  className={`min-h-[36px] rounded-full border px-3.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    tag === t
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border bg-card text-foreground/70 hover:border-primary/40 hover:text-foreground'
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div aria-live="polite" aria-atomic="true" className="sr-only">
+            Найдено {filtered.length} {coursesWord(filtered.length)}
+          </div>
+
+          {filtered.length === 0 ? (
+            <div className="mt-8 rounded-xl border border-dashed border-border bg-card p-10 text-center">
+              <p className="font-semibold">Ничего не найдено</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Попробуйте другой запрос или сбросьте фильтр по теме.
+              </p>
+            </div>
+          ) : (
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((c) => <CourseCard key={c.slug} course={c} />)}
+            </div>
+          )}
+        </section>
+        <ProgressExport />
+      </main>
+
+      <footer className="border-t border-border bg-card">
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <p>Дев<span className="font-semibold text-primary">Академия</span> — офлайн-учебник по инженерным практикам</p>
+          <p>Прогресс хранится локально на этом устройстве</p>
+        </div>
+      </footer>
+    </div>
+  );
+}
