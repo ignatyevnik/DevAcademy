@@ -1715,6 +1715,361 @@ export const k8sCourse: Course = {
         },
       ],
     },
-
+        {
+      id: 'k8-m9',
+      title: 'Helm: пакетный менеджер',
+      lessons: [
+        {
+          id: 'k8-l26',
+          title: 'Зачем нужен Helm и структура чарта',
+          minutes: 25,
+          steps: [
+            {
+              id: 'k8-l26-s1',
+              title: 'Проблема без Helm',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: `Приложение в K8s — это не один YAML, а 5–10 (Deployment, Service, Ingress, ConfigMap, Secret, HPA). Для 3 окружений (dev, staging, prod) это 30 файлов с почти одинаковым содержимым. Helm упаковывает всё в **chart** с параметризацией через \`values.yaml\`.`,
+                },
+                {
+                  type: 'code',
+                  lang: 'text',
+                  caption: 'Структура чарта',
+                  code: 'mychart/\n├── Chart.yaml          # имя, версия, зависимости\n├── values.yaml         # значения по умолчанию\n├── templates/\n│   ├── deployment.yaml\n│   ├── service.yaml\n│   ├── ingress.yaml\n│   └── _helpers.tpl    # вспомогательные шаблоны\n└── charts/             # subcharts (зависимости)',
+                },
+                {
+                  type: 'note',
+                  text: 'Helm — де-факто стандарт для установки сторонних приложений (nginx-ingress, cert-manager, prometheus). Публичные чарты лежат в Artifact Hub. На собеседовании DevOps: "как ставите ingress-nginx?" — ответ "helm install".',
+                },
+              ],
+            },
+            {
+              id: 'k8-l26-s2',
+              title: 'Проверь себя: Chart.yaml',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Зачем нужен файл `Chart.yaml` в Helm-чарте?',
+                options: [
+                  { id: 'a', text: 'Хранит секреты приложения' },
+                  { id: 'b', text: 'Содержит метаданные: имя чарта, версию, описание, зависимости' },
+                  { id: 'c', text: 'Описывает Deployment' },
+                  { id: 'd', text: 'Это конфиг для kubectl' },
+                ],
+                correct: ['b'],
+                explanation: 'Chart.yaml — "паспорт" чарта: name, version, appVersion, dependencies. Без него Helm не поймёт, что это чарт. values.yaml — параметры, templates/ — манифесты.',
+              },
+            },
+          ],
+        },
+        {
+          id: 'k8-l27',
+          title: 'Шаблонизация в Helm',
+          minutes: 30,
+          steps: [
+            {
+              id: 'k8-l27-s1',
+              title: 'Go templates и .Values',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'code',
+                  lang: 'yaml',
+                  caption: 'values.yaml',
+                  code: 'replicaCount: 3\n\nimage:\n  repository: ghcr.io/myorg/myapp\n  tag: "1.4.2"\n\nservice:\n  port: 80',
+                },
+                {
+                  type: 'code',
+                  lang: 'yaml',
+                  caption: 'templates/deployment.yaml',
+                  code: 'apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: {{ .Release.Name }}-app\nspec:\n  replicas: {{ .Values.replicaCount }}\n  template:\n    spec:\n      containers:\n        - name: app\n          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"\n          ports:\n            - containerPort: {{ .Values.service.port }}',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    '.Values — доступ к values.yaml (и переопределениям)',
+                    '.Release.Name — имя релиза (задаётся при helm install my-release)',
+                    '.Chart.Name / .Chart.Version — из Chart.yaml',
+                    '.Capabilities.KubeVersion — версия кластера (для условий)',
+                    '{{- ... }} — обрезка пробелов слева, {{ ... -}} — справа',
+                  ],
+                },
+              ],
+            },
+            {
+              id: 'k8-l27-s2',
+              title: 'Условия и циклы',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'code',
+                  lang: 'yaml',
+                  caption: 'Условия (if)',
+                  code: '{{- if .Values.ingress.enabled }}\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: {{ .Release.Name }}-ingress\nspec:\n  rules:\n    - host: {{ .Values.ingress.host }}\n{{- end }}',
+                },
+                {
+                  type: 'code',
+                  lang: 'yaml',
+                  caption: 'Циклы (range)',
+                  code: 'env:\n{{- range $key, $value := .Values.env }}\n  - name: {{ $key }}\n    value: {{ $value | quote }}\n{{- end }}',
+                },
+                {
+                  type: 'note',
+                  text: '`| quote` — обернуть значение в кавычки. Важно для строк, которые могут выглядеть как числа или boolean (например, `"true"` без кавычек станет boolean true и сломает env).',
+                },
+              ],
+            },
+            {
+              id: 'k8-l27-s3',
+              title: 'Проверь себя: синтаксис',
+              type: 'quiz',
+              quiz: {
+                kind: 'fill',
+                question: 'Как в шаблоне Helm обратиться к параметру `replicaCount` из values.yaml?',
+                accepted: ['{{ .Values.replicaCount }}', '{{.Values.replicaCount}}', '.Values.replicaCount'],
+                placeholder: '{{ ... }}',
+                hint: 'Точка, Values, точка, имя',
+                explanation: '{{ .Values.replicaCount }} — стандартный доступ. Точка в начале означает "текущий контекст", Values — корневой объект с values.yaml.',
+              },
+            },
+          ],
+        },
+        {
+          id: 'k8-l28',
+          title: 'Управление релизами (install, upgrade, rollback)',
+          minutes: 25,
+          steps: [
+            {
+              id: 'k8-l28-s1',
+              title: 'Основные команды',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'Жизненный цикл релиза',
+                  code: '# Установка из локальной папки\nhelm install myapp ./mychart -n production --create-namespace\n\n# С override values\nhelm install myapp ./mychart -n production \\\n  --set image.tag=1.4.3 \\\n  -f prod-values.yaml\n\n# Обновление\nhelm upgrade myapp ./mychart -n production -f prod-values.yaml\n\n# Install or upgrade (идемпотентно — для CI)\nhelm upgrade --install myapp ./mychart -n production\n\n# История и откат\nhelm history myapp -n production\nhelm rollback myapp 1 -n production\n\n# Удаление\nhelm uninstall myapp -n production',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'helm install — первый деплой',
+                    'helm upgrade — обновление (создаёт новую ревизию)',
+                    'helm upgrade --install — идемпотентно, для CI',
+                    'helm rollback N — откат к ревизии N',
+                    'helm template — отрендерить YAML без установки (для отладки)',
+                    'helm diff upgrade — показать, что изменится (плагин)',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Helm хранит историю ревизий (по умолчанию 10) в Secret-ах в namespace. `helm rollback` — это не "откат состояния", а деплой старой ревизии. Kubernetes делает rolling update до предыдущей версии.',
+                },
+              ],
+            },
+            {
+              id: 'k8-l28-s2',
+              title: 'Репозитории и поиск',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'Публичные чарты',
+                  code: '# Добавить репозиторий\nhelm repo add bitnami https://charts.bitnami.com/bitnami\nhelm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx\n\n# Обновить индекс\nhelm repo update\n\n# Найти чарт\nhelm search repo nginx\nhelm search hub prometheus   # поиск по Artifact Hub\n\n# Посмотреть values по умолчанию\nhelm show values bitnami/postgresql\n\n# Установить сторонний чарт\nhelm install postgres bitnami/postgresql -n db \\\n  --set auth.password=secret',
+                },
+                {
+                  type: 'note',
+                  text: 'Artifact Hub (artifacthub.io) — центральный поисковик чартов. Для продакшена: ставьте популярные чарты (bitnami, ingress-nginx, cert-manager, prometheus-community). Свои — публикуйте в OCI-registry (ghcr.io, ECR).',
+                },
+              ],
+            },
+            {
+              id: 'k8-l28-s3',
+              title: 'Проверь себя: команды',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте команду Helm и её действие',
+                pairs: [
+                  { left: 'helm install', right: 'Первый деплой чарта' },
+                  { left: 'helm upgrade', right: 'Обновление с созданием новой ревизии' },
+                  { left: 'helm rollback', right: 'Откат к предыдущей ревизии' },
+                  { left: 'helm template', right: 'Отрендерить YAML без установки' },
+                ],
+                explanation: 'install — первый раз. upgrade — обновление. rollback — откат. template — "сухой прогон" для отладки шаблонов (часто с --debug).',
+              },
+            },
+          ],
+        },
+      ],
+    },
+        {
+      id: 'k8-m10',
+      title: 'Практикум',
+      lessons: [
+        {
+          id: 'k8-l29',
+          title: 'Практика: поды, деплойменты, сервисы',
+          minutes: 35,
+          steps: [
+            {
+              id: 'k8-l29-s1',
+              title: 'Что такое под',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Что такое Pod в Kubernetes?',
+                options: [
+                  { id: 'a', text: 'Физический сервер' },
+                  { id: 'b', text: 'Минимальная единица: один или несколько контейнеров' },
+                  { id: 'c', text: 'Docker-образ' },
+                  { id: 'd', text: 'База данных' },
+                ],
+                correct: ['b'],
+                explanation: 'Pod — минимальная единица в K8s. Обычно один контейнер, но может быть несколько тесно связанных (sidecar).',
+              },
+            },
+            {
+              id: 'k8-l29-s2',
+              title: 'Список подов',
+              type: 'quiz',
+              quiz: {
+                kind: 'fill',
+                question: 'Какая команда покажет все поды в текущем namespace?',
+                accepted: ['kubectl get pods', 'kubectl get pod'],
+                placeholder: 'kubectl ...',
+                hint: 'get + pods',
+                explanation: 'kubectl get pods — стандартная команда. С -o wide — больше информации, с -A — все namespace.',
+              },
+            },
+            {
+              id: 'k8-l29-s3',
+              title: 'Порядок деплоя',
+              type: 'quiz',
+              quiz: {
+                kind: 'sorting',
+                question: 'Расставьте шаги деплоя приложения в правильном порядке',
+                items: ['kubectl apply -f deployment.yaml', 'kubectl get pods', 'kubectl get svc', 'kubectl port-forward'],
+                correct: ['kubectl apply -f deployment.yaml', 'kubectl get pods', 'kubectl get svc', 'kubectl port-forward'],
+                explanation: 'Применили манифест → проверили поды → проверили сервис → пробросили порт для проверки.',
+              },
+            },
+            {
+              id: 'k8-l29-s4',
+              title: 'Манифест Deployment',
+              type: 'quiz',
+              quiz: {
+                kind: 'cloze',
+                question: 'Заполните пропуски в манифесте',
+                text: 'apiVersion: apps/v1\n____: Deployment\nmetadata:\n  name: web\nspec:\n  ____: 3',
+                blanks: [
+                  { accepted: ['kind'], hint: 'тип объекта' },
+                  { accepted: ['replicas'], hint: 'количество копий' },
+                ],
+                explanation: 'kind: Deployment — тип. replicas: 3 — три копии пода. Обязательные поля для любого манифеста.',
+              },
+            },
+            {
+              id: 'k8-l29-s5',
+              title: 'Объекты K8s',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте объект и его роль',
+                pairs: [
+                  { left: 'Pod', right: 'Минимальная единица' },
+                  { left: 'Deployment', right: 'Управление репликами' },
+                  { left: 'Service', right: 'Стабильная точка входа' },
+                  { left: 'Ingress', right: 'Маршрутизация L7' },
+                ],
+                explanation: 'Pod — единица, Deployment — реплики, Service — стабильный доступ, Ingress — маршрутизация по host/path.',
+              },
+            },
+            {
+              id: 'k8-l29-s6',
+              title: 'Реплики по умолчанию',
+              type: 'quiz',
+              quiz: {
+                kind: 'number',
+                question: 'Сколько реплик создаст Deployment, если в манифесте не указано поле `replicas`?',
+                correct: 1,
+                explanation: 'По умолчанию replicas: 1. Если нужно больше — указывайте явно. Для HA-сервисов обычно 2+ реплики.',
+              },
+            },
+            {
+              id: 'k8-l29-s7',
+              title: 'Probes',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие типы probes существуют в Kubernetes?',
+                options: [
+                  { id: 'a', text: 'liveness' },
+                  { id: 'b', text: 'readiness' },
+                  { id: 'c', text: 'startup' },
+                  { id: 'd', text: 'performance' },
+                ],
+                correct: ['a', 'b', 'c'],
+                explanation: 'liveness — жив ли процесс, readiness — готов ли принимать трафик, startup — стартовал ли. performance — не существует.',
+              },
+            },
+            {
+              id: 'k8-l29-s8',
+              title: 'Типы Service',
+              type: 'quiz',
+              quiz: {
+                kind: 'table',
+                question: 'Отметьте, что верно для каждого типа Service',
+                columns: ['ClusterIP', 'NodePort', 'LoadBalancer'],
+                rows: [
+                  { label: 'Доступен только внутри кластера', correct: ['ClusterIP'] },
+                  { label: 'Открывает порт на каждом узле', correct: ['NodePort'] },
+                  { label: 'Внешний IP через облако', correct: ['LoadBalancer'] },
+                  { label: 'Тип по умолчанию', correct: ['ClusterIP'] },
+                ],
+                explanation: 'ClusterIP — только внутри, NodePort — порт на узлах (30000-32767), LoadBalancer — облачный LB. По умолчанию — ClusterIP.',
+              },
+            },
+            {
+              id: 'k8-l29-s9',
+              title: 'Напишите манифест',
+              type: 'quiz',
+              quiz: {
+                kind: 'code',
+                question: 'Напишите Deployment-манифест: имя web, образ nginx:1.27, 3 реплики.',
+                starterCode: 'apiVersion: apps/v1\nkind: Deployment\n',
+                mustInclude: [
+                  { pattern: 'kind:\\s*Deployment', message: 'Нужен kind: Deployment' },
+                  { pattern: 'replicas:\\s*3', message: 'Нужно replicas: 3' },
+                  { pattern: 'image:\\s*nginx:1\\.27', message: 'Нужен image: nginx:1.27' },
+                  { pattern: 'name:\\s*web', message: 'Нужно name: web' },
+                ],
+                explanation: 'apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web\nspec:\n  replicas: 3\n  selector:\n    matchLabels: {app: web}\n  template:\n    metadata: {labels: {app: web}}\n    spec:\n      containers:\n        - name: web\n          image: nginx:1.27',
+              },
+            },
+            {
+              id: 'k8-l29-s10',
+              title: 'StatefulSet',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Чем StatefulSet отличается от Deployment?',
+                options: [
+                  { id: 'a', text: 'Быстрее работает' },
+                  { id: 'b', text: 'Даёт стабильные имена подов и свой volume на каждый под' },
+                  { id: 'c', text: 'Не поддерживает реплики' },
+                  { id: 'd', text: 'Работает только с БД' },
+                ],
+                correct: ['b'],
+                explanation: 'StatefulSet — для stateful-приложений (БД, Kafka): стабильные имена (web-0, web-1), свой PVC на каждый под, порядок запуска. Deployment — для stateless.',
+              },
+            },
+          ],
+        },
+      ],
+    },
   ],
 };

@@ -889,5 +889,167 @@ git reset --hard b7c8e1d
         },
       ],
     },
+        {
+      id: 'git-m4',
+      title: 'Практикум',
+      lessons: [
+        {
+          id: 'git-l11',
+          title: 'Практика: от init до PR',
+          minutes: 35,
+          steps: [
+            {
+              id: 'git-l11-s1',
+              title: 'Создание репозитория',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Какая команда создаёт новый Git-репозиторий в текущей папке?',
+                options: [
+                  { id: 'a', text: 'git start' },
+                  { id: 'b', text: 'git init' },
+                  { id: 'c', text: 'git new' },
+                  { id: 'd', text: 'git create' },
+                ],
+                correct: ['b'],
+                explanation: 'git init создаёт папку .git и превращает текущую директорию в репозиторий. Других команд для инициализации нет.',
+              },
+            },
+            {
+              id: 'git-l11-s2',
+              title: 'Состояние файлов',
+              type: 'quiz',
+              quiz: {
+                kind: 'fill',
+                question: 'Какая команда покажет, какие файлы изменены, какие в staging, а какие не отслеживаются?',
+                accepted: ['git status', 'status'],
+                placeholder: 'git ...',
+                hint: 'Два слова, начинается с git',
+                explanation: 'git status — главный инструмент «где я и что происходит». Запускайте после каждого add/commit, если не уверены.',
+              },
+            },
+            {
+              id: 'git-l11-s3',
+              title: 'Порядок действий',
+              type: 'quiz',
+              quiz: {
+                kind: 'sorting',
+                question: 'Расставьте команды в правильном порядке для отправки изменений на сервер',
+                items: ['git add .', 'git commit -m "msg"', 'git push'],
+                correct: ['git add .', 'git commit -m "msg"', 'git push'],
+                explanation: 'Сначала индексируем (add), потом фиксируем локально (commit), потом отправляем на сервер (push).',
+              },
+            },
+            {
+              id: 'git-l11-s4',
+              title: 'Создание ветки',
+              type: 'quiz',
+              quiz: {
+                kind: 'cloze',
+                question: 'Заполните команду для создания ветки и переключения на неё:',
+                text: 'git ____ ____ feature/login',
+                blanks: [
+                  { accepted: ['switch'], hint: 'переключение' },
+                  { accepted: ['-c'], hint: 'флаг create' },
+                ],
+                explanation: 'git switch -c feature/login — создаёт ветку и сразу переключается. Старая альтернатива: git checkout -b.',
+              },
+            },
+            {
+              id: 'git-l11-s5',
+              title: 'Команды и действия',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте команду и что она делает',
+                pairs: [
+                  { left: 'git add', right: 'Добавить в staging' },
+                  { left: 'git commit', right: 'Зафиксировать в локальной истории' },
+                  { left: 'git push', right: 'Отправить на удалённый сервер' },
+                  { left: 'git pull', right: 'Забрать и слить изменения' },
+                ],
+                explanation: 'add → staging, commit → локально, push → на сервер, pull = fetch + merge.',
+              },
+            },
+            {
+              id: 'git-l11-s6',
+              title: 'Короткий SHA',
+              type: 'quiz',
+              quiz: {
+                kind: 'number',
+                question: 'Сколько символов в коротком хэше коммита, который показывает `git log --oneline` по умолчанию?',
+                correct: 7,
+                explanation: 'По умолчанию git сокращает SHA-1 до 7 символов. Полный хэш — 40 символов.',
+              },
+            },
+            {
+              id: 'git-l11-s7',
+              title: '.gitignore',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Что верно про .gitignore?',
+                options: [
+                  { id: 'a', text: 'Исключает файлы из отслеживания' },
+                  { id: 'b', text: 'Удаляет файлы с диска' },
+                  { id: 'c', text: 'Не действует на уже закоммиченные файлы' },
+                  { id: 'd', text: 'Обычно содержит node_modules, venv, .env' },
+                ],
+                correct: ['a', 'c', 'd'],
+                explanation: '.gitignore не удаляет файлы (b) — только перестаёт их отслеживать. Уже закоммиченные файлы надо убирать через git rm --cached.',
+              },
+            },
+            {
+              id: 'git-l11-s8',
+              title: 'merge vs rebase',
+              type: 'quiz',
+              quiz: {
+                kind: 'table',
+                question: 'Отметьте, что верно для каждого способа',
+                columns: ['merge', 'rebase'],
+                rows: [
+                  { label: 'Создаёт merge-commit', correct: ['merge'] },
+                  { label: 'Переписывает историю', correct: ['rebase'] },
+                  { label: 'Безопасен для общих веток', correct: ['merge'] },
+                  { label: 'Даёт линейную историю', correct: ['rebase'] },
+                ],
+                explanation: 'merge сохраняет факт ветвления и безопасен для запушенных веток. rebase переписывает историю — только для своих локальных веток.',
+              },
+            },
+            {
+              id: 'git-l11-s9',
+              title: 'Спасти потерянный коммит',
+              type: 'quiz',
+              quiz: {
+                kind: 'code',
+                question: 'После `git reset --hard HEAD~1` вы потеряли коммит. Напишите команду, которая покажет все перемещения HEAD — чтобы найти его хэш.',
+                starterCode: 'git ',
+                mustInclude: [
+                  { pattern: '^git reflog', message: 'Нужна команда git reflog' },
+                ],
+                explanation: 'git reflog — журнал всех перемещений HEAD. Хранится 30–90 дней. Находите хэш и делаете git reset --hard <hash> — коммит вернётся.',
+              },
+            },
+            {
+              id: 'git-l11-s10',
+              title: 'Что такое HEAD',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Что такое HEAD в Git?',
+                options: [
+                  { id: 'a', text: 'Первый коммит в репозитории' },
+                  { id: 'b', text: 'Указатель на текущий коммит (обычно — на вершину текущей ветки)' },
+                  { id: 'c', text: 'Имя главной ветки' },
+                  { id: 'd', text: 'Сервер, куда пушим' },
+                ],
+                correct: ['b'],
+                explanation: 'HEAD — «где вы сейчас». Обычно указывает на вершину текущей ветки. При checkout на конкретный коммит — detached HEAD.',
+              },
+            },
+          ],
+        },
+      ],
+    },
   ],
 };

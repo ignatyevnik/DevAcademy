@@ -1016,5 +1016,167 @@ export const designCourse: Course = {
         },
       ],
     },
+        {
+      id: 'dp-m4',
+      title: 'Практикум',
+      lessons: [
+        {
+          id: 'dp-l13',
+          title: 'Практика: SOLID, паттерны, архитектура',
+          minutes: 35,
+          steps: [
+            {
+              id: 'dp-l13-s1',
+              title: 'Принцип SRP',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Что означает принцип Single Responsibility (SRP)?',
+                options: [
+                  { id: 'a', text: 'У класса должен быть один метод' },
+                  { id: 'b', text: 'У класса должна быть одна причина для изменения' },
+                  { id: 'c', text: 'Класс должен делать всё сам' },
+                  { id: 'd', text: 'Класс должен наследовать один родитель' },
+                ],
+                correct: ['b'],
+                explanation: 'SRP — «одна причина для изменения». Класс может делать много всего, если это меняется по одной причине (например, правила расчёта).',
+              },
+            },
+            {
+              id: 'dp-l13-s2',
+              title: 'Порядок SOLID',
+              type: 'quiz',
+              quiz: {
+                kind: 'sorting',
+                question: 'Расставьте принципы SOLID в правильном порядке',
+                items: ['Single Responsibility', 'Open-Closed', 'Liskov Substitution', 'Interface Segregation', 'Dependency Inversion'],
+                correct: ['Single Responsibility', 'Open-Closed', 'Liskov Substitution', 'Interface Segregation', 'Dependency Inversion'],
+                explanation: 'S.O.L.I.D. — именно в таком порядке.',
+              },
+            },
+            {
+              id: 'dp-l13-s3',
+              title: 'Принцип OCP',
+              type: 'quiz',
+              quiz: {
+                kind: 'fill',
+                question: 'Продолжите принцип OCP: «Программные сущности должны быть открыты для ____, но закрыты для изменения».',
+                accepted: ['расширения', 'extension', 'расширения (extension)'],
+                placeholder: 'одно слово',
+                hint: 'Добавление нового без правки старого',
+                explanation: 'Открыты для расширения (extension), закрыты для изменения (modification). Новый тип скидки — новый класс, а не правка if/else.',
+              },
+            },
+            {
+              id: 'dp-l13-s4',
+              title: 'Dependency Inversion',
+              type: 'quiz',
+              quiz: {
+                kind: 'cloze',
+                question: 'Заполните код, чтобы соблюсти DIP (внедрение зависимости):',
+                text: 'class OrderService:\n    def __init__(self, repo: OrderRepository):\n        self.repo = ____',
+                blanks: [
+                  { accepted: ['repo'], hint: 'переданная зависимость' },
+                ],
+                explanation: 'Зависимость передаётся через конструктор (repo) и сохраняется в self.repo. Класс не создаёт БД сам.',
+              },
+            },
+            {
+              id: 'dp-l13-s5',
+              title: 'Типы паттернов',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте паттерн и его категорию',
+                pairs: [
+                  { left: 'Singleton', right: 'Порождающий' },
+                  { left: 'Adapter', right: 'Структурный' },
+                  { left: 'Strategy и Observer', right: 'Поведенческий' },
+                ],
+                explanation: 'Порождающие — про создание (Singleton, Factory, Builder). Структурные — про связи (Adapter, Decorator, Facade). Поведенческие — про взаимодействие (Strategy, Observer, Command).',
+              },
+            },
+            {
+              id: 'dp-l13-s6',
+              title: 'Комбинации декораторов',
+              type: 'quiz',
+              quiz: {
+                kind: 'number',
+                question: 'Сколько классов-комбинаций понадобится при наследовании, если есть 3 независимых поведения (логирование, кэш, retry), и мы хотим все возможные комбинации? (2^3)',
+                correct: 8,
+                explanation: 'С наследованием нужно 2^3 = 8 классов (L, C, R, LC, LR, CR, LCR + базовый). С Decorator — 3 декоратора, комбинируются в рантайме.',
+              },
+            },
+            {
+              id: 'dp-l13-s7',
+              title: 'Когда НЕ использовать паттерны',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие признаки over-engineering (избыточного проектирования)?',
+                options: [
+                  { id: 'a', text: 'Абстрактная фабрика для одного класса' },
+                  { id: 'b', text: 'Интерфейс с одной реализацией «на будущее»' },
+                  { id: 'c', text: '5 уровней наследования ради гибкости' },
+                  { id: 'd', text: 'Использование dependency injection' },
+                ],
+                correct: ['a', 'b', 'c'],
+                explanation: 'Фабрика для одного класса, интерфейсы «на будущее», глубокое наследование — over-engineering. DI (d) — нормальная практика.',
+              },
+            },
+            {
+              id: 'dp-l13-s8',
+              title: 'Монолит vs Микросервисы',
+              type: 'quiz',
+              quiz: {
+                kind: 'table',
+                question: 'Отметьте, что верно для каждой архитектуры',
+                columns: ['Монолит', 'Микросервисы'],
+                rows: [
+                  { label: 'Простой деплой', correct: ['Монолит'] },
+                  { label: 'ACID-транзакции из коробки', correct: ['Монолит'] },
+                  { label: 'Независимое масштабирование', correct: ['Микросервисы'] },
+                  { label: 'Сложнее отладка', correct: ['Микросервисы'] },
+                ],
+                explanation: 'Монолит — простой, ACID. Микросервисы — масштабирование, но сложность (сеть, eventual consistency, observability).',
+              },
+            },
+            {
+              id: 'dp-l13-s9',
+              title: 'Паттерн Singleton',
+              type: 'quiz',
+              quiz: {
+                kind: 'code',
+                question: 'Напишите класс Config (Singleton) на Python, гарантирующий единственный экземпляр.',
+                starterCode: 'class Config:\n    ',
+                mustInclude: [
+                  { pattern: '_instance', message: 'Нужно поле _instance' },
+                  { pattern: '__new__', message: 'Нужен метод __new__' },
+                  { pattern: 'if cls\\._instance is None', message: 'Нужна проверка на None' },
+                ],
+                explanation: 'class Config:\n    _instance = None\n    def __new__(cls):\n        if cls._instance is None:\n            cls._instance = super().__new__(cls)\n        return cls._instance',
+              },
+            },
+            {
+              id: 'dp-l13-s10',
+              title: 'CQRS',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Что разделяет паттерн CQRS?',
+                options: [
+                  { id: 'a', text: 'Фронтенд и бэкенд' },
+                  { id: 'b', text: 'Модель чтения (Query) и модель записи (Command)' },
+                  { id: 'c', text: 'Базу данных и кэш' },
+                  { id: 'd', text: 'Микросервисы и монолит' },
+                ],
+                correct: ['b'],
+                explanation: 'CQRS = Command Query Responsibility Segregation. Чтение и запись используют разные модели данных (часто разные БД).',
+              },
+            },
+          ],
+        },
+      ],
+    },
   ],
 };

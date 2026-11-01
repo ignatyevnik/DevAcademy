@@ -9,10 +9,11 @@ export type QuizResult = 'ok' | 'partial' | 'fail';
 export interface ProgressState {
   done: Record<string, true>;
   lastVisited: Record<string, { lessonId: string; stepIndex: number; ts: number }>;
-  quizResults: Record<string, QuizResult>;
+  quizResults: Record<string, 'ok' | 'partial' | 'fail'>;
+  bookmarks: Record<string, true>; // ключ: `${courseSlug}:${lessonId}`
 }
 
-const empty: ProgressState = { done: {}, lastVisited: {}, quizResults: {} };
+const empty: ProgressState = { done: {}, lastVisited: {}, quizResults: {}, bookmarks: {} };
 
 export function stepKey(slug: string, stepId: string) {
   return `${slug}:${stepId}`;
@@ -43,6 +44,8 @@ interface ProgressApi {
   resetCourse: (slug: string) => void;
   replaceState: (newState: ProgressState) => void;
   totalStats: () => { started: number; donePct: number };
+  isBookmarked: (slug: string, lessonId: string) => boolean;
+  toggleBookmark: (slug: string, lessonId: string) => void;  
 }
 
 const Ctx = createContext<ProgressApi | null>(null);
@@ -114,6 +117,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
           done: newState.done ?? {},
           lastVisited: newState.lastVisited ?? {},
           quizResults: newState.quizResults ?? {},
+          bookmarks: newState.bookmarks ?? {},
         });
       },
       resetCourse: (slug) => {
@@ -122,9 +126,30 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
           const quizResults: Record<string, QuizResult> = {};
           for (const k of Object.keys(s.done)) if (!k.startsWith(slug + ':')) done[k] = true;
           for (const [k, v] of Object.entries(s.quizResults)) if (!k.startsWith(slug + ':')) quizResults[k] = v;
+          
           const lastVisited = { ...s.lastVisited };
           delete lastVisited[slug];
-          return { done, quizResults, lastVisited };
+
+          // Удаляем закладки этого курса, остальные сохраняем
+          const bookmarks = { ...s.bookmarks };
+          for (const k of Object.keys(bookmarks)) {
+            if (k.startsWith(slug + ':')) delete bookmarks[k];
+          }
+
+          return { done, quizResults, lastVisited, bookmarks };
+        });
+      },
+            isBookmarked: (slug, lessonId) => !!state.bookmarks[`${slug}:${lessonId}`],
+      toggleBookmark: (slug, lessonId) => {
+        const key = `${slug}:${lessonId}`;
+        setState((s) => {
+          const next = { ...s.bookmarks };
+          if (next[key]) {
+            delete next[key];
+          } else {
+            next[key] = true;
+          }
+          return { ...s, bookmarks: next };
         });
       },
       totalStats: () => {

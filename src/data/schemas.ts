@@ -123,11 +123,83 @@ const matchingQuizSchema = z
     }
   });
 
+const sortingQuizSchema = z.object({
+  kind: z.literal('sorting'),
+  question: z.string().min(1),
+  items: z.array(z.string().min(1)).min(2),
+  correct: z.array(z.string().min(1)).min(2),
+  explanation: z.string().min(1),
+}).superRefine((q, ctx) => {
+  if (q.items.length !== q.correct.length) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['correct'], message: 'items и correct должны быть одинаковой длины' });
+  }
+  if (JSON.stringify([...q.items].sort()) !== JSON.stringify([...q.correct].sort())) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['correct'], message: 'correct должен содержать те же элементы, что и items' });
+  }
+});
+
+const tableQuizSchema = z.object({
+  kind: z.literal('table'),
+  question: z.string().min(1),
+  columns: z.array(z.string().min(1)).min(2),
+  rows: z.array(z.object({
+    label: z.string().min(1),
+    correct: z.array(z.string()),
+  })).min(2),
+  explanation: z.string().min(1),
+});
+
+const numberQuizSchema = z.object({
+  kind: z.literal('number'),
+  question: z.string().min(1),
+  correct: z.number(),
+  tolerance: z.number().nonnegative().optional(),
+  placeholder: z.string().optional(),
+  explanation: z.string().min(1),
+});
+
+const clozeQuizSchema = z.object({
+  kind: z.literal('cloze'),
+  question: z.string().min(1),
+  text: z.string().min(1),
+  blanks: z.array(z.object({
+    accepted: z.array(z.string().min(1)).min(1),
+    hint: z.string().optional(),
+  })).min(1),
+  explanation: z.string().min(1),
+}).superRefine((q, ctx) => {
+  const parts = q.text.split('____');
+  if (parts.length - 1 !== q.blanks.length) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['text'], message: `Количество ____ (${parts.length - 1}) не совпадает с количеством blanks (${q.blanks.length})` });
+  }
+});
+
+const codeQuizSchema = z.object({
+  kind: z.literal('code'),
+  question: z.string().min(1),
+  starterCode: z.string().optional(),
+  placeholder: z.string().optional(),
+  mustInclude: z.array(z.object({
+    pattern: z.string(),
+    message: z.string(),
+  })).min(1),
+  mustNotInclude: z.array(z.object({
+    pattern: z.string(),
+    message: z.string(),
+  })).optional(),
+  explanation: z.string().min(1),
+});
+
 const quizSchema = z.discriminatedUnion('kind', [
   singleQuizSchema,
   multipleQuizSchema,
   fillQuizSchema,
   matchingQuizSchema,
+  sortingQuizSchema,
+  tableQuizSchema,
+  numberQuizSchema,
+  clozeQuizSchema,
+  codeQuizSchema,
 ]);
 
 // ─────────────────────────────────────────────

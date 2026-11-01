@@ -948,5 +948,167 @@ def new_checkout(user):
         },
       ],
     },
+        {
+      id: 'cd-m3',
+      title: 'Практикум',
+      lessons: [
+        {
+          id: 'cd-l8',
+          title: 'Практика: пайплайны и деплой',
+          minutes: 35,
+          steps: [
+            {
+              id: 'cd-l8-s1',
+              title: 'Delivery vs Deployment',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Чем Continuous Delivery отличается от Continuous Deployment?',
+                options: [
+                  { id: 'a', text: 'Delivery — деплой по кнопке, Deployment — автоматически' },
+                  { id: 'b', text: 'Delivery — для Docker, Deployment — для серверов' },
+                  { id: 'c', text: 'Ничем' },
+                  { id: 'd', text: 'Delivery — это CI' },
+                ],
+                correct: ['a'],
+                explanation: 'Delivery — всё готово, но деплой в прод требует ручного approve. Deployment — автоматом в прод, если тесты прошли.',
+              },
+            },
+            {
+              id: 'cd-l8-s2',
+              title: 'Стадии pipeline',
+              type: 'quiz',
+              quiz: {
+                kind: 'sorting',
+                question: 'Расставьте стадии CI/CD в правильном порядке (от самого быстрого к самому долгому)',
+                items: ['Lint', 'Unit-тесты', 'Build (Docker)', 'E2E-тесты', 'Deploy'],
+                correct: ['Lint', 'Unit-тесты', 'Build (Docker)', 'E2E-тесты', 'Deploy'],
+                explanation: 'Сначала быстрые проверки (lint, unit), потом сборка, потом долгие E2E, и только потом деплой.',
+              },
+            },
+            {
+              id: 'cd-l8-s3',
+              title: 'Триггер GitHub Actions',
+              type: 'quiz',
+              quiz: {
+                kind: 'cloze',
+                question: 'Заполните YAML для запуска workflow на push и pull_request',
+                text: 'name: CI\n____:\n  ____: [push, pull_request]',
+                blanks: [
+                  { accepted: ['on'], hint: 'когда запускать' },
+                  { accepted: ['on'], hint: 'события' },
+                ],
+                explanation: 'on: [push, pull_request] — стандартный триггер для проверки каждого пуша и PR. (В YAML `on` — ключевое слово).',
+              },
+            },
+            {
+              id: 'cd-l8-s4',
+              title: 'Секреты',
+              type: 'quiz',
+              quiz: {
+                kind: 'fill',
+                question: 'Как обратиться к секрету `DB_PASSWORD` в GitHub Actions?',
+                accepted: ['${{ secrets.DB_PASSWORD }}', '${{secrets.DB_PASSWORD}}'],
+                placeholder: '${{ ... }}',
+                hint: 'secrets и имя',
+                explanation: '${{ secrets.DB_PASSWORD }} — стандартный синтаксис. Значение будет замаскировано в логах.',
+              },
+            },
+            {
+              id: 'cd-l8-s5',
+              title: 'Стратегии деплоя',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте стратегию деплоя и её суть',
+                pairs: [
+                  { left: 'Blue-Green', right: 'Два окружения, переключение трафика' },
+                  { left: 'Canary', right: '5% → 25% → 100% трафика' },
+                  { left: 'Rolling', right: 'Постепенная замена подов' },
+                  { left: 'Feature flag', right: 'Включение фичи в рантайме' },
+                ],
+                explanation: 'Blue-Green — два окружения. Canary — постепенная раскатка с метриками. Rolling — стандарт K8s. Feature flag — деплой ≠ релиз.',
+              },
+            },
+            {
+              id: 'cd-l8-s6',
+              title: 'Время PR-пайплайна',
+              type: 'quiz',
+              quiz: {
+                kind: 'number',
+                question: 'Какое максимальное время выполнения CI на PR считается комфортным (в минутах)?',
+                correct: 15,
+                explanation: 'Оптимум — 10–15 минут. Если дольше, разработчики перестают ждать и мержат вслепую.',
+              },
+            },
+            {
+              id: 'cd-l8-s7',
+              title: 'Что блокирует merge',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Что стоит делать обязательной проверкой (required check) в PR?',
+                options: [
+                  { id: 'a', text: 'Lint' },
+                  { id: 'b', text: 'Unit-тесты' },
+                  { id: 'c', text: 'Полный нагрузочный тест (30 минут)' },
+                  { id: 'd', text: 'Smoke E2E (5 минут)' },
+                ],
+                correct: ['a', 'b', 'd'],
+                explanation: 'Lint, unit, smoke E2E — быстрые проверки. Полный нагрузочный тест — только ночью, он не должен блокировать PR.',
+              },
+            },
+            {
+              id: 'cd-l8-s8',
+              title: 'Кэш vs артефакт',
+              type: 'quiz',
+              quiz: {
+                kind: 'table',
+                question: 'Отметьте, что верно для каждого механизма',
+                columns: ['Кэш', 'Артефакт'],
+                rows: [
+                  { label: 'Ускоряет повторные запуски', correct: ['Кэш'] },
+                  { label: 'Передаёт файлы между job-ами', correct: ['Артефакт'] },
+                  { label: 'Содержит, например, node_modules', correct: ['Кэш'] },
+                  { label: 'Содержит собранный jar/Docker-образ', correct: ['Артефакт'] },
+                ],
+                explanation: 'Кэш — ускоряет (pip, npm). Артефакт — результат сборки, передаётся между job.',
+              },
+            },
+            {
+              id: 'cd-l8-s9',
+              title: 'Шаг в GitHub Actions',
+              type: 'quiz',
+              quiz: {
+                kind: 'code',
+                question: 'Напишите шаг (step) в GitHub Actions, который запускает команду `pytest -v`.',
+                starterCode: '- name: Run tests\n  ',
+                mustInclude: [
+                  { pattern: 'run:\\s*pytest -v', message: 'Нужен ключ run с командой pytest -v' },
+                ],
+                explanation: '- name: Run tests\n  run: pytest -v',
+              },
+            },
+            {
+              id: 'cd-l8-s10',
+              title: 'Docker в CI',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Зачем на PR обычно ставят `push: false` при сборке Docker-образа?',
+                options: [
+                  { id: 'a', text: 'Docker не работает на PR' },
+                  { id: 'b', text: 'Чтобы проверить сборку, но не засорять registry и не ломать latest' },
+                  { id: 'c', text: 'Это ускоряет сборку в 10 раз' },
+                  { id: 'd', text: 'Чтобы не платить за Docker Hub' },
+                ],
+                correct: ['b'],
+                explanation: 'На PR достаточно проверить, что Dockerfile собирается. Push в registry — только для main и тегов.',
+              },
+            },
+          ],
+        },
+      ],
+    },
   ],
 };

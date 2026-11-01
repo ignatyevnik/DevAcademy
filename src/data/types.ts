@@ -39,7 +39,16 @@ export interface MatchingQuiz extends QuizBase {
   shuffle?: boolean;
 }
 
-export type Quiz = SingleQuiz | MultipleQuiz | FillQuiz | MatchingQuiz;
+export type Quiz =
+  | SingleQuiz
+  | MultipleQuiz
+  | FillQuiz
+  | MatchingQuiz
+  | SortingQuiz
+  | TableQuiz
+  | NumberQuiz
+  | ClozeQuiz
+  | CodeQuiz;
 
 export type Step =
   | { id: string; title: string; type: 'theory'; blocks: TextBlock[] }
@@ -95,3 +104,37 @@ export function findLesson(course: Course, lessonId: string) {
 export function allLessons(course: Course): Lesson[] {
   return course.modules.flatMap((m) => m.lessons);
 }
+
+export interface SortingQuiz extends QuizBase {
+  kind: 'sorting';
+  items: string[];
+  correct: string[];
+}
+
+export interface TableQuiz extends QuizBase {
+  kind: 'table';
+  columns: string[];
+  rows: { label: string; correct: string[] }[];
+}
+
+export interface NumberQuiz extends QuizBase {
+  kind: 'number';
+  correct: number;
+  tolerance?: number;
+  placeholder?: string;
+}
+
+export interface ClozeQuiz extends QuizBase {
+  kind: 'cloze';
+  text: string; // содержит ____ для пропусков
+  blanks: { accepted: string[]; hint?: string }[];
+}
+
+export interface CodeQuiz extends QuizBase {
+  kind: 'code';
+  starterCode?: string;
+  placeholder?: string;
+  mustInclude: { pattern: string; message: string }[];
+  mustNotInclude?: { pattern: string; message: string }[];
+}
+

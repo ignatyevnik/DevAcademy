@@ -15,6 +15,7 @@ const exportedStateSchema = z.object({
     }),
   ),
   quizResults: z.record(z.string(), z.enum(['ok', 'partial', 'fail'])),
+  bookmarks: z.record(z.string(), z.literal(true)).optional().default({}),
 });
 
 const exportFileSchema = z.object({

@@ -1,7 +1,7 @@
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router';
-import { BookOpenCheck, WifiOff } from 'lucide-react';
-import { courses, courseStats } from '@/data';
+import { useSearchParams, Link } from 'react-router';
+import { Bookmark, BookOpenCheck, WifiOff } from 'lucide-react';
+import { courses, courseStats, getCourse, findLesson } from '@/data';
 import { useProgress } from '@/lib/progress';
 import { Header } from '@/components/Header';
 import { CourseCard } from '@/components/CourseCard';
@@ -38,6 +38,22 @@ export default function Home() {
     () => courses.filter((c) => courseProgress(c.slug).done > 0),
     [courseProgress]
   );
+  const { state } = useProgress();
+
+    const bookmarkedItems = useMemo(() => {
+    const items = [];
+    for (const key of Object.keys(state.bookmarks)) {
+      if (!state.bookmarks[key]) continue;
+      const [slug, lessonId] = key.split(':');
+      const course = getCourse(slug);
+      if (!course) continue;
+      const found = findLesson(course, lessonId);
+      if (found) {
+        items.push({ course, lesson: found.lesson });
+      }
+    }
+    return items;
+  }, [state.bookmarks]);
 
   const filtered = useMemo(() => {
     const q = deferredQuery.trim().toLowerCase();
@@ -53,7 +69,7 @@ export default function Home() {
 
   return (
     <div className="min-h-dvh">
-      <Header query={query} onSearch={setQuery} />
+      <Header/>
 
       <main className="mx-auto max-w-6xl px-4 pb-20">
         <section className="py-10 sm:py-14">
@@ -93,6 +109,29 @@ export default function Home() {
             </div>
             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {startedCourses.map((c) => <CourseCard key={c.slug} course={c} />)}
+            </div>
+          </section>
+        )}
+
+                {/* Закладки */}
+        {bookmarkedItems.length > 0 && (
+          <section id="bookmarks" className="mt-12 scroll-mt-20">
+            <div className="flex items-center gap-2.5">
+              <Bookmark className="h-5 w-5 text-primary" aria-hidden="true" />
+              <h2 className="text-xl font-bold tracking-tight">Закладки</h2>
+            </div>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {bookmarkedItems.map(({ course, lesson }) => (
+                <Link
+                  key={`${course.slug}-${lesson.id}`}
+                  to={`/course/${course.slug}/lesson/${lesson.id}`}
+                  className="flex flex-col rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40"
+                >
+                  <span className="text-xs text-muted-foreground">{course.title}</span>
+                  <span className="mt-1 font-bold">{lesson.title}</span>
+                  <span className="mt-auto pt-3 text-xs text-muted-foreground">{lesson.minutes} мин</span>
+                </Link>
+              ))}
             </div>
           </section>
         )}

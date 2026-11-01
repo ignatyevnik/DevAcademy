@@ -710,8 +710,17 @@ curl -I --http3 https://cloudflare.com
 nghttp -v https://example.com`,
                 },
                 {
+                  type: 'list',
+                  items: [
+                    'HTTP/2 мультиплексирует потоки в одном TCP-соединении',
+                    'HTTP/3 использует QUIC (UDP) — потоки независимы, нет head-of-line blocking',
+                    'QUIC поддерживает 0-RTT (как TLS 1.3), но с оговоркой про replay-атаки',
+                    'HTTP/3 требует HTTPS (TLS 1.3), без шифрования не работает',
+                  ],
+                },
+                {
                   type: 'note',
-                  text: `HTTP/2 обязателен по факту: почти все сайты с HTTPS работают на нём (браузеры согласуют через ALPN в TLS-рукопожатии). HTTP/3 растёт: Cloudflare, Google, Facebook уже отдают h3. Проверка «сайт на h2» — частая задача при аудите производительности.`,
+                  text: 'HTTP/2 обязателен по факту: почти все сайты с HTTPS работают на нём. HTTP/3 растёт: Cloudflare, Google, Facebook отдают h3. 0-RTT в QUIC ускоряет повторные подключения, но уязвим к replay — не для неидемпотентных запросов (POST, платежи).',
                 },
               ],
             },
@@ -781,6 +790,10 @@ TLS 1.2 — 2 RTT, TLS 1.3 — 1 RTT (быстрее).
                 {
                   type: 'note',
                   text: `SNI (Server Name Indication) — в ClientHello клиент передаёт домен, чтобы сервер знал, какой сертификат отдать. Без SNI на одном IP нельзя было бы держать 100 HTTPS-сайтов. С SNI — можно (и это стандарт).`,
+                },
+                {
+                  type: 'note',
+                  text: 'TLS 1.3 поддерживает 0-RTT (zero round-trip time) при повторном подключении — клиент отправляет данные сразу, не дожидаясь handshake. Это ускоряет, но есть риск: 0-RTT-данные уязвимы к replay-атакам (злоумышленник может повторить перехваченный запрос). Поэтому 0-RTT не используют для неидемпотентных операций (POST, платежи) — только для GET и статики. В HTTP/3 (QUIC) 0-RTT есть, но с теми же ограничениями.',
                 },
               ],
             },
@@ -1229,6 +1242,162 @@ sudo tcpdump -i any 'tcp port 443 and host api.example.com'`,
                 correct: ['b'],
                 explanation:
                   '-v (verbose) — пошаговая отладка: DNS → TCP → TLS (сертификат, шифры) → отправленные заголовки → ответ сервера. Это главный инструмент отладки API и HTTPS. Если сайт «не открывается» — curl -v покажет, на каком шаге сломалось.',
+              },
+            },
+          ],
+        },
+      ],
+    },
+        {
+      id: 'nw-m4',
+      title: 'Практикум',
+      lessons: [
+        {
+          id: 'nw-l11',
+          title: 'Практика: OSI, DNS, HTTP, TCP',
+          minutes: 35,
+          steps: [
+            {
+              id: 'nw-l11-s1',
+              title: 'Уровни OSI',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'На каком уровне модели OSI работает протокол TCP?',
+                options: [
+                  { id: 'a', text: 'Application (7)' },
+                  { id: 'b', text: 'Transport (4)' },
+                  { id: 'c', text: 'Network (3)' },
+                  { id: 'd', text: 'Data Link (2)' },
+                ],
+                correct: ['b'],
+                explanation: 'TCP — транспортный уровень (4). IP — сетевой (3). HTTP — прикладной (7).',
+              },
+            },
+            {
+              id: 'nw-l11-s2',
+              title: 'Путь DNS-запроса',
+              type: 'quiz',
+              quiz: {
+                kind: 'sorting',
+                question: 'Расставьте шаги DNS-резолвинга в правильном порядке',
+                items: ['Кэш браузера', 'Кэш ОС', 'DNS-резолвер (провайдер)', 'Корневой сервер', 'TLD-сервер (.com)', 'Авторитетный сервер домена'],
+                correct: ['Кэш браузера', 'Кэш ОС', 'DNS-резолвер (провайдер)', 'Корневой сервер', 'TLD-сервер (.com)', 'Авторитетный сервер домена'],
+                explanation: 'Сначала ищем в кэше. Если нет — идём к рекурсивному резолверу, который опрашивает иерархию DNS.',
+              },
+            },
+            {
+              id: 'nw-l11-s3',
+              title: 'Количество хостов',
+              type: 'quiz',
+              quiz: {
+                kind: 'number',
+                question: 'Сколько хостов можно адресовать в подсети /24? (не считая адрес сети и broadcast)',
+                correct: 254,
+                explanation: '/24 = 256 адресов. 256 - 2 (сеть и broadcast) = 254 хоста.',
+              },
+            },
+            {
+              id: 'nw-l11-s4',
+              title: 'HTTP-запрос',
+              type: 'quiz',
+              quiz: {
+                kind: 'cloze',
+                question: 'Заполните пропуски в HTTP-запросе',
+                text: '____ /api/users HTTP/1.1\n____: example.com',
+                blanks: [
+                  { accepted: ['GET', 'POST'], hint: 'метод' },
+                  { accepted: ['Host'], hint: 'заголовок с доменом' },
+                ],
+                explanation: 'GET /api/users HTTP/1.1 — строка запроса. Host: example.com — обязательный заголовок для HTTP/1.1.',
+              },
+            },
+                        {
+              id: 'nw-l11-s5',
+              title: 'TCP vs UDP',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте протоколы и транспорт, на котором они работают',
+                pairs: [
+                  { left: 'HTTP/1.1 и SSH', right: 'TCP' },
+                  { left: 'HTTP/3', right: 'QUIC (поверх UDP)' },
+                  { left: 'DNS (запрос)', right: 'UDP' },
+                ],
+                explanation: 'HTTP/1.1 и SSH — TCP (надёжность). HTTP/3 — QUIC поверх UDP (скорость). DNS — UDP (короткий запрос).',
+              },
+            },
+            {
+              id: 'nw-l11-s6',
+              title: 'TCP Handshake',
+              type: 'quiz',
+              quiz: {
+                kind: 'number',
+                question: 'Сколько пакетов нужно для установки TCP-соединения (3-way handshake)?',
+                correct: 3,
+                explanation: 'SYN → SYN-ACK → ACK. Три пакета — поэтому handshake называется 3-way.',
+              },
+            },
+            {
+              id: 'nw-l11-s7',
+              title: 'Коды 4xx',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие коды относятся к классу 4xx (ошибка клиента)?',
+                options: [
+                  { id: 'a', text: '400 Bad Request' },
+                  { id: 'b', text: '401 Unauthorized' },
+                  { id: 'c', text: '502 Bad Gateway' },
+                  { id: 'd', text: '429 Too Many Requests' },
+                ],
+                correct: ['a', 'b', 'd'],
+                explanation: '4xx — ошибки клиента. 502 — ошибка сервера (5xx, неверный ответ от upstream).',
+              },
+            },
+            {
+              id: 'nw-l11-s8',
+              title: 'TCP vs UDP свойства',
+              type: 'quiz',
+              quiz: {
+                kind: 'table',
+                question: 'Отметьте, что верно для каждого протокола',
+                columns: ['TCP', 'UDP'],
+                rows: [
+                  { label: 'Устанавливает соединение', correct: ['TCP'] },
+                  { label: 'Гарантирует доставку', correct: ['TCP'] },
+                  { label: 'Быстрее', correct: ['UDP'] },
+                  { label: 'Используется в DNS', correct: ['UDP'] },
+                ],
+                explanation: 'TCP — соединение, надёжность, порядок. UDP — быстрота, без гарантий. DNS — UDP.',
+              },
+            },
+            {
+              id: 'nw-l11-s9',
+              title: 'curl на практике',
+              type: 'quiz',
+              quiz: {
+                kind: 'code',
+                question: 'Напишите команду curl, которая делает GET-запрос к https://api.example.com/users с заголовком Authorization: Bearer TOKEN.',
+                starterCode: 'curl ',
+                mustInclude: [
+                  { pattern: 'https://api\\.example\\.com/users', message: 'Нужен правильный URL' },
+                  { pattern: '-H\\s+["\']Authorization: Bearer TOKEN["\']', message: 'Нужен заголовок Authorization' },
+                ],
+                explanation: 'curl -H "Authorization: Bearer TOKEN" https://api.example.com/users',
+              },
+            },
+            {
+              id: 'nw-l11-s10',
+              title: 'HTTPS порт',
+              type: 'quiz',
+              quiz: {
+                kind: 'fill',
+                question: 'На каком порту по умолчанию работает HTTPS? (только число)',
+                accepted: ['443'],
+                placeholder: 'число',
+                hint: 'HTTP — 80',
+                explanation: 'HTTPS — 443. HTTP — 80. SSH — 22. PostgreSQL — 5432.',
               },
             },
           ],

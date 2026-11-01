@@ -1,27 +1,13 @@
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useState } from 'react';
 import { Search, GraduationCap, Menu, X } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { useSearch } from '@/components/SearchProvider';
 
-interface HeaderProps {
-  query?: string;
-  onSearch?: (q: string) => void;
-}
-
-export function Header({ query = '', onSearch }: HeaderProps) {
+export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [localQuery, setLocalQuery] = useState(query);
-
-  // Синхронизация с внешним query (URL)
-  if (query !== localQuery) setLocalQuery(query);
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (onSearch) onSearch(localQuery);
-    else navigate(`/?q=${encodeURIComponent(localQuery)}`);
-  };
+  const { openSearch } = useSearch();
 
   const goMyCourses = () => {
     setMobileOpen(false);
@@ -40,6 +26,7 @@ export function Header({ query = '', onSearch }: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-6">
+        {/* Логотип заменяет кнопку "Каталог" */}
         <Link to="/" className="flex min-h-[44px] items-center gap-2.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary">
             <GraduationCap className="h-5 w-5 text-primary-foreground" aria-hidden="true" />
@@ -49,28 +36,31 @@ export function Header({ query = '', onSearch }: HeaderProps) {
           </span>
         </Link>
 
-        {onSearch && (
-          <form onSubmit={submit} className="relative hidden flex-1 md:block" role="search">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-            <Input
-              value={localQuery}
-              onChange={(e) => { setLocalQuery(e.target.value); onSearch(e.target.value); }}
-              placeholder="Поиск по курсам и темам…"
-              className="h-11 pl-9"
-              aria-label="Поиск по курсам"
-            />
-          </form>
-        )}
+        {/* Кнопка поиска (десктоп) */}
+        <button
+          type="button"
+          onClick={openSearch}
+          className="relative hidden flex-1 md:flex h-11 items-center gap-2 rounded-md border border-input bg-transparent px-3 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Search className="h-4 w-4 shrink-0" />
+          <span className="flex-1 text-left">Поиск по урокам...</span>
+          <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+            Ctrl K
+          </kbd>
+        </button>
 
+        {/* Навигация (десктоп) */}
         <nav className="ml-auto hidden items-center gap-1 md:flex">
-          <Link to="/" className="rounded-md px-3 py-2.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-            Каталог
-          </Link>
-          <button type="button" onClick={goMyCourses} className="rounded-md px-3 py-2.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <button
+            type="button"
+            onClick={goMyCourses}
+            className="rounded-md px-3 py-2.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
             Моё обучение
           </button>
         </nav>
 
+        {/* Кнопка мобильного меню */}
         <button
           type="button"
           className="ml-auto grid h-11 w-11 place-items-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
@@ -82,25 +72,26 @@ export function Header({ query = '', onSearch }: HeaderProps) {
         </button>
       </div>
 
+      {/* Мобильное меню */}
       {mobileOpen && (
         <div className="border-t border-border bg-card px-4 pb-4 pt-3 md:hidden">
-          {onSearch && (
-            <form onSubmit={submit} className="relative" role="search">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-              <Input
-                value={localQuery}
-                onChange={(e) => { setLocalQuery(e.target.value); onSearch(e.target.value); }}
-                placeholder="Поиск по курсам и темам…"
-                className="h-11 pl-9"
-                aria-label="Поиск по курсам"
-              />
-            </form>
-          )}
+          <button
+            type="button"
+            onClick={() => {
+              setMobileOpen(false);
+              openSearch();
+            }}
+            className="flex w-full h-11 items-center gap-2 rounded-md border border-input bg-transparent px-3 text-sm text-muted-foreground hover:bg-accent"
+          >
+            <Search className="h-4 w-4" />
+            Поиск по урокам...
+          </button>
           <div className="mt-2 flex flex-col">
-            <Link to="/" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-3 text-sm font-medium hover:bg-accent">
-              Каталог
-            </Link>
-            <button type="button" onClick={goMyCourses} className="rounded-md px-3 py-3 text-left text-sm font-medium hover:bg-accent">
+            <button
+              type="button"
+              onClick={goMyCourses}
+              className="rounded-md px-3 py-3 text-left text-sm font-medium hover:bg-accent"
+            >
               Моё обучение
             </button>
           </div>

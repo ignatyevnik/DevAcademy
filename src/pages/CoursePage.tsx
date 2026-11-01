@@ -8,7 +8,7 @@ import {
   PlayCircle,
   RotateCcw,
   Target,
-  ListChecks,
+  ListChecks, Bookmark, 
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getCourse, courseStats, allLessons, findLesson } from '@/data';
@@ -23,7 +23,7 @@ import { lessonsWord, stepsWord } from '@/lib/pluralize';
 export default function CoursePage() {
   const { slug } = useParams();
   const course = getCourse(slug ?? '');
-  const { courseProgress, lessonProgress, state, resetCourse } = useProgress();
+  const { courseProgress, lessonProgress, state, resetCourse, isBookmarked } = useProgress();
   const [openModules, setOpenModules] = useState<Record<string, boolean>>({});
   const [confirmReset, setConfirmReset] = useState(false);
 
@@ -196,24 +196,28 @@ export default function CoursePage() {
                                 className="flex min-h-[56px] items-center gap-3 px-5 py-3 transition-colors hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                               >
                                 {complete ? (
-                                  <CheckCircle2
-                                    className="h-5 w-5 shrink-0 text-primary"
-                                    aria-label="Урок пройден"
-                                  />
+                                  <CheckCircle2 className="h-5 w-5 shrink-0 text-primary" aria-label="Урок пройден" />
+                                ) : lp > 0 ? (
+                                  <svg className="h-5 w-5 shrink-0 -rotate-90" viewBox="0 0 20 20" aria-hidden="true">
+                                    <circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground/30" />
+                                    <circle
+                                      cx="10"
+                                      cy="10"
+                                      r="9"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeDasharray={`${lp * 56.55} 56.55`}
+                                      className="text-primary transition-all duration-300"
+                                    />
+                                  </svg>
                                 ) : (
-                                  <span
-                                    className="grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 border-muted-foreground/30"
-                                    aria-hidden="true"
-                                    style={
-                                      lp > 0
-                                        ? {
-                                            background: `conic-gradient(hsl(var(--primary)) ${lp * 360}deg, transparent 0deg)`,
-                                          }
-                                        : undefined
-                                    }
-                                  />
+                                  <span className="h-5 w-5 shrink-0 rounded-full border-2 border-muted-foreground/30" aria-hidden="true" />
                                 )}
                                 <span className="flex-1 text-[15px] font-medium">{l.title}</span>
+                                {isBookmarked(course.slug, l.id) && (
+                                  <Bookmark className="h-4 w-4 text-primary shrink-0" aria-label="В закладках" />
+                                )}
                                 <span className="text-xs text-muted-foreground">
                                   {l.steps.length} {stepsWord(l.steps.length)} · {l.minutes} мин
                                 </span>

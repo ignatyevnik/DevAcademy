@@ -1622,5 +1622,287 @@ export const agentsCourse: Course = {
         },
       ],
     },
+        {
+      id: 'ai-m8',
+      title: 'Мультиагентные фреймворки',
+      lessons: [
+        {
+          id: 'ai-l23',
+          title: 'CrewAI: ролевые агенты',
+          minutes: 25,
+          steps: [
+            {
+              id: 'ai-l23-s1',
+              title: 'Агенты с ролями и целями',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: `CrewAI — фреймворк для создания "команд" агентов. Каждый агент имеет роль (кто он), цель (что хочет) и предысторию (контекст). Задачи выполняются последовательно или иерархически (есть менеджер, который распределяет).`,
+                },
+                {
+                  type: 'code',
+                  lang: 'python',
+                  caption: 'CrewAI: команда из двух агентов',
+                  code: 'from crewai import Agent, Task, Crew, Process\n\nresearcher = Agent(\n    role="Senior Researcher",\n    goal="Найти актуальные данные о рынке",\n    backstory="Ты опытный аналитик с 10-летним стажем",\n    verbose=True,\n)\n\nwriter = Agent(\n    role="Content Writer",\n    goal="Написать понятную статью",\n    backstory="Ты пишешь технические статьи для широкой аудитории",\n    verbose=True,\n)\n\ntask1 = Task(\n    description="Исследуй рынок AI-агентов в 2025",\n    expected_output="Список из 5 ключевых трендов",\n    agent=researcher,\n)\n\ntask2 = Task(\n    description="Напиши статью на основе исследования",\n    expected_output="Статья 500 слов с заголовком",\n    agent=writer,\n)\n\ncrew = Crew(\n    agents=[researcher, writer],\n    tasks=[task1, task2],\n    process=Process.sequential,\n)\n\nresult = crew.kickoff()',
+                },
+                {
+                  type: 'note',
+                  text: 'CrewAI хорош для быстрых прототипов: 20 строк — и у вас "команда". Минусы: меньше контроля, чем в LangGraph, абстракции иногда мешают. Подходит для контент-генерации, исследований, простых пайплайнов.',
+                },
+              ],
+            },
+            {
+              id: 'ai-l23-s2',
+              title: 'Проверь себя: CrewAI',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Что задаёт `role` в CrewAI-агенте?',
+                options: [
+                  { id: 'a', text: 'Техническую модель (GPT-4, Claude)' },
+                  { id: 'b', text: 'Кто этот агент по "профессии" — влияет на поведение и стиль ответов' },
+                  { id: 'c', text: 'Количество токенов' },
+                  { id: 'd', text: 'API-ключ' },
+                ],
+                correct: ['b'],
+                explanation: 'Роль (role) — "Senior Researcher", "Content Writer" — задаёт контекст для LLM. Модель задаётся отдельно через llm=ChatOpenAI(...). Роль влияет на то, как агент рассуждает и отвечает.',
+              },
+            },
+          ],
+        },
+        {
+          id: 'ai-l24',
+          title: 'AutoGen: диалог агентов',
+          minutes: 25,
+          steps: [
+            {
+              id: 'ai-l24-s1',
+              title: 'Агенты, которые общаются',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: `AutoGen (Microsoft) — фреймворк, где агенты общаются друг с другом для решения задачи. Классический паттерн: AssistantAgent (пишет код) + UserProxyAgent (запускает код и возвращает результат). Вместе они итеративно улучшают решение.`,
+                },
+                {
+                  type: 'code',
+                  lang: 'python',
+                  caption: 'AutoGen: ассистент и исполнитель',
+                  code: 'from autogen import AssistantAgent, UserProxyAgent\n\nassistant = AssistantAgent(\n    name="assistant",\n    llm_config={"config_list": [{"model": "gpt-4o-mini", "api_key": "..."}]},\n)\n\nuser_proxy = UserProxyAgent(\n    name="user_proxy",\n    human_input_mode="NEVER",\n    code_execution_config={"work_dir": "coding", "use_docker": False},\n)\n\nuser_proxy.initiate_chat(\n    assistant,\n    message="Напиши python-скрипт для сортировки CSV по второму столбцу",\n)\n# assistant пишет код, user_proxy его запускает,\n# при ошибке возвращает traceback, assistant исправляет',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'AssistantAgent — LLM, который предлагает решения (пишет код)',
+                    'UserProxyAgent — выполняет код, возвращает результат/ошибки',
+                    'human_input_mode — "NEVER" (полный автопилот), "ALWAYS" (спрашивать), "TERMINATE"',
+                    'GroupChat — несколько агентов общаются в общем чате (например, PM, разработчик, тестировщик)',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'AutoGen — мощный, но сложнее CrewAI: нужно понимать, как настроить общение, когда останавливать. Для "напиши код и запусти" — идеален. Для простых задач — overkill.',
+                },
+              ],
+            },
+            {
+              id: 'ai-l24-s2',
+              title: 'Проверь себя: AutoGen',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'В чём ключевое отличие AutoGen от CrewAI?',
+                options: [
+                  { id: 'a', text: 'AutoGen — платный' },
+                  { id: 'b', text: 'В AutoGen агенты общаются друг с другом в диалоге, в CrewAI — выполняют задачи по очереди/иерархии' },
+                  { id: 'c', text: 'CrewAI не использует LLM' },
+                  { id: 'd', text: 'AutoGen работает только на Windows' },
+                ],
+                correct: ['b'],
+                explanation: 'CrewAI — "команда с ролями" (каждый делает свою задачу). AutoGen — "диалог" (агенты обсуждают, возвращают результаты, уточняют). Оба — мультиагентные, но парадигмы разные. Для кодогенерации — AutoGen, для контента — CrewAI.',
+              },
+            },
+            {
+              id: 'ai-l24-s3',
+              title: 'Проверь себя: итог модуля',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте фреймворк и его подход',
+                pairs: [
+                  { left: 'LangGraph', right: 'Граф состояний с ветвлениями' },
+                  { left: 'CrewAI', right: 'Ролевые агенты с задачами' },
+                  { left: 'AutoGen', right: 'Диалог агентов в чате' },
+                  { left: 'LangChain', right: 'Базовые абстракции и инструменты' },
+                ],
+                explanation: 'LangGraph — граф. CrewAI — команда с ролями. AutoGen — диалог. LangChain — базовый набор для агентов и RAG. На собеседовании "какой фреймворк выбрать" — правильный ответ "зависит от задачи".',
+              },
+            },
+          ],
+        },
+      ],
+    },
+        {
+      id: 'ai-m9',
+      title: 'Практикум',
+      lessons: [
+        {
+          id: 'ai-l25',
+          title: 'Практика: RAG, фреймворки, безопасность',
+          minutes: 35,
+          steps: [
+            {
+              id: 'ai-l25-s1',
+              title: 'Цикл агента',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Что отличает LLM-агента от обычного чат-бота?',
+                options: [
+                  { id: 'a', text: 'Более длинные ответы' },
+                  { id: 'b', text: 'Цикл: рассуждение → вызов инструмента → наблюдение → повтор' },
+                  { id: 'c', text: 'Использование GPT-4 вместо GPT-3.5' },
+                  { id: 'd', text: 'Наличие аватара' },
+                ],
+                correct: ['b'],
+                explanation: 'Агент не просто генерирует текст — он вызывает инструменты, получает результаты и планирует следующий шаг.',
+              },
+            },
+            {
+              id: 'ai-l25-s2',
+              title: 'Пайплайн RAG',
+              type: 'quiz',
+              quiz: {
+                kind: 'sorting',
+                question: 'Расставьте этапы RAG-пайплайна по порядку',
+                items: ['Загрузка документов', 'Chunking (нарезка)', 'Embedding (векторизация)', 'Сохранение в Vector DB', 'Поиск при запросе', 'Генерация ответа LLM'],
+                correct: ['Загрузка документов', 'Chunking (нарезка)', 'Embedding (векторизация)', 'Сохранение в Vector DB', 'Поиск при запросе', 'Генерация ответа LLM'],
+                explanation: 'Индексация: загрузка → нарезка → векторизация → сохранение. При запросе: поиск релевантных чанков → отправка в LLM вместе с вопросом.',
+              },
+            },
+            {
+              id: 'ai-l25-s3',
+              title: 'LangChain structured output',
+              type: 'quiz',
+              quiz: {
+                kind: 'fill',
+                question: 'Какой метод LangChain гарантирует, что LLM вернет ответ строго по Pydantic-схеме? (напишите только название метода)',
+                accepted: ['with_structured_output', 'with_structured_output()'],
+                placeholder: 'метод',
+                hint: 'with_...',
+                explanation: 'with_structured_output(MySchema) — заставляет модель использовать function calling/JSON mode для ответа по схеме.',
+              },
+            },
+            {
+              id: 'ai-l25-s4',
+              title: 'Function calling',
+              type: 'quiz',
+              quiz: {
+                kind: 'cloze',
+                question: 'Заполните аргумент для передачи инструментов в OpenAI API:',
+                text: 'response = client.chat.completions.create(\n    model="gpt-4o",\n    messages=messages,\n    ____=TOOLS\n)',
+                blanks: [
+                  { accepted: ['tools'], hint: 'инструменты' },
+                ],
+                explanation: 'Аргумент tools=TOOLS передаёт список доступных функций (в формате JSON Schema).',
+              },
+            },
+            {
+              id: 'ai-l25-s5',
+              title: 'Фреймворки',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте фреймворк и его подход',
+                pairs: [
+                  { left: 'LangGraph', right: 'Граф состояний с ветвлениями' },
+                  { left: 'CrewAI', right: 'Ролевые агенты с задачами' },
+                  { left: 'AutoGen', right: 'Диалог агентов в чате' },
+                  { left: 'LlamaIndex', right: 'RAG из коробки' },
+                ],
+                explanation: 'LangGraph — граф. CrewAI — команда. AutoGen — диалог. LlamaIndex — RAG.',
+              },
+            },
+            {
+              id: 'ai-l25-s6',
+              title: 'Ограничение шагов',
+              type: 'quiz',
+              quiz: {
+                kind: 'number',
+                question: 'Какое максимальное число шагов (итераций) обычно ставят для цикла агента, чтобы не уйти в бесконечность?',
+                correct: 10,
+                explanation: 'Обычно ограничивают 5–15 шагами (max_steps = 10). Это защищает от бесконечных циклов и неконтролируемых трат.',
+              },
+            },
+            {
+              id: 'ai-l25-s7',
+              title: 'Защита от инъекций',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие меры помогают защитить агента от промпт-инъекций?',
+                options: [
+                  { id: 'a', text: 'Ограничение прав инструментов (minimum privilege)' },
+                  { id: 'b', text: 'Подтверждение человеком опасных действий' },
+                  { id: 'c', text: 'Попросить в промпте «не поддавайся инъекциям»' },
+                  { id: 'd', text: 'Мониторинг аномальных вызовов инструментов' },
+                ],
+                correct: ['a', 'b', 'd'],
+                explanation: 'Надёжная защита — архитектурная (a, b, d). Промпт «не поддавайся» (c) — не работает, это просто текст, модель его проигнорирует при атаке.',
+              },
+            },
+            {
+              id: 'ai-l25-s8',
+              title: 'Би-энкодер vs Кросс-энкодер',
+              type: 'quiz',
+              quiz: {
+                kind: 'table',
+                question: 'Отметьте, что верно для каждого типа моделей',
+                columns: ['Bi-encoder', 'Cross-encoder'],
+                rows: [
+                  { label: 'Быстрый поиск по миллионам векторов', correct: ['Bi-encoder'] },
+                  { label: 'Точное переранжирование (reranking)', correct: ['Cross-encoder'] },
+                  { label: 'Используется для embedding документов', correct: ['Bi-encoder'] },
+                ],
+                explanation: 'Bi-encoder — быстро (эмбеддинги). Cross-encoder — точно (reranker), но медленно. Комбинируются: поиск Bi → rerank Cross.',
+              },
+            },
+            {
+              id: 'ai-l25-s9',
+              title: 'Инструмент в LangChain',
+              type: 'quiz',
+              quiz: {
+                kind: 'code',
+                question: 'Напишите функцию-инструмент `get_weather(city: str)`, используя декоратор `@tool` из LangChain.',
+                starterCode: 'from langchain_core.tools import tool\n\n',
+                mustInclude: [
+                  { pattern: '@tool', message: 'Нужен декоратор @tool' },
+                  { pattern: 'def get_weather\\(city: str\\)', message: 'Нужна функция get_weather с типом str' },
+                ],
+                explanation: '@tool\ndef get_weather(city: str) -> str:\n    """Возвращает погоду в городе."""\n    return "sunny"',
+              },
+            },
+            {
+              id: 'ai-l25-s10',
+              title: 'Model Context Protocol',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Какую проблему решает MCP (Model Context Protocol)?',
+                options: [
+                  { id: 'a', text: 'Ускоряет генерацию токенов' },
+                  { id: 'b', text: 'Унифицирует способ подключения LLM к внешним инструментам и данным' },
+                  { id: 'c', text: 'Уменьшает стоимость API' },
+                  { id: 'd', text: 'Заменяет LangChain' },
+                ],
+                correct: ['b'],
+                explanation: 'MCP — открытый стандарт (Anthropic), «USB-C для AI». Один протокол, работающий в Claude Desktop, Cursor, IDE и т.д.',
+              },
+            },
+          ],
+        },
+      ],
+    },
   ],
 };

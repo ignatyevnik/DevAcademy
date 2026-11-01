@@ -112,4 +112,14 @@ describe('ProgressProvider', () => {
     expect(before.pct).toBe(0);
     expect(before.total).toBeGreaterThan(0);
   });
+
+  it('toggleBookmark добавляет и удаляет закладку', () => {
+    const { result } = renderHook(() => useProgress(), { wrapper });
+    
+  act(() => result.current.toggleBookmark('py', 'lesson-1'));
+    expect(result.current.isBookmarked('py', 'lesson-1')).toBe(true);
+
+  act(() => result.current.toggleBookmark('py', 'lesson-1'));
+    expect(result.current.isBookmarked('py', 'lesson-1')).toBe(false);
+  });
 });

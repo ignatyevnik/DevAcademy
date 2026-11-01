@@ -1,7 +1,7 @@
 import { Link, useParams, useSearchParams, Navigate, useNavigate } from 'react-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ArrowLeft, ArrowRight, Check, CheckCircle2, CircleHelp, FileText, ListTree, X,
+  ArrowLeft, ArrowRight, Check, CheckCircle2, CircleHelp, FileText, ListTree, X, Bookmark, BookmarkCheck
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getCourse, findLesson, allLessons } from '@/data';
@@ -17,7 +17,7 @@ export default function LessonPage() {
   const navigate = useNavigate();
   const course = getCourse(slug ?? '');
   const found = course && lessonId ? findLesson(course, lessonId) : null;
-  const { isStepDone, completeStep, visit, state } = useProgress();
+  const { isStepDone, completeStep, visit, state, isBookmarked, toggleBookmark } = useProgress();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const h1Ref = useRef<HTMLHeadingElement>(null);
 
@@ -69,6 +69,27 @@ export default function LessonPage() {
       li < lessons.length - 1 ? goTo(li + 1, 0) : null;
     return { prev, next, isLast: !next, isLastInCourse: !next };
   }, [course, lesson, stepIndex]);
+
+    // Горячие клавиши: ← / → для навигации
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Игнорируем, если фокус в инпуте/текстареа
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target as HTMLElement).isContentEditable
+      ) return;
+
+      if (e.key === 'ArrowLeft' && nav?.prev) {
+        navigate(nav.prev);
+      } else if (e.key === 'ArrowRight' && nav?.next) {
+        navigate(nav.next);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [nav, navigate]);
 
   if (!course || !found || !lesson || !step) return <Navigate to="/" replace />;
 
@@ -144,6 +165,19 @@ export default function LessonPage() {
             <p className="truncate text-xs text-muted-foreground">{course.title}</p>
             <p className="truncate text-sm font-bold tracking-tight">{lesson.title}</p>
           </div>
+          <button
+            type="button"
+            onClick={() => toggleBookmark(course.slug, lesson.id)}
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label={isBookmarked(course.slug, lesson.id) ? 'Удалить из закладок' : 'Добавить в закладки'}
+            title={isBookmarked(course.slug, lesson.id) ? 'Удалить из закладок' : 'В закладки'}
+          >
+            {isBookmarked(course.slug, lesson.id) ? (
+              <BookmarkCheck className="h-5 w-5 text-primary" />
+            ) : (
+              <Bookmark className="h-5 w-5 text-muted-foreground" />
+            )}
+          </button>
           <div className="hidden items-center gap-2 sm:flex" aria-hidden="true">
             <div className="h-1.5 w-28 overflow-hidden rounded-full bg-secondary">
               <div className="h-full rounded-full bg-primary transition-[width] duration-300" style={{ width: `${lessonPct}%` }} />
