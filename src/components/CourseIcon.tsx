@@ -39,35 +39,6 @@ function StarBadge({ accent }: { accent: string }) {
   );
 }
 
-function BoltBadge({ accent }: { accent: string }) {
-  return (
-    <>
-      <circle cx="36" cy="36" r="8" fill="#fff" stroke={accent} strokeWidth="1" />
-      <path
-        d="M38 28l-5 8h4l-2 8 6-10h-4l1-6z"
-        fill={accent}
-      />
-    </>
-  );
-}
-
-function AdvancedBadge({ accent }: { accent: string }) {
-  return (
-    <>
-      <circle cx="36" cy="36" r="8" fill="#fff" stroke={accent} strokeWidth="1" />
-      <g
-        fill="none"
-        stroke={accent}
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M31 36l5-5 5 5" />
-        <path d="M31 41l5-5 5 5" />
-      </g>
-    </>
-  );
-}
 
 // ─────────────────────────────────────────────
 // Основной компонент
