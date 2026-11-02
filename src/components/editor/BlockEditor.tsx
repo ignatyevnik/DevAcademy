@@ -122,6 +122,27 @@ export function BlockEditor({ block, onChange, onDelete }: Props) {
           />
         </>
       )}
+
+            {block.type === 'image' && (
+        <>
+          <Input value={block.src} onChange={(e) => field('src', e.target.value)} placeholder="URL картинки или путь (/images/docker.png)" className="bg-background" />
+          <Input value={block.alt} onChange={(e) => field('alt', e.target.value)} placeholder="Описание (alt-текст) для доступности" className="bg-background" />
+          <Input value={block.caption || ''} onChange={(e) => field('caption', e.target.value)} placeholder="Подпись (опционально)" className="bg-background" />
+        </>
+      )}
+
+      {block.type === 'mermaid' && (
+        <>
+          <p className="text-xs text-muted-foreground mb-1">Код Mermaid (например, graph TD; A--&gt;B;)</p>
+          <textarea
+            value={block.code}
+            onChange={(e) => field('code', e.target.value)}
+            className="w-full min-h-[100px] rounded-md border border-input bg-background p-2 text-sm font-mono text-foreground"
+            rows={5}
+          />
+          <Input value={block.caption || ''} onChange={(e) => field('caption', e.target.value)} placeholder="Подпись (опционально)" className="bg-background" />
+        </>
+      )}
     </div>
   );
 }

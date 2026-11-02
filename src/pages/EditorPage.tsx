@@ -314,7 +314,7 @@ export default function EditorPage() {
                               />
                             ))}
                             <div className="flex flex-wrap gap-1">
-                              {(['p', 'h3', 'list', 'code', 'note', 'table'] as const).map((t) => (
+                              {(['p', 'h3', 'list', 'code', 'note', 'table', 'image', 'mermaid'] as const).map((t) => (
                                 <Button key={t} variant="outline" size="sm" onClick={() => {
                                   const newBlock: any = { type: t };
                                   if (t === 'p' || t === 'h3' || t === 'note') newBlock.text = '';

@@ -32,6 +32,17 @@ const textBlockSchema = z.discriminatedUnion('type', [
     rows: z.array(z.array(z.string())).min(1, 'table: нужна хотя бы 1 строка'),
     caption: z.string().optional(),
   }),
+    z.object({
+    type: z.literal('image'),
+    src: z.string().min(1),
+    alt: z.string().min(1, 'Для изображения нужен alt-текст'),
+    caption: z.string().optional(),
+  }),
+  z.object({
+    type: z.literal('mermaid'),
+    code: z.string().min(1, 'Нужен код диаграммы'),
+    caption: z.string().optional(),
+  }),
 ]);
 
 // ─────────────────────────────────────────────

@@ -37,6 +37,22 @@ export const dockerCourse: Course = {
                   text: 'Контейнер — это изолированный процесс в вашей операционной системе. В отличие от виртуальной машины, он не запускает отдельное ядро ОС: все контейнеры делят ядро хоста, а изоляцию обеспечивают механизмы Linux — namespaces (своё дерево процессов, сеть, файловая система) и cgroups (лимиты CPU и памяти).',
                 },
                 {
+                  type: 'mermaid',
+                  caption: 'Разница между виртуальной машиной и контейнером',
+                  code: `graph TD
+    subgraph VM["Виртуальная машина"]
+      App1[Приложение] --> GuestOS1[Гостевая ОС]
+      GuestOS1 --> Hypervisor[Гипервизор]
+    end
+    
+    subgraph Docker["Контейнер (Docker)"]
+      App2[Приложение] --> Engine[Docker Engine]
+    end
+    
+    Hypervisor --> HostOS["Хостовая ОС (Windows/Linux)"]
+    Engine --> HostOS`
+                },
+                {
                   type: 'h3',
                   text: 'Почему это важно',
                 },

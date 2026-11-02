@@ -37,6 +37,35 @@ export const k8sCourse: Course = {
                   text: 'Кластер Kubernetes состоит из управляющего слоя (control plane) и рабочих узлов (nodes). Control plane — мозг: API-сервер принимает команды, etcd хранит состояние кластера, scheduler выбирает, на каком узле запустить под, а контроллеры непрерывно приводят фактическое состояние к желаемому.',
                 },
                 {
+                  type: 'mermaid',
+                  caption: 'Компоненты кластера Kubernetes',
+                  code: `graph TD
+                    subgraph CP["Control Plane"]
+                      API[API Server]
+                      ETCD[etcd]
+                      Sched[Scheduler]
+                      CM[Controller Manager]
+                    end
+                    
+                    subgraph Node1["Worker Node 1"]
+                      K1[Kubelet]
+                      P1[Pods]
+                    end
+                    
+                    subgraph Node2["Worker Node 2"]
+                      K2[Kubelet]
+                      P2[Pods]
+                    end
+                    
+                    API --> ETCD
+                    API --> Sched
+                    API --> CM
+                    API --> K1
+                    API --> K2
+                    K1 --> P1
+                    K2 --> P2`
+                },
+                {
                   type: 'h3',
                   text: 'Главная идея: декларативность',
                 },

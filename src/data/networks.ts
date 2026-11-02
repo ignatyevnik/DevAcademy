@@ -423,6 +423,21 @@ dig -x 8.8.8.8`,
                   ],
                 },
                 {
+                  type: 'mermaid',
+                  caption: 'Установка TCP-соединения (3-way handshake)',
+                  code: `sequenceDiagram
+                    participant C as Клиент
+                    participant S as Сервер
+                    
+                    C->>S: SYN (я хочу соединиться)
+                    S->>C: SYN-ACK (согласен)
+                    C->>S: ACK (подтверждаю)
+                    
+                    Note over C,S: Соединение установлено
+                    C->>S: Данные
+                    S->>C: Данные`
+                },
+                {
                   type: 'code',
                   lang: 'text',
                   caption: '3-way handshake (TCP)',

@@ -350,6 +350,19 @@ Three-way merge:
                   C ← D`,
                 },
                 {
+                  type: 'mermaid',
+                  caption: 'Fast-forward merge',
+                  code: `gitGraph
+                    commit id: "A"
+                    commit id: "B"
+                    branch feature
+                    checkout feature
+                    commit id: "C"
+                    commit id: "D"
+                    checkout main
+                    merge feature`
+                },
+                {
                   type: 'note',
                   text: 'Fast-forward «чище» — линейная история. Three-way merge сохраняет факт ветвления, но добавляет «шум» в граф. git merge --no-ff заставляет всегда создавать merge-commit, даже если можно fast-forward — так делают в некоторых командах, чтобы видеть, где была ветка.',
                 },

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import {
   Check, Info, CircleHelp, Lightbulb, ArrowUp, ArrowDown, Code2,
 } from 'lucide-react';
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useTheme } from '@/lib/theme';
 
 type ResultType = 'ok' | 'partial' | 'fail';
 
@@ -34,6 +35,46 @@ function InlineText({ text }: { text: string }) {
         return part;
       })}
     </>
+  );
+}
+
+// Компонент Mermaid
+function MermaidDiagram({ code, caption }: { code: string; caption?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { theme } = useTheme(); // Получаем текущую тему
+
+  useEffect(() => {
+    let isMounted = true;
+    const render = async () => {
+      const mermaid = (await import('mermaid')).default;
+      
+      // Инициализируем с нужной темой
+      mermaid.initialize({ 
+        startOnLoad: false, 
+        theme: theme === 'dark' ? 'dark' : 'default',
+        themeVariables: {
+          fontFamily: 'inherit', // Чтобы шрифт был как в приложении
+        }
+      });
+      
+      if (ref.current && isMounted) {
+        try {
+          const { svg } = await mermaid.render(`mermaid-${Math.random().toString(36).substr(2, 9)}`, code);
+          ref.current.innerHTML = svg;
+        } catch (e: any) {
+          ref.current.innerHTML = `<div class="text-destructive text-sm p-4 border border-destructive/30 rounded bg-destructive/10">Ошибка в синтаксисе Mermaid: ${e.message || e}</div>`;
+        }
+      }
+    };
+    render();
+    return () => { isMounted = false; };
+  }, [code, theme]); // <-- Добавили theme в зависимости, чтобы перерисовывать при смене
+
+  return (
+    <figure className="my-6">
+      <div ref={ref} className="flex justify-center overflow-x-auto p-4 bg-muted/10 rounded-lg border border-border" />
+      {caption && <figcaption className="mt-2 text-center text-xs text-muted-foreground">{caption}</figcaption>}
+    </figure>
   );
 }
 
@@ -95,6 +136,15 @@ export function TextBlocks({ blocks }: { blocks: TextBlock[] }) {
                 </table>
               </figure>
             );
+                    case 'image':
+            return (
+              <figure key={i} className="my-6">
+                <img src={b.src} alt={b.alt} loading="lazy" className="rounded-lg border border-border w-full max-w-2xl mx-auto object-cover" />
+                {b.caption && <figcaption className="mt-2 text-center text-xs text-muted-foreground">{b.caption}</figcaption>}
+              </figure>
+            );
+          case 'mermaid':
+            return <MermaidDiagram key={i} code={b.code} caption={b.caption} />;
         }
       })}
     </div>

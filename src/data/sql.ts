@@ -43,10 +43,37 @@ export const sqlCourse: Course = {
                   text: `Все примеры курса — на схеме интернет-магазина. Четыре таблицы, связи users → orders → order_items → products.`,
                 },
                 {
-                  type: 'code',
-                  lang: 'sql',
-                  caption: 'Схема интернет-магазина',
-                  code: `users\n  id          integer primary key\n  email       text\n  name        text\n  created_at  timestamp\n\norders\n  id          integer primary key\n  user_id     integer references users(id)\n  status      text      -- new | paid | shipped | cancelled\n  total       numeric\n  created_at  timestamp\n\nproducts\n  id          integer primary key\n  name        text\n  category    text\n  price       numeric\n\norder_items\n  id          integer primary key\n  order_id    integer references orders(id)\n  product_id  integer references products(id)\n  quantity    integer\n  price       numeric   -- цена на момент заказа`,
+                  type: 'mermaid',
+                  caption: 'Схема базы данных интернет-магазина',
+                  code: `erDiagram
+                    USERS ||--o{ ORDERS : "делает"
+                    ORDERS ||--|{ ORDER_ITEMS : "содержит"
+                    PRODUCTS ||--o{ ORDER_ITEMS : "входит в"
+                    
+                    USERS {
+                        int id PK
+                        string email
+                        string name
+                    }
+                    ORDERS {
+                        int id PK
+                        int user_id FK
+                        string status
+                        numeric total
+                    }
+                    ORDER_ITEMS {
+                        int id PK
+                        int order_id FK
+                        int product_id FK
+                        int quantity
+                        numeric price
+                    }
+                    PRODUCTS {
+                        int id PK
+                        string name
+                        string category
+                        numeric price
+                    }`
                 },
                 {
                   type: 'note',
@@ -473,6 +500,27 @@ export const sqlCourse: Course = {
                   text: `JOIN соединяет строки двух таблиц по условию. INNER JOIN (он же просто JOIN) оставляет только те строки, где есть совпадение с обеих сторон. Пользователь без заказов не попадёт в результат; заказ без пользователя — тоже.`,
                 },
                 {
+                  type: 'mermaid',
+                  caption: 'Логика INNER JOIN (только совпадения)',
+                  code: `graph LR
+                    subgraph TableA["Таблица users"]
+                      A1[Пользователь 1]
+                      A2[Пользователь 2]
+                      A3[Пользователь без заказов]
+                    end
+                    
+                    subgraph TableB["Таблица orders"]
+                      B1[Заказ 1]
+                      B2[Заказ 2]
+                    end
+                    
+                    A1 -->|совпадает| B1
+                    A2 -->|совпадает| B2
+                    A3 -.->|нет пары, отбрасывается| X[Удалено]
+                    
+                    style X fill:none,stroke:none,color:#888`
+                },
+                {
                   type: 'code',
                   lang: 'sql',
                   caption: 'INNER JOIN: заказы с email пользователей',
@@ -560,6 +608,27 @@ export const sqlCourse: Course = {
                     ['FULL OUTER JOIN', 'Всё из обеих таблиц, где нет совпадений — NULL с одной стороны'],
                     ['CROSS JOIN', 'Декартово произведение: каждая строка с каждой'],
                   ],
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Логика LEFT JOIN (все из левой таблицы)',
+                  code: `graph LR
+                    subgraph TableA["users (Левая таблица)"]
+                      A1[Пользователь 1]
+                      A2[Пользователь 2]
+                      A3[Пользователь без заказов]
+                    end
+                    
+                    subgraph TableB["orders (Правая таблица)"]
+                      B1[Заказ 1]
+                      B2[Заказ 2]
+                    end
+                    
+                    A1 -->|совпадает| B1
+                    A2 -->|совпадает| B2
+                    A3 -->|нет пары| N[Возвращает NULL]
+                    
+                    style N fill:#ff9800,color:#000`
                 },
                 {
                   type: 'code',

@@ -4,7 +4,9 @@ export type TextBlock =
   | { type: 'list'; items: string[] }
   | { type: 'code'; lang: string; code: string; caption?: string }
   | { type: 'note'; text: string }
-  | { type: 'table'; head: string[]; rows: string[][]; caption?: string };
+  | { type: 'table'; head: string[]; rows: string[][]; caption?: string }
+    | { type: 'image'; src: string; alt: string; caption?: string }
+  | { type: 'mermaid'; code: string; caption?: string };
 
 export interface QuizBase {
   question: string;
