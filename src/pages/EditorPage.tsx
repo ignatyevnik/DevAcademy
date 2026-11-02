@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import { Plus, Trash2, Download, Save, ArrowLeft, RotateCcw, Clock, Eye, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -105,43 +105,56 @@ export default function EditorPage() {
     setCourse(prev => ({ ...prev, modules: newModules }));
   };
 
-  const saveToLocal = () => {
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const skipAutoSave = useRef(true);
+
+  const saveToLocal = (silent = false) => {
     try {
       const cleanedModules = course.modules
         .map((m) => ({ ...m, lessons: m.lessons.filter((l) => l.steps.length > 0) }))
         .filter((m) => m.lessons.length > 0);
 
-      if (cleanedModules.length === 0) {
-        toast.error('Добавьте хотя бы один урок с шагами, иначе курс не сохранится');
-        return;
-      }
+      if (cleanedModules.length === 0) return;
 
       const cleanedCourse = { ...course, modules: cleanedModules };
       const result = courseSchema.safeParse(cleanedCourse);
       
-      if (!result.success) {
-        const issues = result.error.issues
-          .map((i) => `${i.path.join('.')}: ${i.message}`)
-          .slice(0, 3)
-          .join('; ');
-        toast.error(`Курс не прошёл валидацию: ${issues}`);
-        return;
-      }
+      if (!result.success) return;
 
       const prev = localStorage.getItem('dev-academy-custom-courses');
-      if (prev && prev !== '[]') {
-        localStorage.setItem('dev-academy-custom-courses-backup', prev);
-      }
+      if (prev && prev !== '[]') localStorage.setItem('dev-academy-custom-courses-backup', prev);
 
       const existing: Course[] = JSON.parse(prev || '[]');
       const updated = [...existing.filter((c) => c.slug !== cleanedCourse.slug), cleanedCourse];
       localStorage.setItem('dev-academy-custom-courses', JSON.stringify(updated));
 
-      toast.success('Курс сохранён. Обновите страницу, чтобы увидеть изменения.');
+      if (!silent) {
+        toast.success('Курс сохранён.');
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      } else {
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      }
     } catch {
-      toast.error('Ошибка сохранения');
+      if (!silent) toast.error('Ошибка сохранения');
     }
   };
+
+  // Эффект автосохранения
+  useEffect(() => {
+    if (skipAutoSave.current) {
+      skipAutoSave.current = false;
+      return;
+    }
+
+    setSaveStatus('saving');
+    const timer = setTimeout(() => {
+      saveToLocal(true); // true = тихий режим (без тостов)
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [course]); // Срабатывает при любом изменении course
 
   const restoreOriginal = () => {
     if (!confirm(`Удалить локальную версию курса «${course.title}» и вернуть оригинал?`)) return;
@@ -198,7 +211,11 @@ export default function EditorPage() {
             )}
             {!previewMode && (
               <>
-                <Button onClick={saveToLocal} variant="outline" className="gap-2 hidden sm:flex"><Save className="h-4 w-4" /> Сохранить</Button>
+            <Button onClick={() => saveToLocal()} variant="outline" className="gap-2 hidden sm:flex"><Save className="h-4 w-4" /> Сохранить</Button>
+            <div className="w-24 text-xs text-right">
+            {saveStatus === 'saving' && <span className="text-muted-foreground animate-pulse">Сохранение...</span>}
+            {saveStatus === 'saved' && <span className="text-green-500 font-medium">Сохранено</span>}
+          </div>
                 <Button onClick={downloadJson} className="gap-2"><Download className="h-4 w-4" /></Button>
               </>
             )}

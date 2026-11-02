@@ -15,16 +15,16 @@ export function CourseCard({ course }: { course: Course }) {
   return (
     <Link
       to={`/course/${course.slug}`}
-      className="group flex flex-col rounded-xl border border-border bg-card p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group flex h-full w-full min-w-0 flex-col rounded-xl border border-border bg-card p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="flex items-start justify-between gap-3">
-        <CourseIcon icon={course.icon} accent={course.accent} className="h-12 w-12" />
-        <Badge variant="secondary" className="text-xs font-medium">
+        <CourseIcon icon={course.icon} accent={course.accent} className="h-12 w-12 shrink-0" />
+        <Badge variant="secondary" className="text-xs font-medium shrink-0">
           {course.level}
         </Badge>
       </div>
 
-      <h3 className="mt-4 text-lg font-bold leading-snug tracking-tight group-hover:text-primary">
+      <h3 className="mt-4 text-lg font-bold leading-snug tracking-tight group-hover:text-primary break-words">
         {course.title}
       </h3>
       <p className="mt-1.5 line-clamp-2 flex-1 text-sm leading-relaxed text-muted-foreground">

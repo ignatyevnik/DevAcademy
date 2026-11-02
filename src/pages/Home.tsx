@@ -11,6 +11,7 @@ import { TrackCard } from '@/components/TrackCard';
 import { ProgressExport } from '@/components/ProgressExport';
 import { Button } from '@/components/ui/button';
 import { ReportError } from '@/components/ReportError';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const ALL_TAGS = ['Все', ...Array.from(new Set(courses.flatMap((c) => c.tags)))];
 
@@ -21,6 +22,13 @@ export default function Home() {
   const deferredQuery = useDeferredValue(query);
   const { totalStats, courseProgress, getDueReviews } = useProgress();
   const dueCount = useMemo(() => getDueReviews().length, [getDueReviews]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    // Имитация загрузки (на реальном сервере тут будет fetch)
+    const timer = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   // URL → state
   useEffect(() => {
@@ -110,7 +118,7 @@ export default function Home() {
               <BookOpenCheck className="h-5 w-5 text-primary" aria-hidden="true" />
               <h2 className="text-xl font-bold tracking-tight">Моё обучение</h2>
             </div>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-4 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {startedCourses.map((c) => <CourseCard key={c.slug} course={c} />)}
             </div>
           </section>
@@ -168,7 +176,8 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="catalog" className="mt-12 scroll-mt-20">
+        {/* Каталог */}
+        <section id="catalog" className="mt-12 w-full scroll-mt-20">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-xl font-bold tracking-tight">Каталог курсов</h2>
             <div className="flex flex-wrap gap-2" role="group" aria-label="Фильтр по темам">
@@ -194,7 +203,27 @@ export default function Home() {
             Найдено {filtered.length} {coursesWord(filtered.length)}
           </div>
 
-          {filtered.length === 0 ? (
+          {isLoading ? (
+            <div className="mt-5 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="flex flex-col rounded-xl border border-border bg-card p-5 space-y-4">
+                  <div className="flex justify-between">
+                    <Skeleton className="h-12 w-12 rounded-xl" />
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                  </div>
+                  <div className="mt-auto pt-4 space-y-2">
+                    <Skeleton className="h-3 w-1/2" />
+                    <Skeleton className="h-1.5 w-full rounded-full" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="mt-8 rounded-xl border border-dashed border-border bg-card p-10 text-center">
               <p className="font-semibold">Ничего не найдено</p>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -202,7 +231,7 @@ export default function Home() {
               </p>
             </div>
           ) : (
-            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-5 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((c) => <CourseCard key={c.slug} course={c} />)}
             </div>
           )}

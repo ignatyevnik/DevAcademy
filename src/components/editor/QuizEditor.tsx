@@ -52,11 +52,17 @@ export function QuizEditor({ quiz, onChange }: Props) {
         </select>
       </div>
 
-      <Input
-        value={quiz.question}
-        onChange={(e) => onChange({ ...quiz, question: e.target.value })}
-        placeholder="Вопрос (можно использовать `код`)"
-      />
+      <div>
+        <Input
+          value={quiz.question}
+          onChange={(e) => onChange({ ...quiz, question: e.target.value })}
+          placeholder="Вопрос (можно использовать `код`)"
+          className="bg-background"
+        />
+        <div className="text-[10px] text-muted-foreground text-right mt-1">
+          {quiz.question.length} символов
+        </div>
+      </div>
 
       {(quiz.kind === 'single' || quiz.kind === 'multiple') && (
         <div className="space-y-2">
@@ -253,13 +259,17 @@ export function QuizEditor({ quiz, onChange }: Props) {
         </div>
       )}
 
-      <div>
+        <div>
         <label className="text-xs font-medium block mb-1">Объяснение (показывается после ответа):</label>
         <textarea
           value={quiz.explanation}
           onChange={(e) => onChange({ ...quiz, explanation: e.target.value })}
-          className="w-full min-h-[50px] rounded border border-input bg-background p-2 text-sm"
+          className="w-full min-h-[60px] rounded-md border border-input bg-background p-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          placeholder="Почему этот ответ верный?"
         />
+        <div className="text-[10px] text-muted-foreground text-right mt-1">
+          {quiz.explanation.length} символов
+        </div>
       </div>
     </div>
   );
