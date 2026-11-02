@@ -9,7 +9,7 @@ export const k8sAdvancedCourse: Course = {
   level: 'Продвинутый',
   tags: ['Kubernetes', 'DevOps', 'Ingress', 'Helm', 'Безопасность'],
   accent: '#7c5cff',
-  icon: 'helm',
+  icon: 'helm-advanced',
   outcomes: [
     'Настраивать сеть: ClusterIP, NodePort, LoadBalancer, Headless, Ingress, NetworkPolicy',
     'Управлять хранилищами через PV, PVC, StorageClass, PVC templates',

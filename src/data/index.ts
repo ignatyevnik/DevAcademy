@@ -11,18 +11,20 @@ import { pythonAdvancedCourse } from './python-advanced';
 import { gitCourse } from './git';
 import { linuxCourse } from './linux';
 import { networksCourse } from './networks';
-import { cicdCourse } from './cicd';
-import { sqlCourse } from './sql';
+import { cicdBasicsCourse } from './cicd-basics';
+import { gitopsCourse } from './gitops';
+import { sqlBasicsCourse } from './sql-basics';
+import { sqlAdvancedCourse } from './sql-advanced';
 import { designCourse } from './design';
 import { validateAllCourses } from './validate';
 import { courseSchema } from './schemas'; // <-- импорт схемы для кастомных курсов
 
 // Базовые курсы
 const baseCourses: Course[] = [
-  gitCourse, linuxCourse, networksCourse, sqlCourse,
+  gitCourse, linuxCourse, networksCourse, sqlBasicsCourse, sqlAdvancedCourse,
   pythonBasicsCourse, pythonAdvancedCourse,
   qaFundamentalsCourse, qaAutomationCourse, qaSeniorCourse,
-  dockerCourse, k8sBasicsCourse, k8sAdvancedCourse, cicdCourse, agentsCourse, designCourse,
+  dockerCourse, k8sBasicsCourse, k8sAdvancedCourse, cicdBasicsCourse, gitopsCourse, agentsCourse, designCourse,
 ];
 
 export const baseSlugs = new Set(baseCourses.map((c) => c.slug));

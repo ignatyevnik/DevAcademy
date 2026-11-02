@@ -9,7 +9,7 @@ export const qaAutomationCourse: Course = {
   level: 'Средний',
   tags: ['QA', 'Автоматизация', 'Playwright', 'pytest', 'Безопасность'],
   accent: '#0e9f6e',
-  icon: 'flask',
+  icon: 'qa-automation',
   outcomes: [
     'Писать автотесты на pytest: фикстуры, mock, параметризация, схемы ответа',
     'Автоматизировать UI через Playwright: локаторы, ожидания, Page Object, trace viewer',

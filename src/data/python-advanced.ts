@@ -9,7 +9,7 @@ export const pythonAdvancedCourse: Course = {
   level: 'Средний',
   tags: ['Python', 'ООП', 'Async', 'Типизация'],
   accent: '#3776ab',
-  icon: 'python',
+  icon: 'python-advanced',
   outcomes: [
     'Проектировать классы: наследование, композиция, dataclass, магические методы',
     'Писать декораторы с параметрами и использовать functools.wraps',

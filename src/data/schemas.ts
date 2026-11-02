@@ -283,9 +283,31 @@ export const courseSchema = z
     }),
     tags: z.array(z.string().min(1, 'tags: пустой тег')).min(1, 'tags: нужен хотя бы 1 тег'),
     accent: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'accent: hex-цвет формата #RRGGBB'),
-    icon: z.enum(['flask', 'docker', 'helm', 'bot', 'python', 'git', 'linux', 'network', 'cicd', 'sql', 'design'], {
-      message: 'icon должен быть: flask | docker | helm | bot | python | git | linux | network | cicd | sql | design',
-    }),
+icon: z.enum(
+  [
+    'flask',
+    'docker',
+    'helm',
+    'helm-advanced',
+    'bot',
+    'python',
+    'python-advanced',
+    'git',
+    'linux',
+    'network',
+    'cicd', 
+    'gitops',
+    'sql',
+    'sql-advanced',
+    'design',
+    'qa-automation',
+    'qa-senior',
+  ],
+  {
+    message:
+      'icon должен быть: flask | docker | helm | helm-advanced | bot | python | python-advanced | git | linux | network | cicd | gitops | sql | sql-advanced | design | qa-automation | qa-senior',
+  },
+),
     modules: z.array(moduleSchema).min(1, 'course: нужен хотя бы 1 модуль'),
     outcomes: z.array(z.string().min(1, 'outcomes: пустой пункт')).min(1, 'outcomes: нужен хотя бы 1 пункт'),
     requirements: z

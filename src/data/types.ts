@@ -5,7 +5,7 @@ export type TextBlock =
   | { type: 'code'; lang: string; code: string; caption?: string }
   | { type: 'note'; text: string }
   | { type: 'table'; head: string[]; rows: string[][]; caption?: string }
-    | { type: 'image'; src: string; alt: string; caption?: string }
+  | { type: 'image'; src: string; alt: string; caption?: string }
   | { type: 'mermaid'; code: string; caption?: string };
 
 export interface QuizBase {
@@ -69,7 +69,24 @@ export interface Module {
   lessons: Lesson[];
 }
 
-export type CourseIcon = 'flask' | 'docker' | 'helm' | 'bot' | 'python' | 'git' | 'linux' | 'network' | 'cicd' | 'sql' | 'design';
+export type CourseIcon =
+  | 'flask'
+  | 'docker'
+  | 'helm'
+  | 'helm-advanced'
+  | 'bot'
+  | 'python'
+  | 'python-advanced'
+  | 'git'
+  | 'linux'
+  | 'network'
+  | 'cicd'
+  | 'gitops'
+  | 'sql'
+  | 'sql-advanced'
+  | 'design'
+  | 'qa-automation'
+  | 'qa-senior';
 
 export interface Course {
   slug: string;

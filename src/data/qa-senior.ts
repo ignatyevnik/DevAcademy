@@ -9,7 +9,7 @@ export const qaSeniorCourse: Course = {
   level: 'Продвинутый',
   tags: ['QA', 'Senior', 'Стратегия', 'Observability', 'Менторство'],
   accent: '#0e9f6e',
-  icon: 'flask',
+  icon: 'qa-senior',
   outcomes: [
     'Строить тест-стратегию по рискам, а не «всё подряд»',
     'Использовать DORA-метрики и понимать, что они говорят о процессе',
