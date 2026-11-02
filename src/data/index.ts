@@ -3,7 +3,8 @@ import { qaFundamentalsCourse } from './qa-fundamentals';
 import { qaAutomationCourse } from './qa-automation';
 import { qaSeniorCourse } from './qa-senior';
 import { dockerCourse } from './docker';
-import { k8sCourse } from './kubernetes';
+import { k8sBasicsCourse } from './kubernetes-basics';
+import { k8sAdvancedCourse } from './kubernetes-advanced';
 import { agentsCourse } from './agents';
 import { pythonBasicsCourse } from './python-basics';
 import { pythonAdvancedCourse } from './python-advanced';
@@ -21,7 +22,7 @@ const baseCourses: Course[] = [
   gitCourse, linuxCourse, networksCourse, sqlCourse,
   pythonBasicsCourse, pythonAdvancedCourse,
   qaFundamentalsCourse, qaAutomationCourse, qaSeniorCourse,
-  dockerCourse, k8sCourse, cicdCourse, agentsCourse, designCourse,
+  dockerCourse, k8sBasicsCourse, k8sAdvancedCourse, cicdCourse, agentsCourse, designCourse,
 ];
 
 export const baseSlugs = new Set(baseCourses.map((c) => c.slug));
