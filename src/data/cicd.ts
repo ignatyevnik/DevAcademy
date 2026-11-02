@@ -72,32 +72,18 @@ export const cicdCourse: Course = {
               type: 'theory',
               blocks: [
                 {
-                  type: 'code',
-                  lang: 'text',
-                  caption: 'Стадии pipeline',
-                  code: `commit / push / PR
-  ↓
-[1] lint + typecheck     ← 30 сек: код чистый?
-  ↓
-[2] unit-тесты           ← 2 мин: логика работает?
-  ↓
-[3] build (Docker/jar)   ← 3 мин: собирается?
-  ↓
-[4] integration-тесты    ← 5 мин: с БД/API всё ок?
-  ↓
-[5] e2e-тесты (Playwright) ← 10 мин: сценарии работают?
-  ↓
-[6] publish (registry)   ← 1 мин: образ в registry
-  ↓
-[7] deploy staging       ← 2 мин: на staging
-  ↓
-[8] smoke на staging     ← 1 мин: staging жив?
-  ↓
-[9] deploy prod          ← ручной approve → автомат
-  ↓
-[10] smoke prod + monitor
-
-Каждая стадия — «ворота»: не прошла — дальше не идём.`,
+                  type: 'mermaid',
+                  caption: 'Стадии CI/CD pipeline',
+                  code: `graph LR
+                    Commit["Commit / PR"] --> Lint["Lint"]
+                    Lint --> Unit["Unit-тесты"]
+                    Unit --> Build["Build"]
+                    Build --> Integ["Integration"]
+                    Integ --> E2E["E2E"]
+                    E2E --> Publish["Publish<br/>(registry)"]
+                    Publish --> Staging["Deploy<br/>staging"]
+                    Staging --> Smoke["Smoke<br/>staging"]
+                    Smoke --> Prod["Deploy<br/>prod"]`
                 },
                 {
                   type: 'list',
@@ -148,6 +134,14 @@ export const cicdCourse: Course = {
                 {
                   type: 'p',
                   text: `GitHub Actions — встроенный CI/CD в GitHub. Workflow — YAML-файл в .github/workflows/. Он описывает: когда запускаться (триггеры), что делать (jobs), из каких шагов (steps).`,
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Зависимости между job-ами через needs',
+                  code: `graph LR
+                    Trigger["on:<br/>push / pull_request"] --> Lint["lint<br/>ruff check ."]
+                    Lint -->|"needs: [lint]"| Test["test<br/>pytest + matrix"]
+                    Test -->|"needs: [test]<br/>if: github.ref == main"| Deploy["deploy"]`
                 },
                 {
                   type: 'code',
@@ -704,6 +698,17 @@ jobs:
               type: 'theory',
               blocks: [
                 {
+                  type: 'mermaid',
+                  caption: 'Сборка и публикация образа с кэшем',
+                  code: `graph LR
+                    Checkout["checkout"] --> Buildx["setup-buildx"]
+                    Buildx --> Login["login to GHCR"]
+                    Login --> Build["build-push-action"]
+                    Build <-->|"cache-from / cache-to"| Cache[("GHA cache")]
+                    Build -->|"push: main / tags"| Registry[("ghcr.io")]
+                    Build -.->|"push: false на PR"| OnlyBuild["только проверка<br/>сборки"]`
+                },
+                {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'build-push-action в GitHub Actions',
@@ -847,42 +852,29 @@ jobs:
                   ],
                 },
                 {
-                  type: 'code',
-                  lang: 'text',
-                  caption: 'Blue-green deploy',
-                  code: `До деплоя:
-  LB → [Blue: v1.0] (100% трафика)
-       [Green: пусто]
-
-1. Деплой v1.1 в Green
-   LB → [Blue: v1.0]
-        [Green: v1.1] (0%)
-
-2. Smoke-тесты на Green
-
-3. Переключение трафика
-   LB → [Blue: v1.0] (0%)
-        [Green: v1.1] (100%)
-
-4. Если что-то не так — обратно на Blue за секунду
-5. Через N часов Blue удаляется или становится новым Green`,
-                },
+  type: 'mermaid',
+  caption: 'Blue-green: переключение трафика',
+  code: `graph LR
+    subgraph Before["До деплоя"]
+        LB1["LB"] -->|"100%"| B1["Blue v1.0"]
+        LB1 -.->|"0%"| G1["Green — пусто"]
+    end
+    subgraph After["После деплоя"]
+        LB2["LB"] -.->|"0%"| B2["Blue v1.0<br/>(откат за секунду)"]
+        LB2 -->|"100%"| G2["Green v1.1"]
+    end`
+},
                 {
-                  type: 'code',
-                  lang: 'text',
-                  caption: 'Canary deploy',
-                  code: `1. Деплой v1.1 на 5% подов
-   Трафик: 95% → v1.0, 5% → v1.1
-
-2. Смотрим метрики 10 минут: ошибки, latency, бизнес-метрики
-   ОК → 25%
-   Плохо → 0% (автоматический откат)
-
-3. 25% → 50% → 100%
-   Каждый шаг — с проверкой метрик
-
-Инструменты: Argo Rollouts, Flagger, Spinnaker`,
-                },
+  type: 'mermaid',
+  caption: 'Canary: постепенная раскатка',
+  code: `graph LR
+    S1["5%"] --> S2["25%"]
+    S2 --> S3["50%"]
+    S3 --> S4["100%"]
+    S1 -.->|"плохо"| Stop["0%<br/>(автооткат)"]
+    S2 -.->|"плохо"| Stop
+    S3 -.->|"плохо"| Stop`
+},
               ],
             },
             {

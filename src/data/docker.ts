@@ -135,6 +135,23 @@ export const dockerCourse: Course = {
                   type: 'p',
                   text: 'Если поменять COPY . . местами с установкой зависимостей, каждая правка кода будет заново ставить все пакеты — сборка растянется с секунд до минут.',
                 },
+                {
+                type: 'mermaid',
+                caption: 'Какие слои ломают кэш и когда',
+                code: `graph TD
+                  Base["FROM python:3.12-slim"] --> Work["WORKDIR /app"]
+                  Work --> Req["COPY requirements.txt"]
+                  Req --> Install["RUN pip install"]
+                  Install --> Copy["COPY . ."]
+                  Copy --> Cmd["CMD python main.py"]
+
+                  style Base fill:#90EE90,color:#000
+                  style Work fill:#90EE90,color:#000
+                  style Req fill:#FFD700,color:#000
+                  style Install fill:#FFD700,color:#000
+                  style Copy fill:#FF6B6B,color:#000
+                  style Cmd fill:#FF6B6B,color:#000`
+              },
               ],
             },
             {
@@ -218,6 +235,19 @@ export const dockerCourse: Course = {
                   text: 'Записываемый слой контейнера исчезает вместе с ним: удалил контейнер — потерял данные. Для баз данных, загрузок пользователей и логов нужны volumes — управляемые Docker\'ом каталоги, которые живут независимо от жизни контейнера.',
                 },
                 {
+                  type: 'mermaid',
+                  caption: 'default bridge vs своя сеть + named volume',
+                  code: `graph LR
+                    subgraph Default["default bridge"]
+                        A1["app"] -.->|"по имени<br/>не резолвится"| D1["db"]
+                    end
+                    subgraph Custom["своя сеть"]
+                        A2["app"] -->|"db:5432<br/>DNS по имени"| D2["db"]
+                    end
+                    D2 --> Vol[("volume pgdata")]
+                    Vol -.-> Disk["Диск хоста<br/>(переживает<br/>пересоздание)"]`
+                },
+                {
                   type: 'code',
                   lang: 'bash',
                   caption: 'Named volume для PostgreSQL',
@@ -266,6 +296,18 @@ export const dockerCourse: Course = {
                 {
                   type: 'p',
                   text: 'Когда сервисов несколько — приложение, база, кэш, очередь — запускать их руками утомительно. Docker Compose описывает весь стек в одном YAML-файле: сервисы, сети, volumes. Команда docker compose up поднимает всё сразу и в правильном порядке.',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Compose: сервисы, сеть, volume',
+                  code: `graph TD
+                    User["Пользователь<br/>localhost:8080"] -->|"ports: 8080:8000"| App
+                    subgraph Net["Общая сеть (создаёт compose)"]
+                        App["app:8000<br/>build: ."]
+                        DB["db:5432<br/>postgres:16"]
+                    end
+                    App -->|"DATABASE_URL=<br/>postgres://...@db:5432"| DB
+                    DB --> Vol[("volume pgdata<br/>/var/lib/postgresql/data")]`
                 },
                 {
                   type: 'code',
@@ -429,6 +471,20 @@ export const dockerCourse: Course = {
                 {
                   type: 'p',
                   text: 'Для сборки нужны компиляторы, dev-зависимости, исходники. Для запуска — только артефакт и runtime. Multi-stage позволяет собрать в тяжёлом образе, а в финальный положить только результат — образ уменьшается в разы.',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Build stage ~900 MB → runtime stage ~15 MB',
+                  code: `graph LR
+                    subgraph Build["Build stage<br/>~900 MB"]
+                        Src["Исходники + компилятор"]
+                        Bin["/app — бинарник"]
+                        Src -->|"go build"| Bin
+                    end
+                    subgraph Runtime["Runtime stage<br/>~15 MB"]
+                        Final["/app"]
+                    end
+                    Bin -->|"COPY --from=build"| Final`
                 },
                 {
                   type: 'code',

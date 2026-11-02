@@ -1049,6 +1049,18 @@ export const pythonCourse: Course = {
               type: 'theory',
               blocks: [
                 {
+                  type: 'mermaid',
+                  caption: 'Базовый Page и наследники',
+                  code: `graph TD
+                    Page["Page<br/>open()<br/>screenshot()"]
+                    Login["LoginPage<br/>+ login()"]
+                    Cart["CartPage<br/>+ add_item()"]
+                    Admin["AdminPage<br/>+ admin_token<br/>open() переопределён,<br/>вызывает super()"]
+                    Page --> Login
+                    Page --> Cart
+                    Page --> Admin`
+                },
+                {
                   type: 'p',
                   text: 'Наследование — «частный случай». Есть базовый класс (Page) и наследники (LoginPage, CartPage), которые дополняют или переопределяют поведение. В Playwright Page Object наследование часто используется для общей логики: navigate, wait_for_ready, screenshot.',
                 },
@@ -1351,6 +1363,17 @@ export const pythonCourse: Course = {
                   text: 'Декоратор — это функция, которая принимает функцию и возвращает новую функцию (обёртку). Синтаксис @decorator — просто сахар: f = decorator(f).',
                 },
                 {
+                  type: 'mermaid',
+                  caption: 'Что происходит при вызове декорированной функции',
+                  code: `graph LR
+                    Client["@timer<br/>def slow_task()"] --> Wrap["wrapper(*args, **kwargs)"]
+                    Wrap -->|"1. start = time"| Timer["замер времени"]
+                    Wrap -->|"2. result = func(*args)"| Orig["оригинальная slow_task"]
+                    Orig -->|"3. return result"| Wrap
+                    Wrap -->|"4. print elapsed"| Log["stdout"]
+                    Wrap -->|"5. return result"| Out["Результат клиенту"]`
+                },
+                {
                   type: 'code',
                   lang: 'python',
                   caption: 'Декоратор с нуля',
@@ -1571,6 +1594,23 @@ export const pythonCourse: Course = {
                   type: 'note',
                   text: 'Если внутри async def написать time.sleep(1) вместо await asyncio.sleep(1) — весь event loop встанет на секунду. Все остальные корутины ждут. Это главная ошибка новичков в async: блокирующие вызовы в async-коде убивают всю выгоду.',
                 },
+                {
+                type: 'mermaid',
+                caption: 'Event loop: пока одна корутина ждёт, работает другая',
+                code: `sequenceDiagram
+                  participant EL as Event Loop
+                  participant T1 as Task 1
+                  participant T2 as Task 2
+                  EL->>T1: запустить
+                  T1->>EL: await (I/O)
+                  EL->>T2: пока T1 ждёт — запустить T2
+                  T2->>EL: await (I/O)
+                  Note over EL: ждёт завершения I/O
+                  EL-->>T1: результат готов
+                  T1->>EL: продолжить
+                  EL-->>T2: результат готов
+                  T2->>EL: продолжить`
+              },
               ],
             },
             {
@@ -1608,6 +1648,19 @@ export const pythonCourse: Course = {
                   lang: 'python',
                   caption: 'Последовательно vs параллельно',
                   code: 'import asyncio\nimport time\n\nasync def fetch(url):\n    await asyncio.sleep(1)      # имитация HTTP-запроса\n    return f"data from {url}"\n\nasync def sequential():\n    start = time.perf_counter()\n    results = []\n    for url in ["a", "b", "c"]:\n        results.append(await fetch(url))   # ждём каждый\n    print(f"Последовательно: {time.perf_counter() - start:.1f} сек")\n    return results\n\nasync def concurrent():\n    start = time.perf_counter()\n    results = await asyncio.gather(\n        fetch("a"),\n        fetch("b"),\n        fetch("c"),\n    )\n    print(f"Параллельно: {time.perf_counter() - start:.1f} сек")\n    return results\n\nasyncio.run(sequential())    # ~3.0 сек\nasyncio.run(concurrent())    # ~1.0 сек',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Последовательно vs gather',
+                  code: `graph LR
+                    subgraph Seq["Последовательно — 3 сек"]
+                        A1["fetch a"] --> A2["fetch b"] --> A3["fetch c"]
+                    end
+                    subgraph Par["gather — 1 сек"]
+                        P1["fetch a"]
+                        P2["fetch b"]
+                        P3["fetch c"]
+                    end`
                 },
                 {
                   type: 'code',
@@ -2009,6 +2062,17 @@ export const pythonCourse: Course = {
                   text: 'GIL (Global Interpreter Lock) — блокировка, которая не даёт двум потокам одновременно выполнять Python-байткод. Даже на 16-ядерном сервере один Python-процесс в один момент времени использует только одно ядро для Python-кода. Это не баг, а следствие устройства CPython (управление памятью).',
                 },
                 {
+                  type: 'mermaid',
+                  caption: 'GIL: только один поток выполняет Python-код',
+                  code: `graph LR
+                    T1["Поток 1"] --> GIL{"GIL"}
+                    T2["Поток 2"] --> GIL
+                    T3["Поток 3"] --> GIL
+                    GIL -->|"только один<br/>одновременно"| Py["Python-байткод"]
+                    Py --> CPU["Одно ядро CPU"]
+                    GIL -.->|"I/O: GIL<br/>отпускается"| IO["Сеть / диск / sleep"]`
+                },
+                {
                   type: 'code',
                   lang: 'python',
                   caption: 'Проверка: потоки не ускоряют CPU-bound',
@@ -2092,6 +2156,18 @@ export const pythonCourse: Course = {
                   lang: 'python',
                   caption: 'Несколько потоков',
                   code: 'import threading\nimport time\n\nthreads = []\nfor i in range(5):\n    t = threading.Thread(target=worker, args=(f"T{i}", 1))\n    threads.append(t)\n    t.start()\n\n# Ждём все\nfor t in threads:\n    t.join()\nprint(f"Все {len(threads)} потоков завершены")',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'main thread запускает воркеров и ждёт через join()',
+                  code: `graph TD
+                    Main["main thread"] -->|"t.start()"| T1["worker A"]
+                    Main -->|"t.start()"| T2["worker B"]
+                    Main -->|"t.start()"| T3["worker C"]
+                    T1 -.->|"t.join()"| Wait["main ждёт"]
+                    T2 -.-> Wait
+                    T3 -.-> Wait
+                    Wait --> Done["Все потоки завершены"]`
                 },
                 {
                   type: 'list',
@@ -2251,6 +2327,21 @@ export const pythonCourse: Course = {
                 {
                   type: 'p',
                   text: 'Race condition — ситуация, когда два потока одновременно читают и пишут общие данные, и результат зависит от порядка. Классический пример: счётчик, который два потока увеличивают на 1 — а получается не 2, а 1, потому что оба прочитали старое значение до того, как записать новое.',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Потерянное обновление: оба потока читают старый counter',
+                  code: `sequenceDiagram
+                    participant T1 as Поток 1
+                    participant C as counter = 0
+                    participant T2 as Поток 2
+
+                    T1->>C: read → 0
+                    T2->>C: read → 0
+                    Note over T1,T2: Оба потока прочитали<br/>старое значение 0
+                    T1->>C: write 1
+                    T2->>C: write 1
+                    Note over C: Результат: 1<br/>(ожидалось 2)<br/>Одно обновление потеряно`
                 },
                 {
                   type: 'code',

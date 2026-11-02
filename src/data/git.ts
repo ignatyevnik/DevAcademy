@@ -659,6 +659,20 @@ git pull`,
                   text: 'rebase «пересаживает» ваши commit-ы на новую базу. В отличие от merge, который создаёт merge-commit, rebase переписывает историю: ваши изменения выглядят так, будто вы начали работу с последней версии main. История становится линейной.',
                 },
                 {
+                  type: 'mermaid',
+                  caption: 'Three-way merge: появляется merge-commit M',
+                  code: `gitGraph
+                    commit id: "A"
+                    commit id: "B"
+                    branch feature
+                    checkout feature
+                    commit id: "C"
+                    commit id: "D"
+                    checkout main
+                    commit id: "E"
+                    merge feature id: "M (merge commit)"`
+                },
+                {
                   type: 'code',
                   lang: 'text',
                   caption: 'merge vs rebase',
@@ -783,6 +797,19 @@ git revert a3f4d2e
 
 # История сохранилась, ничего не переписано
 # Можно пушить — безопасно`,
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Что использовать для отмены в зависимости от ситуации',
+                  code: `graph TD
+                    Q{"Что отменить?"} -->|"незакоммиченные<br/>изменения"| Stash["git stash"]
+                    Q -->|"локальный commit,<br/>не запушен"| Reset["git reset --soft<br/>или --mixed"]
+                    Q -->|"запушенный commit"| Revert["git revert<br/>(новый commit)"]
+                    Q -->|"уже сделал<br/>reset --hard"| Reflog["git reflog →<br/>reset --hard &lt;hash&gt;"]
+                    Stash --> Done["Готово"]
+                    Reset --> Done
+                    Revert --> Done
+                    Reflog --> Done`
                 },
                 {
                   type: 'note',

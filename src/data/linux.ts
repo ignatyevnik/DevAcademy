@@ -516,6 +516,20 @@ ls -la /home/user
               type: 'theory',
               blocks: [
                 {
+                  type: 'mermaid',
+                  caption: 'Файловая система по FHS',
+                  code: `graph TD
+                    Root["/"] --> Bin["/bin<br/>базовые команды"]
+                    Root --> Etc["/etc<br/>конфиги"]
+                    Root --> Home["/home<br/>пользователи"]
+                    Root --> Var["/var<br/>логи, кэш, БД"]
+                    Root --> Usr["/usr<br/>программы"]
+                    Root --> Tmp["/tmp<br/>временные"]
+                    Root --> Proc["/proc<br/>процессы (в памяти)"]
+                    Root --> Dev["/dev<br/>устройства"]
+                    Root --> Boot["/boot<br/>ядро и загрузчик"]`
+                },
+                {
                   type: 'p',
                   text: 'В Linux нет «дисков C: и D:». Есть единое дерево, корень которого — `/` (корневая директория). Диски, флешки, сетевые папки — всё монтируется куда-то внутрь дерева (например, флешка в /media/user/USB, диск в /mnt/data).',
                 },
@@ -1279,19 +1293,16 @@ zypper search "web server"`,
                   text: `Всё начинается с процесса с PID 1 — это init или systemd. Он запускается ядром при загрузке и является «предком» всех остальных процессов. Если PID 1 умрёт — система упадёт.`,
                 },
                 {
-                  type: 'code',
-                  lang: 'text',
-                  caption: 'Иерархия процессов',
-                  code: `PID 1 (systemd)
-  ├── PID 500 (sshd) — демон SSH
-  │     └── PID 1234 (bash) — ваш shell
-  │           └── PID 5678 (vim) — что вы запустили
-  ├── PID 600 (nginx: master)
-  │     ├── PID 601 (nginx: worker)
-  │     └── PID 602 (nginx: worker)
-  └── PID 700 (cron)
-
-Каждый процесс «принадлежит» родителю.`,
+                  type: 'mermaid',
+                  caption: 'Иерархия процессов (PID 1 — предок всех)',
+                  code: `graph TD
+                    Systemd["systemd<br/>PID 1"] --> SSHD["sshd<br/>PID 500"]
+                    Systemd --> Nginx["nginx: master<br/>PID 600"]
+                    Systemd --> Cron["cron<br/>PID 700"]
+                    SSHD --> Bash["bash<br/>PID 1234"]
+                    Bash --> Vim["vim<br/>PID 5678"]
+                    Nginx --> W1["nginx: worker<br/>PID 601"]
+                    Nginx --> W2["nginx: worker<br/>PID 602"]`
                 },
                 {
                   type: 'note',
@@ -1698,6 +1709,18 @@ Main PID — PID главного процесса`,
                 {
                   type: 'p',
                   text: `Любой долгоживущий процесс можно превратить в сервис. Создаём unit-файл в /etc/systemd/system/myapp.service.`,
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Как systemd запускает и перезапускает сервис',
+                  code: `graph LR
+                    Boot["Boot"] --> Systemd["systemd"]
+                    Systemd --> Unit["myapp.service"]
+                    Unit --> Run["Запуск процесса"]
+                    Run --> Check{"Упал?"}
+                    Check -->|"Да"| Restart["Restart=on-failure<br/>через 5 сек"]
+                    Restart --> Run
+                    Check -->|"Нет"| Working["Работает"]`
                 },
                 {
                   type: 'code',
@@ -2731,6 +2754,16 @@ command > /dev/null 2>&1`,
               type: 'theory',
               blocks: [
                 {
+  type: 'mermaid',
+  caption: 'Поток данных через pipe: ps → grep → awk → head',
+  code: `graph LR
+    PS["ps aux"] -->|"все процессы"| Grep["grep nginx"]
+    Grep -->|"только nginx"| Grep2["grep -v grep"]
+    Grep2 -->|"без самого grep"| Awk["awk — второй столбец"]
+    Awk -->|"PID"| Head["head -1"]
+    Head --> Result["PID первой<br/>nginx-процесса"]`
+},
+                {
                   type: 'code',
                   lang: 'bash',
                   caption: '| — вывод в вход',
@@ -3054,6 +3087,15 @@ tail -f /var/log/syslog | grep CRON
 
 # Логи cron (RHEL/Fedora)
 tail -f /var/log/cron`,
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Что происходит при запуске cron-задачи',
+                  code: `graph LR
+                    Cron["cron<br/>0 2 * * *"] -->|"02:00 ежедневно"| Script["/usr/local/bin/backup.sh"]
+                    Script -->|"успех (exit 0)"| Log["journalctl / syslog"]
+                    Script -->|"ошибка (exit != 0)"| Mail["email админу"]
+                    Log --> Obs["наблюдаемость<br/>(Grafana, Loki)"]`
                 },
                 {
                   type: 'note',

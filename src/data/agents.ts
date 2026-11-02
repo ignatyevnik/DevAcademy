@@ -37,10 +37,15 @@ export const agentsCourse: Course = {
                   text: 'Чат-бот отвечает текстом на текст. Агент — это цикл: модель получает задачу, РАССУЖДАЕТ о следующем шаге, ВЫЗЫВАЕТ инструмент (поиск, база данных, API), получает результат и продолжает, пока задача не решена. Способность действовать в мире через инструменты — главное отличие.',
                 },
                 {
-                  type: 'code',
-                  lang: 'text',
-                  caption: 'Цикл ReAct (Reason + Act)',
-                  code: 'Задача → Мысль → Действие (вызов инструмента)\n        ↑                        ↓\n        ←—— Наблюдение (результат) ——┘\n        … повторять до готовности …\n        → Финальный ответ',
+                  type: 'mermaid',
+                  caption: 'Цикл ReAct: рассуждение → действие → наблюдение',
+                  code: `graph TD
+                    Task["Задача"] --> Think["Рассуждение<br/>(Reason)"]
+                    Think --> Act["Действие<br/>(Act: вызов инструмента)"]
+                    Act --> Observe["Наблюдение<br/>(результат)"]
+                    Observe --> Check{"Задача<br/>решена?"}
+                    Check -->|"Нет"| Think
+                    Check -->|"Да"| Answer["Финальный ответ"]`
                 },
                 {
                   type: 'p',
@@ -191,6 +196,21 @@ export const agentsCourse: Course = {
                   lang: 'python',
                   caption: 'Схема RAG-запроса',
                   code: 'query_vec = embed(user_question)\nchunks = vector_db.search(query_vec, top_k=5)\n\nprompt = f"""Отвечай ТОЛЬКО по контексту ниже.\nЕсли ответа нет в контексте — скажи об этом.\n\nКонтекст:\n{chunks}\n\nВопрос: {user_question}"""',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'RAG: от документа до ответа',
+                  code: `graph LR
+                    Docs["Документы"] --> Split["Chunking<br/>(нарезка)"]
+                    Split --> Embed["Embedding"]
+                    Embed --> VDB[("Vector DB")]
+
+                    Q["Вопрос"] --> QEmbed["Embedding"]
+                    QEmbed --> Search["Поиск<br/>top-k"]
+                    VDB --> Search
+                    Search --> Prompt["Промпт<br/>+ контекст"]
+                    Prompt --> LLM["LLM"]
+                    LLM --> Answer["Ответ<br/>+ источники"]`
                 },
                 {
                   type: 'note',
@@ -471,6 +491,18 @@ export const agentsCourse: Course = {
                 {
                   type: 'p',
                   text: 'Один агент с 15 инструментами путается и теряет контекст. Мультиагентная архитектура разбивает задачу: оркестратор решает «кому», специализированные агенты — «как». Это не про магию, а про декомпозицию.',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Оркестратор и специализированные агенты',
+                  code: `graph TD
+                    User["Запрос"] --> Orchestrator["Orchestrator<br/>(router)"]
+                    Orchestrator -->|"про заказы"| A1["Order Agent"]
+                    Orchestrator -->|"про возврат"| A2["Refund Agent"]
+                    Orchestrator -->|"не понял"| A3["Clarify Agent"]
+                    A1 --> Answer["Финальный ответ"]
+                    A2 --> Answer
+                    A3 --> Answer`
                 },
                 {
                   type: 'list',

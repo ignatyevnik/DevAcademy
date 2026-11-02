@@ -407,6 +407,14 @@ export const sqlCourse: Course = {
               type: 'theory',
               blocks: [
                 {
+                  type: 'mermaid',
+                  caption: 'Строки → группы → агрегаты',
+                  code: `graph LR
+                    Rows["1000 строк orders"] --> Group["GROUP BY status<br/>4 группы"]
+                    Group --> Agg["COUNT(*)<br/>SUM(total)<br/>AVG(total)"]
+                    Agg --> Result["paid: 850, 1.2M<br/>new: 100, 90K<br/>shipped: 45, 60K<br/>cancelled: 5, 8K"]`
+                },
+                {
                   type: 'code',
                   lang: 'sql',
                   caption: 'GROUP BY — агрегаты по группам',
@@ -705,6 +713,14 @@ export const sqlCourse: Course = {
               title: 'Три вида подзапросов',
               type: 'theory',
               blocks: [
+                {
+                  type: 'mermaid',
+                  caption: 'Скалярный подзапрос возвращает одно значение',
+                  code: `graph LR
+                    Outer["Внешний запрос:<br/>SELECT id, total<br/>FROM orders<br/>WHERE total > (подзапрос)"] -->|"выполняет"| Inner["Внутренний:<br/>SELECT AVG(total)<br/>FROM orders"]
+                    Inner -->|"одно число"| Result["Заказы выше среднего чека"]
+                    Outer --> Result`
+                },
                 {
                   type: 'code',
                   lang: 'sql',

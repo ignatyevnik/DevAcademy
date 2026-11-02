@@ -247,6 +247,14 @@ export const qaCourse: Course = {
                   ],
                 },
                 {
+                  type: 'mermaid',
+                  caption: 'Четыре уровня тестирования по ISTQB',
+                  code: `graph TD
+                    Unit["Компонентное<br/>функции, классы"] --> Integ["Интеграционное<br/>интерфейсы"]
+                    Integ --> System["Системное<br/>приложение целиком"]
+                    System --> Accept["Приёмочное<br/>бизнес-требования"]`
+                },
+                {
                   type: 'p',
                   text: 'Приёмочное делится на несколько видов:',
                 },
@@ -445,6 +453,13 @@ export const qaCourse: Course = {
                     'Системные (E2E) — проверяют приложение целиком, глазами пользователя. Медленные, их должно быть мало.',
                   ],
                 },
+                {
+                  type: 'mermaid',
+                  caption: 'Пирамида тестирования',
+                  code: `graph BT
+                    Unit["Unit-тесты<br/>(много, быстрые)"] --> Integ["Интеграционные<br/>(средне)"]
+                    Integ --> E2E["E2E-тесты<br/>(мало, медленные)"]`
+                },
                 { type: 'h3', text: 'По знанию системы' },
                 {
                   type: 'list',
@@ -492,6 +507,19 @@ export const qaCourse: Course = {
               title: 'Эквивалентное разбиение и граничные значения',
               type: 'theory',
               blocks: [
+                {
+                  type: 'mermaid',
+                  caption: 'Эквивалентные классы и граничные значения для диапазона 1..100',
+                  code: `graph TD
+                    Field["Поле: 1..100"]
+                    Field --> C1["меньше 1 — невалидно"]
+                    Field --> C2["1..100 — валидно"]
+                    Field --> C3["больше 100 — невалидно"]
+                    Field --> B0["граница -1: 0"]
+                    Field --> B1["граница: 1"]
+                    Field --> B100["граница: 100"]
+                    Field --> B101["граница +1: 101"]`
+                },
                 {
                   type: 'p',
                   text: 'Проверить все возможные входные данные невозможно. Тест-дизайн помогает выбрать минимальный набор проверок с максимальной отдачей.',
@@ -2964,16 +2992,14 @@ export const qaCourse: Course = {
                   text: '«Нагрузочное тестирование» — общее слово для пяти разных сценариев. На собеседовании почти всегда просят назвать их и объяснить разницу. Это первое, что отличает «читал статью» от «реально делал».',
                 },
                 {
-                  type: 'table',
-                  caption: 'Пять видов — обязательный минимум',
-                  head: ['Вид', 'Что проверяет', 'Как выглядит'],
-                  rows: [
-                    ['Smoke / capacity', 'Система вообще выдерживает нагрузку', '10–50 пользователей, 5–10 минут'],
-                    ['Load (нагрузочное)', 'Поведение на ожидаемой нагрузке', 'Ramp-up до N, плато 30–60 мин'],
-                    ['Stress (стресс)', 'Где предел и как падает', 'Ramp-up до разрушения'],
-                    ['Spike (пиковое)', 'Реакция на резкий скачок', '0 → 1000 за 10 секунд'],
-                    ['Soak / endurance', 'Утечки за долгое время', 'Средняя нагрузка 8–24 часа'],
-                  ],
+                  type: 'mermaid',
+                  caption: 'Пять видов нагрузочных тестов',
+                  code: `graph LR
+                    Load["Load<br/>постоянная нагрузка<br/>30–60 мин"]
+                    Stress["Stress<br/>растём до предела"]
+                    Spike["Spike<br/>0→1000 за 10 сек"]
+                    Soak["Soak<br/>8–24 часа"]
+                    Smoke["Smoke<br/>10–50 users, 5 мин"]`
                 },
                 {
                   type: 'p',
@@ -3367,6 +3393,17 @@ export const qaCourse: Course = {
                     ['RPS падает после часа теста', 'Утечка соединений, накопление логов, деградация кэша'],
                     ['p99 в 10 раз больше p95', 'Отдельный тяжёлый запрос (экспорт, отчёт)'],
                   ],
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Диагностика узких мест по метрикам',
+                  code: `graph TD
+                    Q{"CPU app<br/>сервера?"} -->|"100%"| CPU["Код: тяжёлые<br/>вычисления"]
+                    Q -->|"< 50%"| IO{"Latency<br/>растёт?"}
+                    IO -->|"Да"| IOWait["I/O wait:<br/>БД, диск, API"]
+                    IO -->|"Нет"| OK["Всё в норме"]
+                    CPU --> Fix1["Профилировать,<br/>кэшировать"]
+                    IOWait --> Fix2["Оптимизировать<br/>SQL, добавить индекс"]`
                 },
                 {
                   type: 'code',
@@ -3802,6 +3839,22 @@ export const qaCourse: Course = {
                 {
                   type: 'p',
                   text: 'CSRF (Cross-Site Request Forgery) — злоумышленник заставляет браузер жертвы отправить запрос от её имени. Жертва залогинена, куки отправляются автоматически, и действие выполняется без её ведома.',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Как работает CSRF-атака',
+                  code: `sequenceDiagram
+                    participant V as Жертва
+                    participant E as evil.com
+                    participant B as bank.com
+
+                    Note over V,B: Жертва залогинена,<br/>в браузере cookie bank.com
+                    V->>E: Открывает evil.com
+                    E-->>V: HTML со скрытым img/form
+                    Note over V: Браузер автоматически<br/>отправляет запрос на bank.com<br/>с cookie
+                    V->>B: POST /transfer (to=evil, amount=10000)<br/>Cookie: session=...
+                    B-->>V: 200 OK — перевод выполнен
+                    Note over B: Без CSRF-токена сервер<br/>не отличит запрос жертвы<br/>от запроса злоумышленника`
                 },
                 {
                   type: 'code',
@@ -4846,6 +4899,16 @@ export const qaCourse: Course = {
                   ],
                 },
                 {
+                  type: 'mermaid',
+                  caption: 'Из чего состоит тест-стратегия',
+                  code: `graph TD
+                    Scope["Scope<br/>что тестируем"] --> Risk["Риски<br/>вероятность × ущерб"]
+                    Risk --> Approach["Подходы<br/>unit / api / e2e / нагрузка / security"]
+                    Approach --> Env["Окружения<br/>dev → staging → prod"]
+                    Env --> Exit["Exit criteria<br/>все P0/P1 закрыты,<br/>smoke зелёный"]
+                    Exit --> Release["Релиз"]`
+                },
+                {
                   type: 'note',
                   text: 'На собеседовании Senior: «Как вы выбираете, что автоматизировать в первую очередь?» Ответ — по рискам и частоте регрессий, а не «всё подряд».',
                 },
@@ -4919,6 +4982,15 @@ export const qaCourse: Course = {
                     ['Change Failure Rate', 'Доля деплоев, вызвавших сбой', '~5%', '~10%'],
                     ['Failed Deployment Recovery Time', 'Время восстановления после сбоя', '< 1 часа', '< 1 дня'],
                   ],
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Четыре метрики DORA',
+                  code: `graph LR
+                    DF["Deployment Frequency<br/>↑ элита: по требованию"] --> Perf["DORA: скорость + стабильность"]
+                    LT["Lead Time for Changes<br/>↓ элита: &lt; 1 дня"] --> Perf
+                    CFR["Change Failure Rate<br/>↓ элита: ~5%"] --> Perf
+                    MTTR["Failed Deployment Recovery<br/>↓ элита: &lt; 1 часа"] --> Perf`
                 },
                 {
                   type: 'note',
@@ -5062,6 +5134,18 @@ export const qaCourse: Course = {
                 {
                   type: 'p',
                   text: `Хороший фреймворк — это не «папка с тестами». Это слои: тесты (что проверяем), Page Objects / API clients (как взаимодействуем), хелперы (данные, утилиты), конфиги (окружения). Senior проектирует эту структуру, чтобы 1000 тестов оставались поддерживаемыми.`,
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Слои тестового фреймворка',
+                  code: `graph TD
+                    Tests["tests/<br/>только сценарии и asserts"] --> Pages["pages/<br/>Page Object"]
+                    Tests --> API["api_clients/<br/>обёртки над HTTP API"]
+                    Tests --> Fix["fixtures/<br/>данные и подготовка"]
+                    Tests --> Utils["utils/<br/>хелперы"]
+                    Pages --> Base["pages/base.py<br/>BasePage"]
+                    Pages --> Config["config/<br/>dev / staging / prod"]
+                    API --> Config`
                 },
                 {
                   type: 'code',
@@ -5334,6 +5418,17 @@ conftest.py       ← общие фикстуры pytest`,
               title: 'Три подхода к security testing',
               type: 'theory',
               blocks: [
+                {
+                  type: 'mermaid',
+                  caption: 'Три подхода к security-тестированию',
+                  code: `graph LR
+                    Code["Исходный код"] -->|"SAST"| SAST["SonarQube, Semgrep<br/>уязвимости в коде"]
+                    App["Запущенное<br/>приложение"] -->|"DAST"| DAST["ZAP, Burp<br/>уязвимости в рантайме"]
+                    Deps["Зависимости<br/>requirements, package.json"] -->|"SCA"| SCA["Dependabot, Snyk<br/>CVE в библиотеках"]
+                    SAST --> PR["Проверки в CI<br/>(на каждый PR)"]
+                    SCA --> PR
+                    DAST --> Nightly["DAST nightly<br/>(на staging)"]`
+                },
                 {
                   type: 'table',
                   caption: 'Виды security-тестов',
@@ -5658,6 +5753,21 @@ conftest.py       ← общие фикстуры pytest`,
                   ],
                 },
                 {
+                  type: 'mermaid',
+                  caption: 'Что блокирует merge, а что нет',
+                  code: `graph TD
+                    PR["Pull Request"] --> Lint["lint<br/>ruff, eslint"]
+                    PR --> Types["typecheck<br/>mypy"]
+                    PR --> Unit["unit tests<br/>pytest"]
+                    PR --> E2E["E2E smoke<br/>5–10 сценариев"]
+                    Lint --> All{"Все checks<br/>зелёные?"}
+                    Types --> All
+                    Unit --> All
+                    E2E --> All
+                    All -->|"Да"| Merge["Merge в main"]
+                    All -->|"Нет"| Fix["Fix + push<br/>новая итерация"]`
+                },
+                {
                   type: 'note',
                   text: 'Правило: блокирующих проверок должно быть 3–5. Если 15 — команда начнёт искать обходные пути (--no-verify, merge без CI). Каждая блокирующая проверка должна быть быстрой (< 5 мин) и иметь понятное сообщение об ошибке.',
                 },
@@ -5790,6 +5900,22 @@ conftest.py       ← общие фикстуры pytest`,
               title: 'Три столпа observability',
               type: 'theory',
               blocks: [
+                {
+                  type: 'mermaid',
+                  caption: 'Observability: метрики, логи, трейсы и куда они попадают',
+                  code: `graph LR
+                    App["Приложение"]
+                    App --> M["Метрики<br/>RPS, latency, errors"]
+                    App --> L["Логи<br/>события с контекстом"]
+                    App --> T["Трейсы<br/>путь запроса"]
+                    M --> Prom[("Prometheus")]
+                    L --> Loki[("Loki / ELK")]
+                    T --> Jaeger[("Jaeger / Tempo")]
+                    Prom --> G["Grafana"]
+                    Loki --> G
+                    Jaeger --> G
+                    G --> QA["QA видит проблему<br/>до жалоб пользователей"]`
+                },
                 {
                   type: 'table',
                   caption: 'Три столпа observability',
@@ -6115,6 +6241,25 @@ conftest.py       ← общие фикстуры pytest`,
                   lang: 'gherkin',
                   caption: 'Сценарий на Gherkin',
                   code: `Feature: Оплата заказа картой\n  Как клиент\n  Я хочу оплатить заказ картой\n  Чтобы получить товар\n\n  Scenario: Успешная оплата\n    Given в корзине товар за 1000₽\n    And у клиента валидная карта\n    When он нажимает "Оплатить"\n    Then заказ переходит в статус "paid"\n    And на почту приходит подтверждение\n\n  Scenario: Отклонённая карта\n    Given в корзине товар за 1000₽\n    And карта отклонена банком\n    When он нажимает "Оплатить"\n    Then заказ остаётся в статусе "new"\n    And показывается ошибка "Карта отклонена"`,
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Three Amigos: обсуждение до кода',
+                  code: `sequenceDiagram
+                    participant B as Бизнес
+                    participant D as Разработчик
+                    participant Q as QA
+                    participant G as Gherkin
+
+                    Note over B,Q: Three Amigos — 30 минут
+                    B->>D: зачем это нужно
+                    D->>B: технические ограничения
+                    Q->>B: edge-кейсы
+                    B->>Q: acceptance criteria
+                    Note over B,Q: договорились — пишем Gherkin
+                    Q->>G: Scenario:<br/>Given… When… Then…
+                    G-->>D: реализация
+                    G-->>Q: автотесты`
                 },
                 {
                   type: 'note',

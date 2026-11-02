@@ -392,6 +392,19 @@ export const designCourse: Course = {
               type: 'theory',
               blocks: [
                 {
+                  type: 'mermaid',
+                  caption: 'Три порождающих паттерна: Singleton, Factory, Builder',
+                  code: `graph TD
+                    Client["Клиент"]
+                    Client -->|"Singleton<br/>Config()"| S["Config<br/>(один экземпляр на процесс)"]
+                    Client -->|"Factory<br/>create(type)"| F["NotificationFactory"]
+                    F --> FE["EmailNotification"]
+                    F --> FS["SmsNotification"]
+                    F --> FP["PushNotification"]
+                    Client -->|"Builder<br/>.table().where().limit()"| B["QueryBuilder"]
+                    B -->|".build()"| SQL["SQL-строка"]`
+                },
+                {
                   type: 'p',
                   text: 'Порождающие паттерны отвечают за создание объектов. Их три главных: Singleton (единственный экземпляр), Factory (создание через фабрику вместо `new`), Builder (пошаговое построение сложного объекта).',
                 },
@@ -471,6 +484,27 @@ export const designCourse: Course = {
               type: 'theory',
               blocks: [
                 {
+                  type: 'mermaid',
+                  caption: 'Три структурных паттерна: Adapter, Decorator, Facade',
+                  code: `graph TD
+                    subgraph Adapter["Adapter: перевод интерфейса"]
+                        CL1["Клиент"] -->|"pay()"| A["Adapter"]
+                        A -->|"make_payment(cents, code)"| L["Legacy API"]
+                    end
+                    subgraph Decorator["Decorator: слои поведения"]
+                        CL2["Клиент"] -->|"send()"| D1["Logging"]
+                        D1 --> D2["Retry"]
+                        D2 --> D3["EmailNotifier"]
+                    end
+                    subgraph Facade["Facade: упрощение"]
+                        CL3["Клиент"] -->|"place_order()"| F["Facade"]
+                        F --> S1["Inventory"]
+                        F --> S2["Payment"]
+                        F --> S3["Shipping"]
+                        F --> S4["Email"]
+                    end`
+                },
+                {
                   type: 'p',
                   text: 'Структурные паттерны — про то, как классы и объекты соединяются. Три главных: Adapter (обернуть несовместимый интерфейс), Decorator (добавить поведение без наследования), Facade (упростить сложную систему).',
                 },
@@ -549,6 +583,24 @@ export const designCourse: Course = {
                 {
                   type: 'p',
                   text: 'Поведенческие паттерны — про взаимодействие объектов и распределение обязанностей. Три главных: Strategy (взаимозаменяемые алгоритмы), Observer (подписка на события), Command (инкапсуляция действия).',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Три поведенческих паттерна: Strategy, Observer, Command',
+                  code: `graph TD
+                    subgraph Strategy["Strategy: подмена алгоритма"]
+                        Sorter["Sorter"] -->|"set_strategy(QuickSort)"| QS["QuickSort"]
+                        Sorter -->|"set_strategy(MergeSort)"| MS["MergeSort"]
+                    end
+                    subgraph Observer["Observer: подписка на события"]
+                        Event["EventEmitter<br/>'order_placed'"] -->|"on()"| L1["Email"]
+                        Event -->|"on()"| L2["SMS"]
+                        Event -->|"on()"| L3["Log"]
+                    end
+                    subgraph Command["Command: действие как объект"]
+                        Invoker["Invoker"] -->|"execute()"| Cmd["CreateUserCommand"]
+                        Cmd -->|"execute()"| Repo["Repository"]
+                        Cmd -->|"undo()"| Repo`
                 },
                 {
                   type: 'code',
@@ -778,6 +830,19 @@ export const designCourse: Course = {
               type: 'theory',
               blocks: [
                 {
+                  type: 'mermaid',
+                  caption: 'Монолит и микросервисы',
+                  code: `graph TD
+                    subgraph Mono["Монолит"]
+                        M["Один процесс<br/>Одна БД"]
+                    end
+                    subgraph Micro["Микросервисы"]
+                        S1["Сервис A"] --> DB1[("БД A")]
+                        S2["Сервис B"] --> DB2[("БД B")]
+                        S3["Сервис C"] --> DB3[("БД C")]
+                    end`
+                },
+                {
                   type: 'table',
                   caption: 'Сравнение',
                   head: ['Архитектура', 'Плюсы', 'Минусы'],
@@ -854,10 +919,20 @@ export const designCourse: Course = {
                   text: 'Event-driven архитектура: сервисы общаются не напрямую, а через события в брокере (Kafka, RabbitMQ, NATS, SQS). «Заказ создан» — событие, которое слушают сервисы доставки, биллинга, аналитики.',
                 },
                 {
-                  type: 'code',
-                  lang: 'text',
-                  caption: 'Синхронно vs асинхронно',
-                  code: 'Синхронно (request/response):\n  OrderService → PaymentService (запрос)\n              → InventoryService (запрос)\n              → EmailService (запрос)\n              → AnalyticsService (запрос)\n  Время ответа = сумма всех, падение любого → падение заказа\n\nАсинхронно (event-driven):\n  OrderService → event "order.created" → Broker\n                                         ├→ PaymentService\n                                         ├→ InventoryService\n                                         ├→ EmailService\n                                         └→ AnalyticsService\n  OrderService отвечает мгновенно, сервисы подписаны\n  Каждый может упасть — событие останется в очереди',
+                  type: 'mermaid',
+                  caption: 'Синхронно vs асинхронно (event-driven)',
+                  code: `graph LR
+                    subgraph Sync["Синхронно"]
+                        O1["Order"] --> P1["Payment"]
+                        O1 --> I1["Inventory"]
+                        O1 --> E1["Email"]
+                    end
+                    subgraph Async["Event-driven"]
+                        O2["Order"] --> Broker[("Broker")]
+                        Broker --> P2["Payment"]
+                        Broker --> I2["Inventory"]
+                        Broker --> E2["Email"]
+                    end`
                 },
                 {
                   type: 'list',
@@ -926,6 +1001,14 @@ export const designCourse: Course = {
               title: 'CQRS: разделение чтения и записи',
               type: 'theory',
               blocks: [
+                {
+                  type: 'mermaid',
+                  caption: 'CQRS: разделение чтения и записи',
+                  code: `graph LR
+                    Cmd["Command<br/>(запись)"] --> WDB[("Write DB<br/>Postgres")]
+                    WDB -->|"события"| RDB[("Read DB<br/>ClickHouse")]
+                    Query["Query<br/>(чтение)"] --> RDB`
+                },
                 {
                   type: 'p',
                   text: 'CQRS (Command Query Responsibility Segregation) — разделение модели записи (Command) и модели чтения (Query). Запись идёт в одну модель (нормализованную), чтение — из другой (денормализованной, оптимизированной под запросы).',

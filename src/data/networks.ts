@@ -38,6 +38,35 @@ export const networksCourse: Course = {
                   text: `Любая сетевая передача — это слои. Каждый слой делает одно и передаёт данные следующему. Модель OSI (7 слоёв) — теоретическая, для обучения. Модель TCP/IP (4 слоя) — практическая, по ней реально работает интернет.`,
                 },
                 {
+                  type: 'mermaid',
+                  caption: 'Соответствие слоёв OSI и TCP/IP',
+                  code: `graph TD
+                    subgraph OSI["OSI — 7 уровней"]
+                        direction TB
+                        O7["7. Application<br/>HTTP, DNS, SSH"]
+                        O6["6. Presentation<br/>TLS, gzip"]
+                        O5["5. Session"]
+                        O4["4. Transport<br/>TCP, UDP"]
+                        O3["3. Network<br/>IP, ICMP"]
+                        O2["2. Data Link<br/>Ethernet"]
+                        O1["1. Physical<br/>кабели"]
+                    end
+                    subgraph TCPIP["TCP/IP — 4 уровня"]
+                        direction TB
+                        T4["Application"]
+                        T3["Transport"]
+                        T2["Internet"]
+                        T1["Link"]
+                    end
+                    O7 --> T4
+                    O6 --> T4
+                    O5 --> T4
+                    O4 --> T3
+                    O3 --> T2
+                    O2 --> T1
+                    O1 --> T1`
+                },
+                {
                   type: 'table',
                   caption: 'OSI (7 слоёв) vs TCP/IP (4 слоя)',
                   head: ['OSI', 'TCP/IP', 'Примеры', 'Что делает'],
@@ -301,6 +330,27 @@ curl https://server.com:8443/api
                 {
                   type: 'p',
                   text: `DNS — «телефонная книга интернета». Превращает google.com в IP. Иерархия: корневые серверы (13 кластеров), TLD (com, org, ru), авторитетные серверы домена.`,
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Путь DNS-запроса от клиента до авторитетного сервера',
+                  code: `sequenceDiagram
+                    participant C as Клиент
+                    participant R as Рекурсивный<br/>резолвер
+                    participant Root as Корневой<br/>(.)
+                    participant TLD as TLD-сервер<br/>(.com)
+                    participant Auth as Авторитетный<br/>(example.com)
+
+                    C->>R: IP для example.com?
+                    Note over R: кэш пуст
+                    R->>Root: кто отвечает за .com?
+                    Root-->>R: a.gtld-servers.net
+                    R->>TLD: кто отвечает за example.com?
+                    TLD-->>R: ns1.example.com
+                    R->>Auth: какой IP у example.com?
+                    Auth-->>R: 93.184.216.34
+                    R-->>C: 93.184.216.34
+                    Note over R: кэширует на TTL секунд`
                 },
                 {
                   type: 'code',
@@ -916,6 +966,20 @@ curl -vI https://example.com 2>&1 | grep expire`,
               title: 'Прямой и обратный прокси',
               type: 'theory',
               blocks: [
+                {
+                  type: 'mermaid',
+                  caption: 'Forward proxy скрывает клиента, reverse — бэкенд',
+                  code: `graph LR
+                    subgraph Forward["Forward proxy<br/>(скрывает клиента)"]
+                        C1["Клиент"] -->|"настраивает<br/>клиент"| FP["VPN,<br/>корпоративный прокси"]
+                        FP --> Internet["Интернет"]
+                    end
+                    subgraph Reverse["Reverse proxy<br/>(скрывает бэкенд)"]
+                        Internet2["Интернет"] --> RP["Nginx, HAProxy,<br/>ALB"]
+                        RP --> B1["Backend 1"]
+                        RP --> B2["Backend 2"]
+                    end`
+                },
                 {
                   type: 'table',
                   caption: 'Forward vs Reverse proxy',

@@ -212,6 +212,19 @@ export const k8sCourse: Course = {
                   text: 'Поды рождаются и умирают, их IP меняются. Service — стабильный виртуальный IP и DNS-имя, которые балансируют трафик между живыми подами, отобранными по меткам.',
                 },
                 {
+                  type: 'mermaid',
+                  caption: 'Три способа достучаться до пода',
+                  code: `graph LR
+                    User["Пользователь<br/>из интернета"] -->|"1. LoadBalancer"| LB["Облачный LB<br/>публичный IP"]
+                    User -->|"2. NodePort"| NP["NodePort :30080<br/>на каждом узле"]
+                    PodOther["Другой под<br/>в кластере"] -->|"3. ClusterIP<br/>10.96.5.10"| Svc
+                    LB --> Svc["Service web<br/>ClusterIP 10.96.5.10"]
+                    NP --> Svc
+                    Svc --> P1["Pod web-1"]
+                    Svc --> P2["Pod web-2"]
+                    Svc --> P3["Pod web-3"]`
+                },
+                {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'service.yaml',
@@ -264,6 +277,18 @@ export const k8sCourse: Course = {
                 {
                   type: 'p',
                   text: 'Образ должен быть одинаковым на всех окружениях, а настройки — разными. ConfigMap хранит несекретную конфигурацию (адреса, флаги, лимиты), Secret — чувствительные данные (пароли, токены). Подключаются как переменные окружения или файлы.',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Как под получает конфигурацию и секреты',
+                  code: `graph LR
+                    Pod["Pod web"]
+                    CM["ConfigMap web-config<br/>(не секретно)"]
+                    Sec["Secret db-secret<br/>(base64)"]
+                    Pod -->|"envFrom:<br/>configMapRef"| CM
+                    Pod -->|"env:<br/>secretKeyRef"| Sec
+                    CM -->|"APP_ENV=prod<br/>LOG_LEVEL=info"| Pod
+                    Sec -->|"DB_PASSWORD=***"| Pod`
                 },
                 {
                   type: 'code',
@@ -491,6 +516,22 @@ export const k8sCourse: Course = {
                   lang: 'yaml',
                   caption: 'StatefulSet для PostgreSQL',
                   code: 'apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: postgres\nspec:\n  serviceName: postgres-headless   # обязательно, см. ниже\n  replicas: 3\n  selector:\n    matchLabels:\n      app: postgres\n  template:\n    metadata:\n      labels:\n        app: postgres\n    spec:\n      containers:\n        - name: postgres\n          image: postgres:16\n          env:\n            - name: POSTGRES_PASSWORD\n              value: secret\n          ports:\n            - containerPort: 5432\n          volumeMounts:\n            - name: data\n              mountPath: /var/lib/postgresql/data\n  volumeClaimTemplates:      # шаблон PVC — по одному на под\n    - metadata:\n        name: data\n      spec:\n        accessModes: [ReadWriteOnce]\n        resources:\n          requests:\n            storage: 10Gi',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'StatefulSet: стабильные имена, DNS и PVC на каждый под',
+                  code: `graph TD
+                    HS["Headless Service<br/>postgres-headless<br/>clusterIP: None"]
+                    STS["StatefulSet postgres<br/>replicas: 3"]
+                    P0["Pod postgres-0"] --> PVC0[("PVC data-postgres-0")]
+                    P1["Pod postgres-1"] --> PVC1[("PVC data-postgres-1")]
+                    P2["Pod postgres-2"] --> PVC2[("PVC data-postgres-2")]
+                    STS -.->|"создаёт"| P0
+                    STS -.-> P1
+                    STS -.-> P2
+                    HS -.->|"postgres-0.postgres-headless"| P0
+                    HS -.->|"postgres-1.postgres-headless"| P1
+                    HS -.->|"postgres-2.postgres-headless"| P2`
                 },
                 {
                   type: 'note',
@@ -804,6 +845,23 @@ export const k8sCourse: Course = {
                   ],
                 },
                 {
+                  type: 'mermaid',
+                  caption: 'ClusterIP, Headless и sessionAffinity в действии',
+                  code: `graph LR
+                    subgraph ClusterIP["ClusterIP: балансировка"]
+                        C["Service backend<br/>10.96.5.10"] --> P1["Pod 1"]
+                        C --> P2["Pod 2"]
+                    end
+                    subgraph Headless["Headless: DNS на каждый под"]
+                        H["postgres-headless"] -.->|"postgres-0.postgres-headless"| HP0["Pod postgres-0"]
+                        H -.->|"postgres-1.postgres-headless"| HP1["Pod postgres-1"]
+                    end
+                    subgraph Sticky["sessionAffinity: ClientIP"]
+                        S["Service sticky"] -->|"клиент А"| SP1["Pod 1"]
+                        S -->|"клиент Б"| SP2["Pod 2"]
+                    end`
+                },
+                {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'Все четыре типа',
@@ -873,6 +931,19 @@ export const k8sCourse: Course = {
               title: 'Зачем Ingress',
               type: 'theory',
               blocks: [
+                {
+                  type: 'mermaid',
+                  caption: 'Ingress: одна точка входа, маршрутизация по host и path',
+                  code: `graph TD
+                    User["Пользователь<br/>из интернета"] --> LB["Облачный LB<br/>1 публичный IP"]
+                    LB --> IC["Ingress Controller<br/>(nginx)"]
+                    IC -->|"example.com/"| FE["Service frontend<br/>(ClusterIP)"]
+                    IC -->|"example.com/api"| BE["Service backend<br/>(ClusterIP)"]
+                    IC -->|"admin.example.com"| AD["Service admin<br/>(ClusterIP)"]
+                    FE --> FP["Pod frontend"]
+                    BE --> BP["Pod backend"]
+                    AD --> AP["Pod admin"]`
+                },
                 {
                   type: 'p',
                   text: 'LoadBalancer на каждый сервис — дорого (10 сервисов = 10 публичных IP = 10 облачных LB). Ingress — единая точка входа: один LB + правила маршрутизации по host и path. Внутри кластера сервисы остаются ClusterIP.',
