@@ -10,6 +10,7 @@ import { tracks } from '@/data/tracks';
 import { TrackCard } from '@/components/TrackCard';
 import { ProgressExport } from '@/components/ProgressExport';
 import { Button } from '@/components/ui/button';
+import { ReportError } from '@/components/ReportError';
 
 const ALL_TAGS = ['Все', ...Array.from(new Set(courses.flatMap((c) => c.tags)))];
 
@@ -210,12 +211,23 @@ export default function Home() {
       </main>
 
       <footer className="border-t border-border bg-card">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>Дев<span className="font-semibold text-primary">Академия</span> — офлайн-учебник по инженерным практикам</p>
-            <Link to="/editor" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Создать свой курс (для авторов)
+        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1.5">
+            <p className="font-semibold text-foreground">
+              Дев<span className="text-primary">Академия</span>
+            </p>
+            <p className="text-xs">Прогресс хранится локально на этом устройстве</p>
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-4">
+            <Link 
+              to="/editor" 
+              className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors hover:underline underline-offset-4"
+            >
+              Создать свой курс
             </Link>
-          <p>Прогресс хранится локально на этом устройстве</p>
+            <ReportError context="Главная" className="bg-background" />
+          </div>
         </div>
       </footer>
     </div>

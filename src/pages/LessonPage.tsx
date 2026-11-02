@@ -11,6 +11,7 @@ import { TextBlocks, QuizView } from '@/components/StepContent';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { ReportError } from '@/components/ReportError';
 
 function StepNotes({ slug, stepId }: { slug: string; stepId: string }) {
   const { getNote, setNote } = useProgress();
@@ -264,6 +265,15 @@ export default function LessonPage() {
           
           <StepNotes slug={course.slug} stepId={step.id} />
           
+          {/* Кнопка сообщения об ошибке */}
+          <ReportError 
+            course={course} 
+            lesson={lesson} 
+            step={step} 
+            stepIndex={stepIndex} 
+          />
+          
+           {/* Навигация */}
           <div className="mt-10 flex items-center justify-between gap-3 border-t border-border pt-6">
             {nav?.prev ? (
               <Button asChild variant="outline" className="min-h-[44px]">

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { Plus, Trash2, Download, Save, ArrowLeft, RotateCcw, Clock } from 'lucide-react';
+import { Plus, Trash2, Download, Save, ArrowLeft, RotateCcw, Clock, Eye, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -9,7 +9,7 @@ import { baseSlugs, courses } from '@/data';
 import { courseSchema } from '@/data/schemas';
 import { BlockEditor } from '@/components/editor/BlockEditor';
 import { QuizEditor } from '@/components/editor/QuizEditor';
-
+import { TextBlocks, QuizView } from '@/components/StepContent';
 
 export default function EditorPage() {
   const [course, setCourse] = useState<Course>({
@@ -25,12 +25,16 @@ export default function EditorPage() {
     requirements: ['Желание учиться'],
     modules: [],
   });
-
+  
+  const [previewMode, setPreviewMode] = useState(false);
   const isBase = baseSlugs.has(course.slug);
 
-    const loadCourse = (slug: string) => {
+  const updateCourse = (field: keyof Course, value: any) => {
+    setCourse(prev => ({ ...prev, [field]: value }));
+  };
+
+  const loadCourse = (slug: string) => {
     if (!slug) {
-      // Сброс на новый курс
       setCourse({
         slug: 'my-custom-course', 
         title: 'Мой новый курс', 
@@ -48,13 +52,8 @@ export default function EditorPage() {
     }
     const found = courses.find(c => c.slug === slug);
     if (found) {
-      // Глубокое клонирование, чтобы не менять исходный объект до сохранения
       setCourse(JSON.parse(JSON.stringify(found)));
     }
-  };
-
-  const updateCourse = (field: keyof Course, value: any) => {
-    setCourse(prev => ({ ...prev, [field]: value }));
   };
 
   const addModule = () => {
@@ -108,7 +107,6 @@ export default function EditorPage() {
 
   const saveToLocal = () => {
     try {
-      // 1. Очищаем пустые уроки
       const cleanedModules = course.modules
         .map((m) => ({ ...m, lessons: m.lessons.filter((l) => l.steps.length > 0) }))
         .filter((m) => m.lessons.length > 0);
@@ -119,9 +117,8 @@ export default function EditorPage() {
       }
 
       const cleanedCourse = { ...course, modules: cleanedModules };
-
-      // 2. Валидация через zod
       const result = courseSchema.safeParse(cleanedCourse);
+      
       if (!result.success) {
         const issues = result.error.issues
           .map((i) => `${i.path.join('.')}: ${i.message}`)
@@ -131,13 +128,11 @@ export default function EditorPage() {
         return;
       }
 
-      // 3. Бэкап предыдущего состояния
       const prev = localStorage.getItem('dev-academy-custom-courses');
       if (prev && prev !== '[]') {
         localStorage.setItem('dev-academy-custom-courses-backup', prev);
       }
 
-      // 4. Сохранение
       const existing: Course[] = JSON.parse(prev || '[]');
       const updated = [...existing.filter((c) => c.slug !== cleanedCourse.slug), cleanedCourse];
       localStorage.setItem('dev-academy-custom-courses', JSON.stringify(updated));
@@ -170,13 +165,14 @@ export default function EditorPage() {
     <div className="min-h-dvh bg-background">
       <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-4xl items-center gap-2 px-4">
-          <Link to="/" className="grid h-10 w-10 place-items-center rounded-md hover:bg-accent"><ArrowLeft className="h-5 w-5" /></Link>
-                    <h1 className="text-lg font-bold hidden sm:block">Редактор</h1>
+          <Link to="/" className="grid h-10 w-10 place-items-center rounded-md hover:bg-accent shrink-0"><ArrowLeft className="h-5 w-5" /></Link>
+          <h1 className="text-lg font-bold hidden sm:block">Редактор</h1>
           
           <select
             value={courses.some(c => c.slug === course.slug) ? course.slug : ''}
             onChange={(e) => loadCourse(e.target.value)}
-            className="h-9 flex-1 max-w-[250px] rounded border border-input bg-background px-3 text-sm ml-2 hidden sm:block">
+            className="h-9 flex-1 max-w-[250px] rounded border border-input bg-background px-3 text-sm ml-2 hidden sm:block"
+          >
             <option value="">+ Создать новый курс</option>
             <optgroup label="Редактировать существующий">
               {courses.map(c => (
@@ -184,136 +180,162 @@ export default function EditorPage() {
               ))}
             </optgroup>
           </select>
-          
-          <div className="ml-auto flex gap-2">
-            {isBase && (
-              <Button onClick={restoreOriginal} variant="outline" className="gap-2">
+
+          <div className="ml-auto flex items-center gap-2">
+            <Button 
+              onClick={() => setPreviewMode(!previewMode)} 
+              variant={previewMode ? "secondary" : "outline"} 
+              className="gap-2"
+            >
+              {previewMode ? <Edit className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              <span className="hidden sm:inline">{previewMode ? 'В редактор' : 'Предпросмотр'}</span>
+            </Button>
+
+            {isBase && !previewMode && (
+              <Button onClick={restoreOriginal} variant="outline" className="gap-2 hidden md:flex">
                 <RotateCcw className="h-4 w-4" /> Вернуть оригинал
               </Button>
             )}
-            <Button onClick={saveToLocal} variant="outline" className="gap-2 hidden sm:flex"><Save className="h-4 w-4" /> Сохранить</Button>
-            <Button onClick={downloadJson} className="gap-2"><Download className="h-4 w-4" /> Скачать</Button>
+            {!previewMode && (
+              <>
+                <Button onClick={saveToLocal} variant="outline" className="gap-2 hidden sm:flex"><Save className="h-4 w-4" /> Сохранить</Button>
+                <Button onClick={downloadJson} className="gap-2"><Download className="h-4 w-4" /></Button>
+              </>
+            )}
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-4xl p-4 pb-24 space-y-6">
-        {isBase && (
+        {!previewMode && isBase && (
           <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm">
             <p className="font-medium">Встроенный курс</p>
             <p className="mt-1 text-muted-foreground">
-              При сохранении будет создана локальная копия, которая заменит оригинал
-              <strong> только в этом браузере</strong>. Исходник в коде приложения не изменится.
+              При сохранении будет создана локальная копия, которая заменит оригинал <strong>только в этом браузере</strong>. Исходник в коде приложения не изменится.
             </p>
           </div>
         )}
 
-        {/* Метаданные курса */}
-        <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-          <h2 className="font-bold text-lg">Основная информация</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="space-y-1"><span className="text-sm font-medium">Название</span><Input value={course.title} onChange={e => updateCourse('title', e.target.value)} /></label>
-            <label className="space-y-1">
-              <span className="text-sm font-medium">Slug (URL)</span>
-              <Input value={course.slug} onChange={e => updateCourse('slug', e.target.value)} disabled={isBase} />
-            </label>
+        {!previewMode && (
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <h2 className="font-bold text-lg">Основная информация</h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="space-y-1"><span className="text-sm font-medium">Название</span><Input value={course.title} onChange={e => updateCourse('title', e.target.value)} /></label>
+              <label className="space-y-1">
+                <span className="text-sm font-medium">Slug (URL)</span>
+                <Input value={course.slug} onChange={e => updateCourse('slug', e.target.value)} disabled={isBase} />
+              </label>
+            </div>
+            <label className="space-y-1 block"><span className="text-sm font-medium">Описание</span><Input value={course.subtitle} onChange={e => updateCourse('subtitle', e.target.value)} /></label>
           </div>
-          <label className="space-y-1 block"><span className="text-sm font-medium">Описание</span><Input value={course.subtitle} onChange={e => updateCourse('subtitle', e.target.value)} /></label>
-        </div>
+        )}
 
-        {/* Модули */}
         {course.modules.map((mod, mIdx) => (
           <div key={mod.id} className="rounded-xl border border-border bg-card p-5 space-y-4">
             <div className="flex items-center gap-2">
-              <Input value={mod.title} onChange={e => { const n = [...course.modules]; n[mIdx].title = e.target.value; setCourse({ ...course, modules: n }); }} className="font-bold max-w-sm" />
-              <Button variant="destructive" size="sm" onClick={() => { if (confirm(`Удалить модуль «${mod.title}»?`)) setCourse({ ...course, modules: course.modules.filter((_, i) => i !== mIdx) }); }}><Trash2 className="h-4 w-4" /></Button>
+              {previewMode ? (
+                <h2 className="font-bold text-lg py-2">{mod.title}</h2>
+              ) : (
+                <>
+                  <Input value={mod.title} onChange={e => { const n = [...course.modules]; n[mIdx].title = e.target.value; setCourse({ ...course, modules: n }); }} className="font-bold max-w-sm" />
+                  <Button variant="destructive" size="sm" onClick={() => { if (confirm(`Удалить модуль «${mod.title}»?`)) setCourse({ ...course, modules: course.modules.filter((_, i) => i !== mIdx) }); }}><Trash2 className="h-4 w-4" /></Button>
+                </>
+              )}
             </div>
             
             {mod.lessons.map((les, lIdx) => (
-              <div key={les.id} className="ml-6 border-l-2 border-border pl-4 space-y-3 mt-4">
+              <div key={les.id} className="ml-0 sm:ml-6 sm:border-l-2 border-border sm:pl-4 space-y-3 mt-4">
                 <div className="flex items-center gap-2">
-                  <Input value={les.title} onChange={(e) => { const n = [...course.modules]; n[mIdx].lessons[lIdx].title = e.target.value; setCourse({ ...course, modules: n }); }} className="font-medium max-w-xs" />
-<div className="relative flex items-center" title="Примерное время прохождения урока в минутах">
-  <Clock className="absolute left-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
-  <Input 
-    type="number" 
-    min={1}
-    value={les.minutes} 
-    onChange={(e) => { 
-      const n = [...course.modules]; 
-      n[mIdx].lessons[lIdx].minutes = Number(e.target.value); 
-      setCourse({ ...course, modules: n }); 
-    }} 
-    className="w-32 pl-8 pr-12 text-sm" 
-    aria-label="Время прохождения в минутах"
-  />
-  <span className="absolute right-2.5 text-xs font-medium text-muted-foreground pointer-events-none">
-    мин
-  </span>
-</div>
-                  <Button variant="ghost" size="sm" onClick={() => { if (confirm(`Удалить урок «${les.title}»?`)) { const n = [...course.modules]; n[mIdx].lessons.splice(lIdx, 1); setCourse({ ...course, modules: n }); } }}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {previewMode ? (
+                    <h3 className="font-medium text-base py-2 border-b border-border w-full">{les.title}</h3>
+                  ) : (
+                    <>
+                      <Input value={les.title} onChange={(e) => { const n = [...course.modules]; n[mIdx].lessons[lIdx].title = e.target.value; setCourse({ ...course, modules: n }); }} className="font-medium max-w-xs" />
+                      <div className="relative flex items-center" title="Примерное время прохождения урока в минутах">
+                        <Clock className="absolute left-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+                        <Input type="number" min={1} value={les.minutes} onChange={(e) => { const n = [...course.modules]; n[mIdx].lessons[lIdx].minutes = Number(e.target.value); setCourse({ ...course, modules: n }); }} className="w-32 pl-8 pr-12 text-sm" aria-label="Время прохождения в минутах" />
+                        <span className="absolute right-2.5 text-xs font-medium text-muted-foreground pointer-events-none">мин</span>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => { if (confirm(`Удалить урок «${les.title}»?`)) { const n = [...course.modules]; n[mIdx].lessons.splice(lIdx, 1); setCourse({ ...course, modules: n }); } }}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
                 </div>
 
                 {les.steps.map((step, sIdx) => (
-                  <div key={step.id} className="rounded-lg border border-border bg-background p-3 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-xs font-bold uppercase px-2 py-1 rounded ${step.type === 'theory' ? 'bg-blue-500/10 text-blue-600' : 'bg-green-500/10 text-green-600'}`}>
-                        {step.type === 'theory' ? 'Теория' : 'Тест'}
-                      </span>
-                      <Input value={step.title} onChange={(e) => { const n = [...course.modules]; n[mIdx].lessons[lIdx].steps[sIdx].title = e.target.value; setCourse({ ...course, modules: n }); }} className="flex-1 h-8 text-sm font-medium" />
-                      <Button variant="ghost" size="sm" onClick={() => { if (confirm(`Удалить шаг «${step.title}»?`)) { const n = [...course.modules]; n[mIdx].lessons[lIdx].steps.splice(sIdx, 1); setCourse({ ...course, modules: n }); } }}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-
-                    {step.type === 'theory' && (
-                      <div className="space-y-2">
-                        {step.blocks.map((b, bIdx) => (
-                          <BlockEditor
-                            key={bIdx}
-                            block={b}
-                            onChange={(newB) => { const n = [...course.modules]; (n[mIdx].lessons[lIdx].steps[sIdx] as any).blocks[bIdx] = newB; setCourse({ ...course, modules: n }); }}
-                            onDelete={() => { if (confirm('Удалить этот блок?')) { const n = [...course.modules]; (n[mIdx].lessons[lIdx].steps[sIdx] as any).blocks.splice(bIdx, 1); setCourse({ ...course, modules: n }); } }}
-                          />
-                        ))}
-                        <div className="flex flex-wrap gap-1">
-                          {(['p', 'h3', 'list', 'code', 'note', 'table'] as const).map((t) => (
-                            <Button key={t} variant="outline" size="sm" onClick={() => {
-                              const newBlock: any = { type: t };
-                              if (t === 'p' || t === 'h3' || t === 'note') newBlock.text = '';
-                              else if (t === 'list') newBlock.items = [''];
-                              else if (t === 'code') { newBlock.lang = 'text'; newBlock.code = ''; }
-                              else if (t === 'table') { newBlock.head = ['A', 'B']; newBlock.rows = [['', '']]; }
-                              const n = [...course.modules];
-                              (n[mIdx].lessons[lIdx].steps[sIdx] as any).blocks.push(newBlock);
-                              setCourse({ ...course, modules: n });
-                            }}>+ {t}</Button>
-                          ))}
-                        </div>
+                  <div key={step.id} className={`rounded-lg border p-3 space-y-3 ${previewMode ? 'border-transparent bg-background' : 'border-border bg-background'}`}>
+                    {previewMode ? (
+                      <div className="p-2 sm:p-6 bg-card rounded-xl">
+                        <h4 className="text-xl font-bold mb-4">{step.title}</h4>
+                        {step.type === 'theory' ? (
+                          <TextBlocks blocks={step.blocks} />
+                        ) : (
+                          <QuizView slug={course.slug} step={step} onResult={() => {}} />
+                        )}
                       </div>
-                    )}
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs font-bold uppercase px-2 py-1 rounded ${step.type === 'theory' ? 'bg-blue-500/10 text-blue-600' : 'bg-green-500/10 text-green-600'}`}>
+                            {step.type === 'theory' ? 'Теория' : 'Тест'}
+                          </span>
+                          <Input value={step.title} onChange={(e) => { const n = [...course.modules]; n[mIdx].lessons[lIdx].steps[sIdx].title = e.target.value; setCourse({ ...course, modules: n }); }} className="flex-1 h-8 text-sm font-medium" />
+                          <Button variant="ghost" size="sm" onClick={() => { if (confirm(`Удалить шаг «${step.title}»?`)) { const n = [...course.modules]; n[mIdx].lessons[lIdx].steps.splice(sIdx, 1); setCourse({ ...course, modules: n }); } }}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
 
-                    {step.type === 'quiz' && (
-                      <QuizEditor
-                        quiz={step.quiz}
-                        onChange={(newQ) => { const n = [...course.modules]; (n[mIdx].lessons[lIdx].steps[sIdx] as any).quiz = newQ; setCourse({ ...course, modules: n }); }}
-                      />
+                        {step.type === 'theory' && (
+                          <div className="space-y-2">
+                            {step.blocks.map((b, bIdx) => (
+                              <BlockEditor
+                                key={bIdx}
+                                block={b}
+                                onChange={(newB) => { const n = [...course.modules]; (n[mIdx].lessons[lIdx].steps[sIdx] as any).blocks[bIdx] = newB; setCourse({ ...course, modules: n }); }}
+                                onDelete={() => { if (confirm('Удалить этот блок?')) { const n = [...course.modules]; (n[mIdx].lessons[lIdx].steps[sIdx] as any).blocks.splice(bIdx, 1); setCourse({ ...course, modules: n }); } }}
+                              />
+                            ))}
+                            <div className="flex flex-wrap gap-1">
+                              {(['p', 'h3', 'list', 'code', 'note', 'table'] as const).map((t) => (
+                                <Button key={t} variant="outline" size="sm" onClick={() => {
+                                  const newBlock: any = { type: t };
+                                  if (t === 'p' || t === 'h3' || t === 'note') newBlock.text = '';
+                                  else if (t === 'list') newBlock.items = [''];
+                                  else if (t === 'code') { newBlock.lang = 'text'; newBlock.code = ''; }
+                                  else if (t === 'table') { newBlock.head = ['A', 'B']; newBlock.rows = [['', '']]; }
+                                  const n = [...course.modules];
+                                  (n[mIdx].lessons[lIdx].steps[sIdx] as any).blocks.push(newBlock);
+                                  setCourse({ ...course, modules: n });
+                                }}>+ {t}</Button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {step.type === 'quiz' && (
+                          <QuizEditor
+                            quiz={step.quiz}
+                            onChange={(newQ) => { const n = [...course.modules]; (n[mIdx].lessons[lIdx].steps[sIdx] as any).quiz = newQ; setCourse({ ...course, modules: n }); }}
+                          />
+                        )}
+                      </>
                     )}
                   </div>
                 ))}
 
-                <div className="flex gap-2 mt-2">
-                  <Button variant="outline" size="sm" onClick={() => addStep(mIdx, lIdx, 'theory')}>+ Теория</Button>
-                  <Button variant="outline" size="sm" onClick={() => addStep(mIdx, lIdx, 'quiz')}>+ Тест</Button>
-                </div>
+                {!previewMode && (
+                  <div className="flex gap-2 mt-2">
+                    <Button variant="outline" size="sm" onClick={() => addStep(mIdx, lIdx, 'theory')}>+ Теория</Button>
+                    <Button variant="outline" size="sm" onClick={() => addStep(mIdx, lIdx, 'quiz')}>+ Тест</Button>
+                  </div>
+                )}
               </div>
             ))}
-            <Button variant="secondary" size="sm" onClick={() => addLesson(mIdx)}>+ Добавить урок</Button>
+            {!previewMode && <Button variant="secondary" size="sm" onClick={() => addLesson(mIdx)}>+ Добавить урок</Button>}
           </div>
         ))}
-        <Button onClick={addModule} className="w-full gap-2" variant="outline"><Plus className="h-4 w-4" /> Добавить модуль</Button>
+        {!previewMode && <Button onClick={addModule} className="w-full gap-2" variant="outline"><Plus className="h-4 w-4" /> Добавить модуль</Button>}
       </main>
     </div>
   );
