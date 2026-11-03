@@ -297,6 +297,9 @@ icon: z.enum(
     'network',
     'cicd', 
     'gitops',
+    'terraform',
+    'ansible',
+    'kafka', 
     'sql',
     'sql-advanced',
     'design',
@@ -305,7 +308,7 @@ icon: z.enum(
   ],
   {
     message:
-      'icon должен быть: flask | docker | helm | helm-advanced | bot | python | python-advanced | git | linux | network | cicd | gitops | sql | sql-advanced | design | qa-automation | qa-senior',
+      'icon должен быть: flask | docker | helm | helm-advanced | bot | python | python-advanced | git | ansible | kafka | linux | network | cicd | gitops | terraform | sql | sql-advanced | design | qa-automation | qa-senior',
   },
 ),
     modules: z.array(moduleSchema).min(1, 'course: нужен хотя бы 1 модуль'),

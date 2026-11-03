@@ -332,5 +332,34 @@ case 'python':
           <StarBadge accent={accent} />
         </svg>
       );
+
+case 'terraform':
+  return (
+    <svg viewBox="0 0 48 48" className={cls} aria-hidden="true">
+      <rect x="4" y="4" width="40" height="40" rx="10" fill={accent} />
+      <g transform="translate(6 6) scale(1.5)" fill="#fff">
+        <path d="M21 5.4V11.8L15.4 15V8.7L21 5.4M14.8 8.7V15L9.2 11.8V5.4L14.8 8.7M14.8 15.7V22.1L9.2 18.9V12.5L14.8 15.7M8.6 5.1V11.5L3 8.3V1.9L8.6 5.1Z" />
+      </g>
+    </svg>
+  );
+
+  case 'ansible':
+  return (
+    <svg viewBox="0 0 48 48" className={cls} aria-hidden="true">
+      <rect x="4" y="4" width="40" height="40" rx="10" fill={accent} />
+      <g transform="translate(6 6) scale(1.5)" fill="#fff">
+        <path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2m0 2a8 8 0 0 1 8 8 8 8 0 0 1-8 8 8 8 0 0 1-8-8 8 8 0 0 1 8-8m0 2.5L7 17.5h2.5L12 12l2.5 5.5H17z" />
+      </g>
+    </svg>
+  );
+  case 'kafka':
+  return (
+    <svg viewBox="0 0 48 48" className={cls} aria-hidden="true">
+      <rect x="4" y="4" width="40" height="40" rx="10" fill={accent} />
+      <g transform="translate(6 6) scale(1.5)" fill="#fff">
+        <path d="M9.5 3.5A2.5 2.5 0 0 1 7 6a2.5 2.5 0 0 1-2.5-2.5A2.5 2.5 0 0 1 7 1a2.5 2.5 0 0 1 2.5 2.5m0 17A2.5 2.5 0 0 1 7 23a2.5 2.5 0 0 1-2.5-2.5A2.5 2.5 0 0 1 7 18a2.5 2.5 0 0 1 2.5 2.5M22 12a2.5 2.5 0 0 1-2.5 2.5A2.5 2.5 0 0 1 17 12a2.5 2.5 0 0 1 2.5-2.5A2.5 2.5 0 0 1 22 12M10 12a3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3Z" />
+      </g>
+    </svg>
+  );
   }
 }

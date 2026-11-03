@@ -1,6 +1,6 @@
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router';
-import { Bookmark, BookOpenCheck, WifiOff } from 'lucide-react';
+import { Bookmark, BookOpenCheck, WifiOff, ChevronDown } from 'lucide-react';
 import { courses, courseStats, getCourse, findLesson } from '@/data';
 import { useProgress } from '@/lib/progress';
 import { Header } from '@/components/Header';
@@ -12,6 +12,8 @@ import { ProgressExport } from '@/components/ProgressExport';
 import { Button } from '@/components/ui/button';
 import { ReportError } from '@/components/ReportError';
 import { Skeleton } from '@/components/ui/skeleton';
+import { categories, courseCategory } from '@/data/categories';
+import { cn } from '@/lib/utils';
 
 const ALL_TAGS = ['Все', ...Array.from(new Set(courses.flatMap((c) => c.tags)))];
 
@@ -76,7 +78,41 @@ export default function Home() {
     });
   }, [deferredQuery, tag]);
 
+const [openCats, setOpenCats] = useState<Record<string, boolean>>({});
+const isFiltering = query.trim().length > 0 || tag !== 'Все';
+
+const grouped = useMemo(() => {
+  const map = new Map<string, typeof filtered>();
+  for (const c of filtered) {
+    const cat = courseCategory[c.slug] ?? 'other';
+    if (!map.has(cat)) map.set(cat, []);
+    map.get(cat)!.push(c);
+  }
+  return map;
+}, [filtered]);
+
+const allExpanded = useMemo(
+  () => categories.every((c) => openCats[c.id]),
+  [openCats],
+);
+
+const toggleCat = (id: string) => {
+  setOpenCats((s) => ({ ...s, [id]: !s[id] }));
+};
+
+const toggleAll = () => {
+  if (allExpanded) {
+    setOpenCats({});
+  } else {
+    const next: Record<string, boolean> = {};
+    for (const c of categories) next[c.id] = true;
+    setOpenCats(next);
+  }
+};
+
   const totalSteps = useMemo(() => courses.reduce((a, c) => a + courseStats(c).steps, 0), []);
+
+  
 
   return (
     <div className="min-h-dvh">
@@ -177,65 +213,133 @@ export default function Home() {
         </section>
 
         {/* Каталог */}
-        <section id="catalog" className="mt-12 w-full scroll-mt-20">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xl font-bold tracking-tight">Каталог курсов</h2>
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Фильтр по темам">
-              {ALL_TAGS.map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setTag(t)}
-                  aria-pressed={tag === t}
-                  className={`min-h-[36px] rounded-full border px-3.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                    tag === t
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-border bg-card text-foreground/70 hover:border-primary/40 hover:text-foreground'
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-          </div>
+<section id="catalog" className="mt-12 w-full scroll-mt-20">
+  <div className="flex flex-wrap items-center justify-between gap-3">
+    <h2 className="text-xl font-bold tracking-tight">Каталог курсов</h2>
+    <div className="flex flex-wrap gap-2" role="group" aria-label="Фильтр по темам">
+      {ALL_TAGS.map((t) => (
+        <button
+          key={t}
+          type="button"
+          onClick={() => setTag(t)}
+          aria-pressed={tag === t}
+          className={`min-h-[36px] rounded-full border px-3.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+            tag === t
+              ? 'border-primary bg-primary text-primary-foreground'
+              : 'border-border bg-card text-foreground/70 hover:border-primary/40 hover:text-foreground'
+          }`}
+        >
+          {t}
+        </button>
+      ))}
+    </div>
+  </div>
 
-          <div aria-live="polite" aria-atomic="true" className="sr-only">
-            Найдено {filtered.length} {coursesWord(filtered.length)}
-          </div>
+  <div aria-live="polite" aria-atomic="true" className="sr-only">
+    Найдено {filtered.length} {coursesWord(filtered.length)}
+  </div>
 
-          {isLoading ? (
-            <div className="mt-5 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="flex flex-col rounded-xl border border-border bg-card p-5 space-y-4">
-                  <div className="flex justify-between">
-                    <Skeleton className="h-12 w-12 rounded-xl" />
-                    <Skeleton className="h-5 w-16 rounded-full" />
-                  </div>
-                  <div className="space-y-2">
-                    <Skeleton className="h-5 w-3/4" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-2/3" />
-                  </div>
-                  <div className="mt-auto pt-4 space-y-2">
-                    <Skeleton className="h-3 w-1/2" />
-                    <Skeleton className="h-1.5 w-full rounded-full" />
-                  </div>
+  {isLoading ? (
+    <div className="mt-5 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {[1, 2, 3, 4, 5, 6].map((i) => (
+        <div key={i} className="flex flex-col rounded-xl border border-border bg-card p-5 space-y-4">
+          <div className="flex justify-between">
+            <Skeleton className="h-12 w-12 rounded-xl" />
+            <Skeleton className="h-5 w-16 rounded-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-3/4" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
+          <div className="mt-auto pt-4 space-y-2">
+            <Skeleton className="h-3 w-1/2" />
+            <Skeleton className="h-1.5 w-full rounded-full" />
+          </div>
+        </div>
+      ))}
+    </div>
+  ) : filtered.length === 0 ? (
+    <div className="mt-8 rounded-xl border border-dashed border-border bg-card p-10 text-center">
+      <p className="font-semibold">Ничего не найдено</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Попробуйте другой запрос или сбросьте фильтр по теме.
+      </p>
+    </div>
+  ) : (
+    <>
+      {!isFiltering && (
+        <div className="mt-4 flex justify-end">
+          <button
+            type="button"
+            onClick={toggleAll}
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1"
+          >
+            {allExpanded ? 'Свернуть все' : 'Развернуть все'}
+          </button>
+        </div>
+      )}
+
+      <div className="mt-3 space-y-3">
+        {categories.map((cat) => {
+          const list = grouped.get(cat.id);
+          if (!list || list.length === 0) return null;
+          const isOpen = isFiltering ? true : (openCats[cat.id] ?? false);
+          return (
+            <div
+              key={cat.id}
+              className="overflow-hidden rounded-xl border border-border bg-card"
+            >
+              <button
+                type="button"
+                onClick={() => toggleCat(cat.id)}
+                aria-expanded={isOpen}
+                className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+              >
+                <span className="flex-1">
+                  <span className="block font-bold tracking-tight">{cat.title}</span>
+                  <span className="mt-0.5 block text-xs text-muted-foreground">
+                    {cat.description}
+                  </span>
+                </span>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {list.length} {coursesWord(list.length)}
+                </span>
+                <ChevronDown
+                  className={cn(
+                    'h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200',
+                    !isOpen && '-rotate-90',
+                  )}
+                  aria-hidden="true"
+                />
+              </button>
+              {isOpen && (
+                <div className="grid w-full grid-cols-1 gap-4 border-t border-border p-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {list.map((c) => <CourseCard key={c.slug} course={c} />)}
                 </div>
-              ))}
+              )}
             </div>
-          ) : filtered.length === 0 ? (
-            <div className="mt-8 rounded-xl border border-dashed border-border bg-card p-10 text-center">
-              <p className="font-semibold">Ничего не найдено</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Попробуйте другой запрос или сбросьте фильтр по теме.
-              </p>
-            </div>
-          ) : (
-            <div className="mt-5 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((c) => <CourseCard key={c.slug} course={c} />)}
-            </div>
-          )}
-        </section>
+          );
+        })}
+      </div>
+
+      {/* Кастомные курсы — вне категорий, всегда видны, если есть */}
+      {grouped.get('other') && (
+        <div className="mt-6">
+          <div className="mb-3">
+            <h3 className="text-lg font-bold tracking-tight">Мои курсы</h3>
+            <p className="text-sm text-muted-foreground">Созданные вами</p>
+          </div>
+          <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {grouped.get('other')!.map((c) => (
+              <CourseCard key={c.slug} course={c} />
+            ))}
+          </div>
+        </div>
+      )}
+    </>
+  )}
+</section>
         <ProgressExport />
       </main>
 

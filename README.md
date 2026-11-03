@@ -5,7 +5,7 @@
 [![PWA Ready](https://img.shields.io/badge/PWA-офлайн%20режим-blueviolet)](https://web.dev/progressive-web-apps/)
 
 **Офлайн-учебник по инженерным практикам.**  
-11 курсов, 261 урок: Git, Linux, сети, SQL, Python, тестирование, Docker, Kubernetes, CI/CD, ИИ-агенты, проектирование.  
+21 курс, 370+ уроков: Git, Linux, сети, SQL, PostgreSQL, Python, тестирование, Docker, Kubernetes, Terraform, Ansible, Kafka, CI/CD, GitOps, ИИ-агенты, проектирование.  
 Работает полностью офлайн (PWA). Прогресс хранится в браузере. Экспорт/импорт прогресса — через JSON.
 
 **Некоммерческий проект.** Любой желающий может пользоваться приложением, получить исходники, форкнуть и адаптировать под свои задачи.
@@ -15,6 +15,7 @@
 ## 📖 Содержание
 
 - [✨ Возможности](#-возможности)
+- [📚 Каталог курсов](#-каталог-курсов)
 - [🚀 Быстрый старт](#-быстрый-старт)
   - [Требования](#требования)
   - [Установка](#установка)
@@ -34,9 +35,11 @@
 
 ## ✨ Возможности
 
-- **11 курсов, 261 урок** — от новичка до Senior в QA и Middle в DevOps/Backend/AI.
+- **21 курс, 370+ уроков** — от новичка до Senior в QA, Middle в DevOps/Backend/AI.
+- **Категории курсов на главной** — «Фундамент», «Данные», «Языки», «QA», «Контейнеры», «IaC», «CI/CD и доставка», «AI», «Архитектура». Сворачиваются, чтобы каталог не превращался в стену карточек.
+- **Треки обучения** — готовые маршруты под роль: QA с нуля, QA Automation, QA Senior, DevOps, Backend Python, AI Engineer.
 - **10 типов заданий**: выбор ответа (single/multiple), текстовый ввод (fill), сопоставление (matching), сортировка (sorting), интерактивные таблицы (table), числовой ответ (number), заполнение пропусков (cloze) и написание кода (code).
-- **Богатые блоки контента**: текст (Markdown), код с подсветкой синтаксиса, **изображения** (скриншоты, схемы в PNG/SVG) и **диаграммы Mermaid** (`graph`, `sequenceDiagram`, `gitGraph`, `stateDiagram-v2` и др.) — прямо в шагах урока.
+- **Богатые блоки контента**: текст (Markdown), код с подсветкой синтаксиса, **изображения** (скриншоты, схемы в PNG/SVG) и **диаграммы Mermaid** (`graph`, `sequenceDiagram`, `gitGraph`, `stateDiagram-v2`, `erDiagram` и др.) — прямо в шагах урока.
 - **Визуальный редактор контента (`/editor`)** — позволяет создавать новые курсы и редактировать существующие прямо в браузере, без пересборки проекта. Поддерживает все типы блоков (включая `image` и `mermaid`) и все типы заданий.
 - **Полнотекстовый поиск (Ctrl+K)** — ищет не только по названиям курсов, но и по всему содержимому уроков, коду и вариантам ответов.
 - **Интервальное повторение (Spaced Repetition)** — алгоритм SM-2, как в Anki. Приложение само напоминает, какие вопросы пора повторить, чтобы знания не выветривались.
@@ -46,6 +49,51 @@
 - **Инлайн-код** — выделение `` `команд` `` в тексте красивыми плашками.
 - **Экспорт/импорт прогресса** — JSON-файл для переноса обучения на другое устройство.
 - **Офлайн-режим (PWA)** — приложение устанавливается на телефон или десктоп и работает без интернета.
+
+---
+
+## 📚 Каталог курсов
+
+Курсы сгруппированы по категориям на главной странице.
+
+### Фундамент
+- **Git и командная работа** — версионирование, ветки, PR, rebase, reset, reflog, hooks, worktree, bisect, submodules/subtree, модели ветвления.
+- **Linux: с нуля до уверенного пользователя** — терминал, FHS, права, процессы, systemd, ssh, bash-скрипты, cron.
+- **Сети и HTTP** — OSI, TCP/IP, DNS, HTTP/2, HTTP/3, TLS, WebSocket, диагностика.
+
+### Данные
+- **SQL: основы** — SELECT, JOIN, агрегаты, строки, даты, UNION.
+- **SQL: продвинуто** — подзапросы, CTE, индексы, транзакции, EXPLAIN, оконные функции, JSONB, миграции.
+- **PostgreSQL: глубоко** — MVCC, WAL, VACUUM, EXPLAIN с BUFFERS, индексы GiST/GIN/BRIN, партиционирование, репликация, PITR, PgBouncer, pgvector.
+
+### Языки
+- **Python: основы** — синтаксис, коллекции, функции, файлы, ошибки.
+- **Python: продвинуто** — ООП, декораторы, генераторы, async, типизация, GIL, threading vs multiprocessing.
+
+### QA
+- **QA: основы** — ISTQB, тест-дизайн, баг-репорты, первый автотест на pytest.
+- **QA Automation** — pytest, Playwright, API, SQL, нагрузка, безопасность, мобильное тестирование, a11y.
+- **QA Senior** — стратегия, DORA-метрики, архитектура тестов, observability, менторство.
+
+### Контейнеры
+- **Docker с нуля** — образы, Dockerfile, volumes, compose, buildx, multi-arch, безопасность.
+- **Kubernetes: основы** — поды, деплойменты, сервисы, config/secret, probes, контроллеры.
+- **Kubernetes: продвинуто** — Ingress, NetworkPolicy, PV/PVC, RBAC, securityContext, Helm, Kustomize.
+
+### IaC и автоматизация
+- **Terraform: инфраструктура как код** — HCL, state, модули, remote backend, CI/CD, drift detection.
+- **Ansible: конфигурация и автоматизация** — inventory, playbooks, роли, Jinja2, vault, collections, molecule.
+
+### CI/CD и доставка
+- **CI/CD: основы** — GitHub Actions, GitLab CI, Jenkins, тесты и Docker в пайплайне.
+- **GitOps и деплой** — ArgoCD, Flux, стратегии деплоя, feature flags, supply chain, secrets.
+- **Kafka: event streaming** — topics, partitions, consumer groups, producer, транзакции, экосистема, Strimzi.
+
+### AI
+- **Настройка ИИ-агентов** — промпты, function calling, RAG, безопасность, MCP, LangChain/LangGraph.
+
+### Архитектура
+- **Проектирование и паттерны** — SOLID, GoF, Repository, монолит vs микросервисы, CQRS.
 
 ---
 
@@ -98,15 +146,33 @@ DevAcademy/
 ├── public/                 # Статические файлы (иконки, манифест PWA)
 │   └── images/             # Изображения для уроков (скриншоты, схемы)
 ├── src/
-│   ├── assets/            # Изображения, шрифты (используются в UI)
-│   ├── components/        # Переиспользуемые UI-компоненты
-│   ├── courses/           # Данные курсов и уроков (JSON/TS)
-│   ├── hooks/             # Пользовательские хуки React
-│   ├── pages/             # Страницы приложения (роутинг)
-│   ├── store/             # Управление состоянием (прогресс, заметки)
-│   ├── utils/             # Вспомогательные функции (SM-2, поиск и т.д.)
-│   ├── App.tsx            # Корневой компонент
-│   └── main.tsx           # Точка входа
+│   ├── components/         # Переиспользуемые UI-компоненты
+│   │   ├── CourseCard.tsx
+│   │   ├── CourseIcon.tsx  # Иконки курсов (svg по slug)
+│   │   └── ...
+│   ├── data/               # Данные курсов и уроков
+│   │   ├── index.ts        # Реестр курсов
+│   │   ├── types.ts        # Типы (Course, Lesson, Step, Quiz)
+│   │   ├── schemas.ts      # Zod-схемы для валидации
+│   │   ├── validate.ts     # validateAllCourses()
+│   │   ├── categories.ts   # Категории для главной
+│   │   ├── tracks.ts       # Треки обучения
+│   │   └── *.ts            # Файлы курсов (git, linux, sql-basics, ...)
+│   ├── lib/                # Хуки и утилиты
+│   │   ├── progress.tsx    # Контекст прогресса (localStorage)
+│   │   ├── srs.ts          # SM-2 для повторения
+│   │   ├── search.ts       # Полнотекстовый поиск
+│   │   ├── progress-io.ts  # Экспорт/импорт прогресса
+│   │   └── ...
+│   ├── pages/              # Страницы приложения (роутинг)
+│   │   ├── Home.tsx
+│   │   ├── CoursePage.tsx
+│   │   ├── LessonPage.tsx
+│   │   ├── TrackPage.tsx
+│   │   ├── ReviewPage.tsx
+│   │   └── EditorPage.tsx
+│   ├── App.tsx             # Корневой компонент
+│   └── main.tsx            # Точка входа
 ├── package.json
 ├── vite.config.ts
 ├── tailwind.config.js
@@ -122,12 +188,12 @@ DevAcademy/
 По адресу `/editor` доступен встроенный редактор, который позволяет:
 
 - Создавать новые курсы и уроки без изменения кода.
-- Редактировать существующие уроки.
+- Редактировать существующие уроки (включая встроенные — сохраняется локальная копия).
 - Использовать все 10 типов заданий.
 - Добавлять блоки **`image`** (картинки из папки `images/`) и **`mermaid`** (диаграммы) наравне с текстом и кодом.
 - Предпросматривать результат в реальном времени.
 
-Это особенно удобно для авторов контента, которые не хотят разбираться в структуре проекта.
+Это особенно удобно для авторов контента, которые не хотят разбираться в структуре проекта. Созданные курсы хранятся в `localStorage` и не затрагивают исходники.
 
 ---
 
@@ -138,29 +204,34 @@ DevAcademy/
 - **Текст** — Markdown, с поддержкой инлайн-кода.
 - **Код** — с подсветкой синтаксиса (Prism React Renderer).
 - **Изображение** (`image`) — картинка или скриншот из папки `images/`.
-- **Диаграмма** (`mermaid`) — схема на языке Mermaid (`graph`, `sequenceDiagram`, `gitGraph`, `stateDiagram-v2` и др.).
+- **Диаграмма** (`mermaid`) — схема на языке Mermaid (`graph`, `sequenceDiagram`, `gitGraph`, `stateDiagram-v2`, `erDiagram` и др.).
 - **Задание** — один из 10 типов (single/multiple/fill/matching/sorting/table/number/cloze/code).
 
-Данные уроков хранятся в структурированном виде (JSON или TypeScript-файлы) в директории `src/courses/`. Схемы блоков описаны в `types.ts` и валидируются через `schemas.ts` (Zod).
+Данные уроков хранятся в структурированном виде (TypeScript-файлы) в директории `src/data/`. Схемы блоков описаны в `types.ts` и валидируются через `schemas.ts` (Zod). Каждый курс проверяется автоматически в тестах (`npm test`).
 
 ### Где уже используются диаграммы Mermaid
 
 | Курс | Урок | Шаг | Что показывает |
 |------|------|-----|----------------|
 | Docker | `dk-l1` «Что такое контейнер» | `dk-l1-s1` | `graph TD` — VM vs Docker (Hypervisor/Guest OS vs Docker Engine/Host OS) |
-| Kubernetes | `k8-l1` «Как устроен кластер» | `k8-l1-s1` | `graph` + `subgraph` — Control Plane (API Server, etcd, Scheduler) и Worker Nodes (Kubelet, Pods) |
+| Kubernetes | `k8-l1` «Как устроен кластер» | `k8-l1-s1` | `graph` + `subgraph` — Control Plane (API Server, etcd, Scheduler) и Worker Nodes |
 | Сети / HTTP | `nw-l4` «TCP и UDP» | `nw-l4-s1` | `sequenceDiagram` — 3-way handshake (SYN → SYN-ACK → ACK) |
 | Git | `git-l4` «Ветки: branch, switch, merge» | `git-l4-s2` | `gitGraph` — fast-forward и three-way merge |
+| PostgreSQL | `pg-l2` «MVCC» | `pg-l2-s1` | `graph LR` — версии строки (xmin/xmax) до и после VACUUM |
+| Kafka | `kf-l9` «Транзакции и exactly-once» | `kf-l9-s1` | `sequenceDiagram` — commit / abort транзакции через Transaction Coordinator |
+| Terraform | `tf-l2` «Первый запуск» | `tf-l2-s2` | `graph LR` — init → plan → apply → state |
+| Ansible | `ans-l5` «handlers» | `ans-l5-s1` | `sequenceDiagram` — handler запускается только при `changed` |
 
 ---
 
 ## ➕ Как добавить урок в код
 
-1. Найдите директорию нужного курса в `src/courses/`.
-2. Создайте новый файл урока (например, `lesson-12.json` или `.ts` в зависимости от формата).
-3. Заполните его согласно схеме, используемой в существующих уроках.
-4. Добавьте ссылку на новый урок в файл курса (обычно `index.ts` или `course.json`).
-5. Запустите `npm run dev` и проверьте отображение.
+1. Найдите файл нужного курса в `src/data/` (например, `git.ts`, `sql-basics.ts`).
+2. В нужном модуле (`modules[]`) и уроке (`lessons[]`) добавьте новый объект `Lesson` со `steps`.
+3. Каждый шаг — `theory` (с блоками) или `quiz` (с одним из 10 типов).
+4. Убедитесь, что все `id` уникальны в пределах урока (шаги), модуля (уроки) и курса.
+5. Запустите `npm test` — `validateAllCourses` проверит схемы, уникальность и корректность quiz-полей.
+6. Запустите `npm run dev` и проверьте отображение.
 
 > Если вы не хотите работать с кодом, используйте **визуальный редактор** по адресу `/editor`.
 
@@ -169,7 +240,8 @@ DevAcademy/
 ```json
 {
   "type": "mermaid",
-  "content": "graph TD\n  A[Клиент] --> B[Сервер]\n  B --> C[(БД)]"
+  "code": "graph TD\n  A[Клиент] --> B[Сервер]\n  B --> C[(БД)]",
+  "caption": "Схема потока запроса"
 }
 ```
 
@@ -184,17 +256,30 @@ DevAcademy/
 }
 ```
 
+### Пример блока `code`
+
+```json
+{
+  "type": "code",
+  "lang": "bash",
+  "code": "docker run -d -p 8080:80 nginx",
+  "caption": "Запуск nginx"
+}
+```
+
 ---
 
 ## 📚 Как добавить курс в код
 
-1. Создайте новую директорию в `src/courses/` (например, `my-new-course/`).
-2. Добавьте файл с метаданными курса (название, описание, иконка, порядок).
-3. Наполните курс уроками (см. предыдущий раздел).
-4. Зарегистрируйте курс в общем реестре курсов (обычно `src/courses/index.ts`).
-5. Перезапустите dev-сервер.
-
-После этого курс появится в списке на главной странице.
+1. Создайте новый файл в `src/data/` (например, `my-new-course.ts`) с `export const myNewCourse: Course = { ... }`.
+2. Заполните метаданные: `slug` (уникальный, `^[a-z0-9-]+$`), `title`, `subtitle`, `description`, `level` (`Новичок` | `Средний` | `Продвинутый`), `tags`, `accent` (hex `#RRGGBB`), `icon` (из `CourseIcon`), `outcomes`, `requirements`, `modules`.
+3. Добавьте уроки и шаги согласно схемам (`types.ts`).
+4. Зарегистрируйте курс в `src/data/index.ts`: импорт + запись в `baseCourses`.
+5. Если нужна иконка — добавьте `case` в `CourseIcon.tsx` и slug в `CourseIcon` / `schemas.ts` (enum).
+6. Добавьте категорию в `src/data/categories.ts` (маппинг `slug → category`), чтобы курс появился в нужной группе на главной.
+7. Опционально — добавьте в трек в `src/data/tracks.ts`.
+8. Запустите `npm test` — валидация должна пройти.
+9. Перезапустите dev-сервер. Курс появится на главной.
 
 ---
 

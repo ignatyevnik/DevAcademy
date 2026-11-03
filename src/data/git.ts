@@ -3,10 +3,10 @@ import type { Course } from './types';
 export const gitCourse: Course = {
   slug: 'git-basics',
   title: 'Git и командная работа',
-  subtitle: 'Версионирование, ветки, PR и разрешение конфликтов — база любого инженера',
+  subtitle: 'Версионирование, ветки, PR, хуки, bisect, submodules и модели ветвления',
   description:
-    'Курс для тех, кто хочет уверенно работать с Git в команде. Разберём три состояния, ветки, слияния и конфликты, удалённые репозитории и pull request, а также продвинутые приёмы: rebase, reset, revert, stash, reflog. Всё на конкретных примерах — от первого commit до спасения потерянных коммитов.',
-  level: 'Новичок',
+    'Курс для тех, кто хочет уверенно работать с Git в команде. Разберём три состояния, ветки, слияния и конфликты, удалённые репозитории и pull request, а также продвинутые приёмы: rebase, reset, revert, stash, reflog, git hooks, worktree, bisect, signing, submodules/subtree и модели ветвления. Всё на конкретных примерах — от первого commit до спасения потерянных коммитов.',
+  level: 'Средний',
   tags: ['Git', 'VCS', 'Командная работа'],
   accent: '#f05032',
   icon: 'git',
@@ -16,9 +16,16 @@ export const gitCourse: Course = {
     'Создавать ветки, сливать изменения, разрешать конфликты',
     'Работать с удалённым репозиторием и pull request',
     'Использовать rebase, reset, revert и reflog осознанно',
+    'Автоматизировать проверки через git hooks (pre-commit, commit-msg, pre-push)',
+    'Применять git worktree, bisect и signing в ежедневной работе',
+    'Работать с вложенными репозиториями (submodules, subtree)',
+    'Выбирать модель ветвления: git flow, trunk-based, GitHub flow',
   ],
   requirements: ['Уверенная работа в командной строке', 'Установленный Git (git-scm.com)'],
   modules: [
+    // ─────────────────────────────────────────────
+    // m1 — Основы Git
+    // ─────────────────────────────────────────────
     {
       id: 'git-m1',
       title: 'Основы Git',
@@ -70,16 +77,7 @@ export const gitCourse: Course = {
                   type: 'code',
                   lang: 'bash',
                   caption: 'Жизненный цикл изменения',
-                  code: `# 1. Рабочая директория — изменили файл
-echo "print('hello')" > app.py
-
-# 2. Staging — подготовили к коммиту
-git add app.py
-
-# 3. Repository — зафиксировали
-git commit -m "Add hello world"
-
-# Посмотреть, что где: git status покажет все три состояния`,
+                  code: `# 1. Рабочая директория — изменили файл\necho "print('hello')" > app.py\n\n# 2. Staging — подготовили к коммиту\ngit add app.py\n\n# 3. Repository — зафиксировали\ngit commit -m "Add hello world"\n\n# Посмотреть, что где: git status покажет все три состояния`,
                 },
                 {
                   type: 'note',
@@ -121,25 +119,7 @@ git commit -m "Add hello world"
                   type: 'code',
                   lang: 'bash',
                   caption: 'Создание репозитория с нуля',
-                  code: `# Инициализация — создаёт папку .git в текущей директории
-git init
-
-# Настройка автора (один раз на машину)
-git config --global user.name "Анна Иванова"
-git config --global user.email "anna@example.com"
-
-# Проверить, что происходит
-git status
-
-# Добавить все файлы в staging
-git add .
-
-# Зафиксировать
-git commit -m "Initial commit"
-
-# Посмотреть историю
-git log
-git log --oneline --graph`,
+                  code: `# Инициализация — создаёт папку .git в текущей директории\ngit init\n\n# Настройка автора (один раз на машину)\ngit config --global user.name "Анна Иванова"\ngit config --global user.email "anna@example.com"\n\n# Проверить, что происходит\ngit status\n\n# Добавить все файлы в staging\ngit add .\n\n# Зафиксировать\ngit commit -m "Initial commit"\n\n# Посмотреть историю\ngit log\ngit log --oneline --graph`,
                 },
                 {
                   type: 'list',
@@ -170,25 +150,7 @@ git log --oneline --graph`,
                   type: 'code',
                   lang: 'text',
                   caption: '.gitignore',
-                  code: `# Зависимости
-node_modules/
-venv/
-__pycache__/
-
-# Артефакты сборки
-dist/
-build/
-*.pyc
-
-# Локальные настройки и секреты
-.env
-.env.local
-*.log
-
-# IDE
-.vscode/
-.idea/
-.DS_Store`,
+                  code: `# Зависимости\nnode_modules/\nvenv/\n__pycache__/\n\n# Артефакты сборки\ndist/\nbuild/\n*.pyc\n\n# Локальные настройки и секреты\n.env\n.env.local\n*.log\n\n# IDE\n.vscode/\n.idea/\n.DS_Store`,
                 },
                 {
                   type: 'note',
@@ -262,6 +224,9 @@ build/
         },
       ],
     },
+    // ─────────────────────────────────────────────
+    // m2 — Ветки и команда
+    // ─────────────────────────────────────────────
     {
       id: 'git-m2',
       title: 'Ветки и команда',
@@ -284,25 +249,7 @@ build/
                   type: 'code',
                   lang: 'bash',
                   caption: 'Работа с ветками',
-                  code: `# Создать ветку (но не переключаться)
-git branch feature/login
-
-# Создать и сразу переключиться
-git switch -c feature/login
-# (или старое: git checkout -b feature/login)
-
-# Посмотреть все ветки
-git branch
-
-# Переключиться на существующую
-git switch main
-
-# Слить ветку feature/login в текущую (main)
-git switch main
-git merge feature/login
-
-# Удалить слитую ветку
-git branch -d feature/login`,
+                  code: `# Создать ветку (но не переключаться)\ngit branch feature/login\n\n# Создать и сразу переключиться\ngit switch -c feature/login\n# (или старое: git checkout -b feature/login)\n\n# Посмотреть все ветки\ngit branch\n\n# Переключиться на существующую\ngit switch main\n\n# Слить ветку feature/login в текущую (main)\ngit switch main\ngit merge feature/login\n\n# Удалить слитую ветку\ngit branch -d feature/login`,
                 },
                 {
                   type: 'note',
@@ -332,22 +279,7 @@ git branch -d feature/login`,
                   type: 'code',
                   lang: 'text',
                   caption: 'Fast-forward vs three-way',
-                  code: `Fast-forward:
-  main:    A ← B
-                 ↖
-  feature:        C ← D
-
-  После merge: main: A ← B ← C ← D (указатель сдвинулся)
-
-Three-way merge:
-  main:    A ← B ← E
-                 ↖
-  feature:        C ← D
-
-  После merge: создаётся M (merge-commit) с родителями E и D
-  main:    A ← B ← E ← M
-                 ↖    ↙
-                  C ← D`,
+                  code: `Fast-forward:\n  main:    A ← B\n                 ↖\n  feature:        C ← D\n\n  После merge: main: A ← B ← C ← D (указатель сдвинулся)\n\nThree-way merge:\n  main:    A ← B ← E\n                 ↖\n  feature:        C ← D\n\n  После merge: создаётся M (merge-commit) с родителями E и D\n  main:    A ← B ← E ← M\n                 ↖    ↙\n                  C ← D`,
                 },
                 {
                   type: 'mermaid',
@@ -360,7 +292,7 @@ Three-way merge:
                     commit id: "C"
                     commit id: "D"
                     checkout main
-                    merge feature`
+                    merge feature`,
                 },
                 {
                   type: 'note',
@@ -406,28 +338,13 @@ Three-way merge:
                   type: 'code',
                   lang: 'text',
                   caption: 'Как выглядит конфликт в файле',
-                  code: `<<<<<<< HEAD
-print("Hello, Anna")
-=======
-print("Hi, Anna")
->>>>>>> feature/greeting
-
-# <<<<<<< HEAD — текущая ветка (куда сливаем)
-# ======= — разделитель
-# >>>>>>> feature/greeting — сливаемая ветка
-# Надо оставить одну версию (или объединить) и удалить все маркеры`,
+                  code: `<<<<<<< HEAD\nprint("Hello, Anna")\n=======\nprint("Hi, Anna")\n>>>>>>> feature/greeting\n\n# <<<<<<< HEAD — текущая ветка (куда сливаем)\n# ======= — разделитель\n# >>>>>>> feature/greeting — сливаемая ветка\n# Надо оставить одну версию (или объединить) и удалить все маркеры`,
                 },
                 {
                   type: 'code',
                   lang: 'bash',
                   caption: 'Как Git сообщает о конфликте',
-                  code: `git merge feature/greeting
-# Auto-merging app.py
-# CONFLICT (content): Merge conflict in app.py
-# Automatic merge failed; fix conflicts and then commit the result.
-
-git status
-# both modified:   app.py    ← «both» — конфликт`,
+                  code: `git merge feature/greeting\n# Auto-merging app.py\n# CONFLICT (content): Merge conflict in app.py\n# Automatic merge failed; fix conflicts and then commit the result.\n\ngit status\n# both modified:   app.py    ← «both» — конфликт`,
                 },
               ],
             },
@@ -440,17 +357,7 @@ git status
                   type: 'code',
                   lang: 'bash',
                   caption: 'Пошагово',
-                  code: `# 1. Открыть файл и найти маркеры <<<<<<<
-# 2. Решить, что оставить — обычно объединить оба изменения
-# 3. Удалить маркеры конфликта
-# 4. Добавить файл в staging — это «сигнал», что конфликт решён
-git add app.py
-
-# 5. Завершить merge
-git commit
-
-# Или отменить merge совсем
-git merge --abort`,
+                  code: `# 1. Открыть файл и найти маркеры <<<<<<<\n# 2. Решить, что оставить — обычно объединить оба изменения\n# 3. Удалить маркеры конфликта\n# 4. Добавить файл в staging — это «сигнал», что конфликт решён\ngit add app.py\n\n# 5. Завершить merge\ngit commit\n\n# Или отменить merge совсем\ngit merge --abort`,
                 },
                 {
                   type: 'note',
@@ -502,24 +409,7 @@ git merge --abort`,
                   type: 'code',
                   lang: 'bash',
                   caption: 'Основные команды',
-                  code: `# Клонировать репозиторий (создаёт папку и .git)
-git clone https://github.com/user/repo.git
-
-# Посмотреть, откуда тянуть/куда пушить
-git remote -v
-
-# Добавить ещё один remote (например, upstream)
-git remote add upstream https://github.com/original/repo.git
-
-# Отправить свои коммиты в origin (main)
-git push origin main
-
-# Забрать изменения из origin/main и слить в текущую ветку
-git pull origin main
-
-# Забрать изменения, но НЕ сливать — только показать
-git fetch origin
-git log origin/main --oneline -5`,
+                  code: `# Клонировать репозиторий (создаёт папку и .git)\ngit clone https://github.com/user/repo.git\n\n# Посмотреть, откуда тянуть/куда пушить\ngit remote -v\n\n# Добавить ещё один remote (например, upstream)\ngit remote add upstream https://github.com/original/repo.git\n\n# Отправить свои коммиты в origin (main)\ngit push origin main\n\n# Забрать изменения из origin/main и слить в текущую ветку\ngit pull origin main\n\n# Забрать изменения, но НЕ сливать — только показать\ngit fetch origin\ngit log origin/main --oneline -5`,
                 },
                 {
                   type: 'note',
@@ -540,25 +430,7 @@ git log origin/main --oneline -5`,
                   type: 'code',
                   lang: 'bash',
                   caption: 'Типичный PR-workflow',
-                  code: `# 1. Создать ветку от актуальной main
-git switch main
-git pull
-git switch -c feature/add-login
-
-# 2. Работать, коммитить
-git add .
-git commit -m "Add login form"
-git push -u origin feature/add-login
-
-# 3. Открыть PR на GitHub/GitLab
-#    (в браузере: compare & pull request)
-
-# 4. После ревью — merge (через UI или локально)
-#    и удалить ветку
-
-# 5. Подтянуть изменения к себе
-git switch main
-git pull`,
+                  code: `# 1. Создать ветку от актуальной main\ngit switch main\ngit pull\ngit switch -c feature/add-login\n\n# 2. Работать, коммитить\ngit add .\ngit commit -m "Add login form"\ngit push -u origin feature/add-login\n\n# 3. Открыть PR на GitHub/GitLab\n#    (в браузере: compare & pull request)\n\n# 4. После ревью — merge (через UI или локально)\n#    и удалить ветку\n\n# 5. Подтянуть изменения к себе\ngit switch main\ngit pull`,
                 },
                 {
                   type: 'list',
@@ -640,9 +512,12 @@ git pull`,
         },
       ],
     },
+    // ─────────────────────────────────────────────
+    // m3 — Продвинутое (rebase, reset, reflog)
+    // ─────────────────────────────────────────────
     {
       id: 'git-m3',
-      title: 'Продвинутое',
+      title: 'Продвинутое: rebase, reset, reflog',
       lessons: [
         {
           id: 'git-l8',
@@ -670,26 +545,13 @@ git pull`,
                     commit id: "D"
                     checkout main
                     commit id: "E"
-                    merge feature id: "M (merge commit)"`
+                    merge feature id: "M (merge commit)"`,
                 },
                 {
                   type: 'code',
                   lang: 'text',
                   caption: 'merge vs rebase',
-                  code: `Исходное:
-  main:    A ← B ← E
-                 ↖
-  feature:        C ← D
-
-git merge main (в feature):
-  main:    A ← B ← E
-                 ↖    ↖
-  feature:        C ← D ← M   (M — merge-commit)
-
-git rebase main (в feature):
-  main:    A ← B ← E
-                     ↖
-  feature:            C' ← D'  (C', D' — «пересаженные» C, D)`,
+                  code: `Исходное:\n  main:    A ← B ← E\n                 ↖\n  feature:        C ← D\n\ngit merge main (в feature):\n  main:    A ← B ← E\n                 ↖    ↖\n  feature:        C ← D ← M   (M — merge-commit)\n\ngit rebase main (в feature):\n  main:    A ← B ← E\n                     ↖\n  feature:            C' ← D'  (C', D' — «пересаженные» C, D)`,
                 },
                 {
                   type: 'note',
@@ -717,20 +579,7 @@ git rebase main (в feature):
                   type: 'code',
                   lang: 'bash',
                   caption: 'git rebase -i: интерактивный rebase',
-                  code: `# Переписать последние 3 коммита
-git rebase -i HEAD~3
-
-# Откроется редактор:
-# pick a3f4d2e Add login form
-# pick b7c8e1d Fix typo
-# pick d9e2f4a WIP
-#
-# pick   — оставить как есть
-# squash — слить с предыдущим (s)
-# reword — изменить сообщение (r)
-# edit   — остановиться для правки (e)
-# drop   — удалить (d)
-# reorder — поменять строки местами`,
+                  code: `# Переписать последние 3 коммита\ngit rebase -i HEAD~3\n\n# Откроется редактор:\n# pick a3f4d2e Add login form\n# pick b7c8e1d Fix typo\n# pick d9e2f4a WIP\n#\n# pick   — оставить как есть\n# squash — слить с предыдущим (s)\n# reword — изменить сообщение (r)\n# edit   — остановиться для правки (e)\n# drop   — удалить (d)\n# reorder — поменять строки местами`,
                 },
                 {
                   type: 'note',
@@ -776,27 +625,13 @@ git rebase -i HEAD~3
                   type: 'code',
                   lang: 'bash',
                   caption: 'Три режима reset',
-                  code: `# reset --soft — «убрать commit, оставить в staging»
-git reset --soft HEAD~1
-# Коммит исчез, изменения готовы к новому коммиту
-
-# reset --mixed (по умолчанию) — «убрать commit и staging, оставить в файлах»
-git reset HEAD~1
-# Коммит исчез, файлы изменены, но не в staging
-
-# reset --hard — «стереть и commit, и staging, и файлы»
-git reset --hard HEAD~1
-# ОПАСНО: изменения безвозвратно потеряны`,
+                  code: `# reset --soft — «убрать commit, оставить в staging»\ngit reset --soft HEAD~1\n# Коммит исчез, изменения готовы к новому коммиту\n\n# reset --mixed (по умолчанию) — «убрать commit и staging, оставить в файлах»\ngit reset HEAD~1\n# Коммит исчез, файлы изменены, но не в staging\n\n# reset --hard — «стереть и commit, и staging, и файлы»\ngit reset --hard HEAD~1\n# ОПАСНО: изменения безвозвратно потеряны`,
                 },
                 {
                   type: 'code',
                   lang: 'bash',
                   caption: 'revert — безопасная отмена запушенного',
-                  code: `# Создаёт НОВЫЙ commit, который отменяет изменения предыдущего
-git revert a3f4d2e
-
-# История сохранилась, ничего не переписано
-# Можно пушить — безопасно`,
+                  code: `# Создаёт НОВЫЙ commit, который отменяет изменения предыдущего\ngit revert a3f4d2e\n\n# История сохранилась, ничего не переписано\n# Можно пушить — безопасно`,
                 },
                 {
                   type: 'mermaid',
@@ -809,7 +644,7 @@ git revert a3f4d2e
                     Stash --> Done["Готово"]
                     Reset --> Done
                     Revert --> Done
-                    Reflog --> Done`
+                    Reflog --> Done`,
                 },
                 {
                   type: 'note',
@@ -826,32 +661,13 @@ git revert a3f4d2e
                   type: 'code',
                   lang: 'bash',
                   caption: 'git stash — «отложить в сторону»',
-                  code: `# Срочно переключиться на другую ветку, но не хочется коммитить
-git stash
-# (или git stash push -m "WIP login form")
-
-git switch main
-# ... поработали ...
-
-git switch feature/login
-git stash pop   # вернуть и удалить из stash
-git stash list  # посмотреть все «отложенные»
-git stash apply # вернуть, но оставить в stash`,
+                  code: `# Срочно переключиться на другую ветку, но не хочется коммитить\ngit stash\n# (или git stash push -m "WIP login form")\n\ngit switch main\n# ... поработали ...\n\ngit switch feature/login\ngit stash pop   # вернуть и удалить из stash\ngit stash list  # посмотреть все «отложенные»\ngit stash apply # вернуть, но оставить в stash`,
                 },
                 {
                   type: 'code',
                   lang: 'bash',
                   caption: 'git reflog — «спасатель»',
-                  code: `# Лог всех перемещений HEAD: коммиты, checkout, reset, merge...
-git reflog
-# a3f4d2e HEAD@{0}: reset: moving to HEAD~1
-# b7c8e1d HEAD@{1}: commit: WIP
-# d9e2f4a HEAD@{2}: commit: Fix typo
-# ...
-
-# «Я сделал reset --hard и потерял коммит!»
-git reset --hard b7c8e1d
-# Всё вернулось. Git не удаляет коммиты сразу — они висят в reflog 30–90 дней.`,
+                  code: `# Лог всех перемещений HEAD: коммиты, checkout, reset, merge...\ngit reflog\n# a3f4d2e HEAD@{0}: reset: moving to HEAD~1\n# b7c8e1d HEAD@{1}: commit: WIP\n# d9e2f4a HEAD@{2}: commit: Fix typo\n# ...\n\n# «Я сделал reset --hard и потерял коммит!»\ngit reset --hard b7c8e1d\n# Всё вернулось. Git не удаляет коммиты сразу — они висят в reflog 30–90 дней.`,
                 },
                 {
                   type: 'list',
@@ -929,8 +745,605 @@ git reset --hard b7c8e1d
         },
       ],
     },
-        {
+    // ─────────────────────────────────────────────
+    // m4 — Продвинутые инструменты (НОВЫЙ)
+    // ─────────────────────────────────────────────
+    {
       id: 'git-m4',
+      title: 'Продвинутые инструменты',
+      lessons: [
+        {
+          id: 'git-l12',
+          title: 'Git hooks: автоматизация перед коммитом',
+          minutes: 25,
+          steps: [
+            {
+              id: 'git-l12-s1',
+              title: 'Что такое hooks',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Git hooks — скрипты, которые автоматически запускаются на определённые события: перед коммитом, перед пушем, при получении изменений. Они живут в `.git/hooks/` и по умолчанию не версионируются — это важно помнить.',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Где срабатывают хуки в жизненном цикле коммита',
+                  code: `graph LR
+                    Edit["Редактирование"] --> Add["git add"]
+                    Add --> PreCommit["pre-commit<br/>линтеры"]
+                    PreCommit --> CommitMsg["commit-msg<br/>валидация"]
+                    CommitMsg --> Commit["git commit"]
+                    Commit --> PrePush["pre-push<br/>тесты"]
+                    PrePush --> Push["git push"]`,
+                },
+                {
+                  type: 'table',
+                  caption: 'Главные хуки',
+                  head: ['Хук', 'Когда', 'Типичное применение'],
+                  rows: [
+                    ['pre-commit', 'Перед созданием коммита', 'Линтеры, форматтеры, проверка секретов'],
+                    ['commit-msg', 'После ввода сообщения', 'Валидация формата (Conventional Commits)'],
+                    ['pre-push', 'Перед push', 'Тесты, проверка типов'],
+                    ['post-merge', 'После merge', 'Установка зависимостей'],
+                    ['pre-rebase', 'Перед rebase', 'Защита от rebase запушенных веток'],
+                  ],
+                },
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'Ручной pre-commit',
+                  code: `# .git/hooks/pre-commit (исполняемый!)\n#!/bin/sh\nset -e\n\n# Запустить линтер на изменённых файлах\necho "Running linter..."\npython -m ruff check .\n\nif [ $? -ne 0 ]; then\n  echo "Lint failed. Commit aborted."\n  exit 1\nfi`,
+                },
+                {
+                  type: 'note',
+                  text: 'Проблема .git/hooks/: файлы не коммитятся, значит у коллеги хука не будет. Каждый должен установить вручную. Решение — husky (JS-экосистема) или lefthook (Go, для любого языка).',
+                },
+              ],
+            },
+            {
+              id: 'git-l12-s2',
+              title: 'husky и lefthook: hooks для команды',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'husky — самый популярный способ версионировать хуки в JS-проектах. lefthook — кроссплатформенная альтернатива на Go, работает быстрее и не зависит от Node.js. Оба хранят конфиг в репозитории и устанавливают хуки при `npm install` / `lefthook install`.',
+                },
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'husky (JS-проект)',
+                  code: `npm install --save-dev husky\nnpx husky init\n\n# .husky/pre-commit\necho "npx lint-staged" > .husky/pre-commit\n\n# package.json (lint-staged)\n"lint-staged": {\n  "*.{js,ts}": ["eslint --fix", "prettier --write"],\n  "*.py": ["ruff check --fix", "ruff format"]\n}`,
+                },
+                {
+                  type: 'code',
+                  lang: 'yaml',
+                  caption: 'lefthook (любой проект)',
+                  code: `# lefthook.yml\npre-commit:\n  parallel: true\n  commands:\n    ruff:\n      glob: "*.py"\n      run: ruff check --fix {staged_files}\n    mypy:\n      run: mypy src/\n\ncommit-msg:\n  commands:\n    conventional:\n      run: |\n        head -1 {1} | grep -qE '^(feat|fix|docs|chore|refactor|test)(\\(.+\\))?: ' || \\\n        (echo "Сообщение должно быть в формате Conventional Commits" && exit 1)`,
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'husky — если проект на Node.js (JS/TS, React, Vue)',
+                    'lefthook — если проект на Python/Go/любом (нет зависимости от Node)',
+                    'pre-commit (Python) — если проект на Python, альтернатива lefthook',
+                    'Все три хранят конфиг в репо — установка автоматическая для новых разработчиков',
+                    'Hooks можно обойти: git commit --no-verify. Не полагайтесь на них как на единственную защиту',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Хук — это «вежливая просьба», а не «жёсткий барьер». Опытный разработчик обойдёт --no-verify. Поэтому критичные проверки (тесты, безопасность) должны дублироваться в CI. Hooks — для быстрой обратной связи, CI — для гарантии.',
+                },
+              ],
+            },
+            {
+              id: 'git-l12-s3',
+              title: 'Проверь себя',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Где по умолчанию лежат git hooks и почему их надо версионировать через husky/lefthook?',
+                options: [
+                  { id: 'a', text: 'В .git/hooks/, но они не попадают в Git — нужен инструмент для шеринга' },
+                  { id: 'b', text: 'В корне репозитория, Git их видит' },
+                  { id: 'c', text: 'В .github/, GitHub Actions их подхватывает' },
+                  { id: 'd', text: 'В отдельном сервисе, Git не при чём' },
+                ],
+                correct: ['a'],
+                explanation:
+                  '.git/ не версионируется. Файлы в .git/hooks/ существуют только у вас. husky/lefthook хранят конфиг в репо и устанавливают хуки автоматически — так вся команда получает одинаковые проверки.',
+              },
+            },
+          ],
+        },
+        {
+          id: 'git-l13',
+          title: 'Git worktree: несколько рабочих копий',
+          minutes: 25,
+          steps: [
+            {
+              id: 'git-l13-s1',
+              title: 'Проблема переключения веток',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Сценарий: вы пишете фичу, вдруг срочно нужен hotfix из main. Что делать? git stash — но незакоммиченные изменения в нескольких файлах. git switch main — но тогда надо закрыть редактор, потом вернуться. git worktree решает это: один `.git`, несколько рабочих директорий.',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Один .git — несколько рабочих директорий',
+                  code: `graph LR
+                    Git[(".git<br/>(общая история)")]
+                    W1["~/myapp<br/>feature/login"] -.-> Git
+                    W2["~/myapp-hotfix<br/>main"] -.-> Git`,
+                },
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'Два worktree одновременно',
+                  code: `# Основная директория: ~/myapp (ветка feature/login)\ncd ~/myapp\n\n# Создать вторую директорию для hotfix\ngit worktree add ../myapp-hotfix main\n\n# Теперь две папки:\n#   ~/myapp           — feature/login (ваша фича)\n#   ~/myapp-hotfix    — main (срочный hotfix)\n\ncd ../myapp-hotfix\n# ... правите hotfix, коммитите, пушите ...\n\ngit worktree remove ../myapp-hotfix`,
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Один .git на все worktree — история, ветки, stash общие',
+                    'Разные рабочие директории — можно держать несколько веток открытыми',
+                    'Не надо stash / switch при переключении контекста',
+                    'Идеально для: hotfix во время фичи, review чужого PR, сборка релиза',
+                    'git worktree list — показать все worktree',
+                    'git worktree remove <path> — удалить',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Не путать с clone. git clone — полностью независимый репозиторий (свой .git, своя история). git worktree — тот же .git, общая история. Удаление основного worktree может сломать остальные, удаление вторичного — безопасно.',
+                },
+              ],
+            },
+            {
+              id: 'git-l13-s2',
+              title: 'Проверь себя',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Чем git worktree отличается от git clone?',
+                options: [
+                  { id: 'a', text: 'Ничем' },
+                  { id: 'b', text: 'worktree использует тот же .git (общая история), clone — полностью независимый репозиторий' },
+                  { id: 'c', text: 'worktree работает только на macOS' },
+                  { id: 'd', text: 'clone быстрее' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'worktree — «вторая рабочая директория с общим .git». История, ветки, stash — общие. clone — отдельный репозиторий, независимая история. worktree удобнее для быстрого переключения контекста.',
+              },
+            },
+          ],
+        },
+        {
+          id: 'git-l14',
+          title: 'Git bisect: бинарный поиск бага',
+          minutes: 30,
+          steps: [
+            {
+              id: 'git-l14-s1',
+              title: 'Бинарный поиск по коммитам',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Баг есть в текущей версии, но не было месяц назад. Между ними — 200 коммитов. Вручную искать, какой именно сломал — долго. git bisect делает бинарный поиск: делит историю пополам, спрашивает «тут баг есть?», снова делит. 200 коммитов → 8 итераций (log₂ 200 ≈ 7.6).',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Бинарный поиск: 200 → 100 → 50 → 25 → 12 → 6 → 3 → 1',
+                  code: `graph LR
+                    A["200 коммитов"] --> B["100"]
+                    B --> C["50"]
+                    C --> D["25"]
+                    D --> E["12"]
+                    E --> F["6"]
+                    F --> G["3"]
+                    G --> H["1<br/>виновник"]`,
+                },
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'Ручной bisect',
+                  code: `git bisect start\n\ngit bisect bad              # текущий коммит — плохой (есть баг)\ngit bisect good v1.2.0      # тег/коммит, где бага не было\n\n# Git переключит на середину. Проверяете — есть баг?\ngit bisect good   # или git bisect bad\n\n# ... повторяете, пока Git не скажет:\n# <hash> is the first bad commit\n\ngit bisect reset            # вернуться в исходное состояние`,
+                },
+                {
+                  type: 'note',
+                  text: 'После bisect Git покажет первый плохой коммит и его diff. Сразу видно, что сломалось. Это в разы быстрее, чем «git log и листать».',
+                },
+              ],
+            },
+            {
+              id: 'git-l14-s2',
+              title: 'Автоматизация: git bisect run',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Если у вас есть тест, который падает при баге, bisect можно автоматизировать: `git bisect run <скрипт>`. Git сам прогонит скрипт на каждом коммите (exit 0 = good, не 0 = bad) и найдёт виновника без вашего участия.',
+                },
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'Автоматический bisect',
+                  code: `# test.sh: exit 0 — тест прошёл, exit 1 — упал\ngit bisect start\ngit bisect bad\ngit bisect good v1.2.0\ngit bisect run pytest tests/test_login.py::test_redirect\n\n# Git сам пройдёт log₂(N) итераций\n# В конце: "abc123 is the first bad commit"`,
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'exit 0 = good (бага нет), exit 125 = skip (пропустить коммит, например, сломанная сборка)',
+                    'exit 1-124, 126, 127 = bad (баг есть)',
+                    'skip полезен, если на каком-то коммите сборка вообще не работает — не из-за бага',
+                    'Находит виновника среди 1000 коммитов за 10 итераций',
+                    'Работает с любым тестовым фреймворком: pytest, jest, go test',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'git bisect — «секретное оружие» senior-разработчика. На собеседовании: «Баг появился где-то за месяц, как найти?» — правильный ответ: «git bisect run с тестом, который воспроизводит баг». «git log и смотреть» — плохой.',
+                },
+              ],
+            },
+            {
+              id: 'git-l14-s3',
+              title: 'Проверь себя',
+              type: 'quiz',
+              quiz: {
+                kind: 'number',
+                question: 'Сколько итераций нужно git bisect, чтобы найти баг среди 1000 коммитов? (log₂ 1000, округлить вверх)',
+                correct: 10,
+                explanation:
+                  'log₂ 1000 ≈ 9.97, округляем до 10. 1000 → 500 → 250 → 125 → 63 → 32 → 16 → 8 → 4 → 2 → 1. Десять итераций вместо тысячи проверок вручную.',
+              },
+            },
+          ],
+        },
+        {
+          id: 'git-l15',
+          title: 'Подпись коммитов и тегов',
+          minutes: 25,
+          steps: [
+            {
+              id: 'git-l15-s1',
+              title: 'Зачем подписывать',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Git-коммит содержит имя и email автора, но их можно указать любые: `git commit --author="Linus Torvalds <torvalds@linux.com>"`. Без подписи нельзя доказать, что коммит сделан именно вами. GPG/SSH-подпись привязывает коммит к ключу, который есть только у вас.',
+                },
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'GPG-подпись',
+                  code: `# 1. Сгенерировать GPG-ключ (если ещё нет)\ngpg --full-generate-key\n\n# 2. Узнать ID ключа\ngpg --list-secret-keys --keyid-format=long\n# sec   rsa4096/ABC123DEF456 2025-01-01 [SC]\n#                            ^^^^^^^^^^^^^ — это key ID\n\n# 3. Настроить Git\ngit config --global user.signingkey ABC123DEF456\ngit config --global commit.gpgsign true     # все коммиты подписываются\ngit config --global tag.gpgsign true        # все теги\n\n# 4. Подписать один коммит вручную\ngit commit -S -m "Signed commit"`,
+                },
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'SSH-подпись (проще, Git 2.34+)',
+                  code: `# Использует ваш существующий SSH-ключ для GitHub/GitLab\ngit config --global gpg.format ssh\ngit config --global user.signingkey ~/.ssh/id_ed25519.pub\ngit config --global commit.gpgsign true\n\n# Проверка\nssh-keygen -Y sign -n git -f ~/.ssh/id_ed25519 /tmp/file`,
+                },
+                {
+                  type: 'note',
+                  text: 'GitHub и GitLab показывают "Verified" у подписанных коммитов. Это защита от подмены авторства: злоумышленник не сможет выдать свой коммит за ваш. В enterprise и open-source часто требуют подписи для мержа в main.',
+                },
+              ],
+            },
+            {
+              id: 'git-l15-s2',
+              title: 'Проверка подписи',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'verify-commit и verify-tag',
+                  code: `# Проверить подпись коммита\ngit verify-commit a3f4d2e\n\n# Проверить подпись тега\ngit verify-tag v1.4.2\n\n# В git log — показать статус подписи\ngit log --show-signature -1`,
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Подпись гарантирует: коммит создан владельцем ключа',
+                    'Подпись НЕ гарантирует: что код хороший, что автор — хороший человек',
+                    'GPG — стандарт, но сложная настройка (gpg-agent, keyring)',
+                    'SSH-подпись — проще для тех, кто уже настроил SSH к GitHub',
+                    'Подпись коммита ≠ подпись артефакта (cosign для Docker-образов — отдельная история)',
+                  ],
+                },
+              ],
+            },
+            {
+              id: 'git-l15-s3',
+              title: 'Проверь себя',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Что даёт подпись коммита? (выберите все подходящие)',
+                options: [
+                  { id: 'a', text: 'Доказывает, что коммит создан владельцем ключа' },
+                  { id: 'b', text: 'Гарантирует, что код в коммите корректный' },
+                  { id: 'c', text: 'Защищает от подмены авторства' },
+                  { id: 'd', text: 'Позволяет GitHub/GitLab показать "Verified"' },
+                ],
+                correct: ['a', 'c', 'd'],
+                explanation:
+                  'Подпись — про авторство и целостность коммита. Не про качество кода (b). Если код плохой, но коммит подписан — подпись всё равно пройдёт. Подпись — это «кто», а не «что».',
+              },
+            },
+          ],
+        },
+        {
+          id: 'git-l16',
+          title: 'Git submodules: вложенные репозитории',
+          minutes: 25,
+          steps: [
+            {
+              id: 'git-l16-s1',
+              title: 'Что такое submodule',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Submodule — это Git-репозиторий внутри другого Git-репозитория. Родитель хранит не файлы, а ссылку на конкретный коммит дочернего репо. Классический пример: главный проект + общая библиотека, которая живёт отдельно.',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Submodule: главный репо ссылается на коммит вложенного',
+                  code: `graph LR
+                    Main[("main-repo<br/>.gitmodules")] -->|"SHA abc123"| Sub[("shared-lib<br/>(отдельный Git)")]
+                    Main --> Code["src/"]
+                    Main --> Lib["libs/shared-lib/"]`,
+                },
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'Добавление и клонирование',
+                  code: `# Добавить submodule\ngit submodule add https://github.com/myorg/shared-lib libs/shared-lib\ngit commit -m "Add shared-lib submodule"\n\n# Клонирование репо с submodules\ngit clone --recurse-submodules https://github.com/myorg/main-repo\n\n# Если забыли --recurse-submodules\ngit submodule update --init --recursive\n\n# Обновить все submodules до последних коммитов\ngit submodule update --remote --merge`,
+                },
+                {
+                  type: 'list',
+                  items: [
+                    '.gitmodules — файл в корне главного репо: какой submodule куда и откуда',
+                    'В главном репо хранится только SHA коммита submodule, не файлы',
+                    'git submodule status — состояние всех submodules',
+                    'git submodule update --init — инициализировать и скачать',
+                    'git submodule foreach \'git pull\' — обновить все',
+                  ],
+                },
+              ],
+            },
+            {
+              id: 'git-l16-s2',
+              title: 'Проблемы submodules',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Submodules мощные, но с ними легко «выстрелить в ногу». Классические проблемы: забыли `--recurse-submodules` при клоне (пустые папки), забыли закоммитить обновление submodule (в главном репо старый SHA), submodule в detached HEAD (коммиты «теряются»).',
+                },
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'Типичный workflow',
+                  code: `# Обновить submodule до свежего коммита\ngit submodule update --remote --merge\ngit add libs/shared-lib   # закоммитить новый SHA\ngit commit -m "Bump shared-lib to latest"\ngit push\n\n# Если submodule в detached HEAD (после update)\ncd libs/shared-lib\ngit switch main   # вернуться на ветку`,
+                },
+                {
+                  type: 'note',
+                  text: 'Правило: submodules оправданы, когда вложенный репо большой, активно развивается отдельно и нужен именно «пин» на конкретный коммит. Для мелких библиотек — package manager (npm, pip) или vendor-копирование. Для монорепо — git subtree (следующий урок).',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Плюс: чёткая граница, независимая история, «пин» на коммит',
+                    'Минус: сложно клонировать (нужен --recurse-submodules)',
+                    'Минус: detached HEAD после update — легко потерять коммиты',
+                    'Минус: обновление требует двух коммитов (в submodule и в главном)',
+                    'Альтернативы: git subtree, package manager, monorepo',
+                  ],
+                },
+              ],
+            },
+            {
+              id: 'git-l16-s3',
+              title: 'Проверь себя',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Что хранит главный репозиторий про submodule?',
+                options: [
+                  { id: 'a', text: 'Все файлы submodule целиком' },
+                  { id: 'b', text: 'Ссылку на конкретный коммит (SHA) submodule и путь в .gitmodules' },
+                  { id: 'c', text: 'Только имя submodule' },
+                  { id: 'd', text: 'Ничего, submodule подключается в рантайме' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'В главном репо — .gitmodules (URL, путь) и SHA коммита submodule. Именно поэтому submodule «запинен» на конкретную версию: git submodule update ставит ровно этот SHA. Чтобы обновить — нужно явно git submodule update --remote и закоммитить.',
+              },
+            },
+          ],
+        },
+        {
+          id: 'git-l17',
+          title: 'Git subtree: submodules без боли',
+          minutes: 25,
+          steps: [
+            {
+              id: 'git-l17-s1',
+              title: 'Subtree: вложенный репо без .gitmodules',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Subtree — альтернатива submodules. В отличие от submodules, содержимое вложенного репо физически копируется в главный (в подпапку). Нет .gitmodules, нет detached HEAD, клонирование — обычное. Плата: история «размывается», размер главного репо растёт.',
+                },
+                {
+                  type: 'table',
+                  caption: 'Submodules vs Subtree',
+                  head: ['Критерий', 'Submodules', 'Subtree'],
+                  rows: [
+                    ['Хранение', 'Ссылка на SHA', 'Полная копия файлов + история'],
+                    ['Клонирование', 'Нужен --recurse-submodules', 'Обычное git clone'],
+                    ['Обновление', 'git submodule update + 2 коммита', 'git subtree pull'],
+                    ['Detached HEAD', 'Часто', 'Никогда'],
+                    ['Размер главного репо', 'Маленький', 'Растёт'],
+                    ['История вложенного', 'Отдельно', 'Смешана с главной'],
+                  ],
+                },
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'Основные команды',
+                  code: `# Добавить subtree\ngit subtree add --prefix=libs/shared-lib \\\n  https://github.com/myorg/shared-lib main --squash\n\n# Обновить до последней версии\ngit subtree pull --prefix=libs/shared-lib \\\n  https://github.com/myorg/shared-lib main --squash\n\n# Запушить изменения обратно в отдельный репо\ngit subtree push --prefix=libs/shared-lib \\\n  https://github.com/myorg/shared-lib main\n\n# --squash — «схлопнуть» историю в один коммит (меньше мусора)`,
+                },
+              ],
+            },
+            {
+              id: 'git-l17-s2',
+              title: 'Когда что',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'list',
+                  items: [
+                    'Subtree — если вложенный репо нужен «как библиотека» и редко меняется',
+                    'Subtree — если команда маленькая и не хочет разбираться с submodules',
+                    'Subtree — если хочется обычный git clone без сюрпризов',
+                    'Submodules — если вложенный репо активно развивается отдельной командой',
+                    'Submodules — если нужна чёткая граница и независимая история',
+                    'Монорепо (Nx, Turborepo, Bazel) — если компонентов много и они связаны',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'На собеседовании: «Чем subtree отличается от submodules?» — «subtree копирует файлы и историю в главный репо (проще клонировать), submodules хранят только ссылку (чище границы, сложнее клон)». Оба — компромисс, выбор зависит от размера команды и активности вложенного репо.',
+                },
+              ],
+            },
+            {
+              id: 'git-l17-s3',
+              title: 'Проверь себя',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Чем git subtree отличается от git submodule?',
+                options: [
+                  { id: 'a', text: 'Subtree физически копирует файлы и историю в главный репо, submodule — только ссылку на SHA' },
+                  { id: 'b', text: 'Subtree работает только на macOS' },
+                  { id: 'c', text: 'Это одно и то же' },
+                  { id: 'd', text: 'Submodule быстрее' },
+                ],
+                correct: ['a'],
+                explanation:
+                  'Subtree: содержимое вложенного репо + история лежат внутри главного. Клонирование — обычное git clone. Submodule: только ссылка на коммит, нужен --recurse-submodules. Subtree проще для потребителя, submodules — для независимой разработки.',
+              },
+            },
+          ],
+        },
+        {
+          id: 'git-l18',
+          title: 'Git flow vs trunk-based: модели ветвления',
+          minutes: 30,
+          steps: [
+            {
+              id: 'git-l18-s1',
+              title: 'Две философии',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Как организовать ветки в команде — вопрос стратегии. Два подхода: Git flow (много долгоживущих веток) и trunk-based (одна main, короткие ветки). У каждого — свои плюсы и своя цена.',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Git flow: main, develop, release, feature, hotfix',
+                  code: `graph LR
+                    Feature["feature/*<br/>от develop"] -->|"merge"| Develop["develop"]
+                    Develop -->|"branch"| Release["release/*"]
+                    Release -->|"merge + tag"| Main["main"]
+                    Release -->|"merge back"| Develop
+                    Hotfix["hotfix/*<br/>от main"] -->|"merge + tag"| Main
+                    Hotfix -->|"merge back"| Develop`,
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Trunk-based: одна main, короткие ветки на 1–2 дня',
+                  code: `graph LR
+                    Feature["feature/*<br/>1–2 дня"] -->|"PR merge"| Main["main"]
+                    Main -->|"auto-deploy"| Prod["prod"]
+                    Main -->|"feature flags"| Prod`,
+                },
+              ],
+            },
+            {
+              id: 'git-l18-s2',
+              title: 'Когда что',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'table',
+                  caption: 'Сравнение',
+                  head: ['Критерий', 'Git flow', 'Trunk-based'],
+                  rows: [
+                    ['Ветки', 'main, develop, release/*, feature/*, hotfix/*', 'main + короткие feature/* (1–2 дня)'],
+                    ['Релизы', 'Отдельная ветка release, стабилизация', 'Из main, feature flags'],
+                    ['Ревью', 'На develop', 'На main (маленькие PR)'],
+                    ['Hotfix', 'hotfix/* от main, слияние в main + develop', 'Прямо в main, потом в feature'],
+                    ['Для чего', 'Версионируемые релизы, mobile, on-prem', 'SaaS, веб, CI/CD с авто-деплоем'],
+                    ['DORA-метрики', 'Хуже (долгие ветки)', 'Лучше (частые мелкие мержи)'],
+                  ],
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Git flow: классика 2010-х, хорош для версионируемых продуктов (десктоп, mobile, on-prem)',
+                    'Trunk-based: стандарт 2020-х, для SaaS и CI/CD, где релиз — каждый день',
+                    'GitHub flow — упрощённый trunk-based: main + feature/*, без release/develop',
+                    'GitLab flow — trunk-based + environment-ветки (staging, production)',
+                    'Выбор зависит от продукта: если «релиз раз в месяц» — git flow оправдан; если «деплой 10 раз в день» — trunk-based',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'На собеседовании: «Какая у вас модель ветвления?» — правильный ответ: «trunk-based с feature flags, PR живут 1–2 дня». «Git flow с develop и release» — устаревший ответ для 2025, но всё ещё используется в enterprise с версионируемыми релизами.',
+                },
+              ],
+            },
+            {
+              id: 'git-l18-s3',
+              title: 'Проверь себя',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте модель ветвления и её особенность',
+                pairs: [
+                  { left: 'Git flow', right: 'main, develop, release, feature, hotfix — много долгоживущих веток' },
+                  { left: 'Trunk-based', right: 'Одна main, короткие feature-ветки на 1–2 дня' },
+                  { left: 'GitHub flow', right: 'main + feature, упрощённый trunk-based' },
+                  { left: 'GitLab flow', right: 'Trunk-based + environment-ветки' },
+                ],
+                explanation:
+                  'Git flow — для версионируемых релизов. Trunk-based — для SaaS с частыми деплоями. GitHub flow — минимализм. GitLab flow — компромисс с environment-ветками. Выбор — по продукту и частоте релизов.',
+              },
+            },
+          ],
+        },
+      ],
+    },
+    // ─────────────────────────────────────────────
+    // m5 — Практикум (переименован из git-m4)
+    // ─────────────────────────────────────────────
+    {
+      id: 'git-m5',
       title: 'Практикум',
       lessons: [
         {

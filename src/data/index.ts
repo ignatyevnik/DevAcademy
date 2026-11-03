@@ -17,14 +17,52 @@ import { sqlBasicsCourse } from './sql-basics';
 import { sqlAdvancedCourse } from './sql-advanced';
 import { designCourse } from './design';
 import { validateAllCourses } from './validate';
+import { terraformBasicsCourse } from './terraform';
+import { postgresqlDeepCourse } from './postgresql';
+import { ansibleBasicsCourse } from './ansible';
+import { kafkaBasicsCourse } from './kafka';   
 import { courseSchema } from './schemas'; // <-- импорт схемы для кастомных курсов
 
-// Базовые курсы
+// Базовые курсы, сгруппированные по темам (порядок = отображение в каталоге)
 const baseCourses: Course[] = [
-  gitCourse, linuxCourse, networksCourse, sqlBasicsCourse, sqlAdvancedCourse,
-  pythonBasicsCourse, pythonAdvancedCourse,
-  qaFundamentalsCourse, qaAutomationCourse, qaSeniorCourse,
-  dockerCourse, k8sBasicsCourse, k8sAdvancedCourse, cicdBasicsCourse, gitopsCourse, agentsCourse, designCourse,
+  // 1. Фундамент: инструменты, которые нужны всем
+  gitCourse,
+  linuxCourse,
+  networksCourse,
+
+  // 2. Данные
+  sqlBasicsCourse,
+  sqlAdvancedCourse,
+  postgresqlDeepCourse,
+
+  // 3. Языки программирования
+  pythonBasicsCourse,
+  pythonAdvancedCourse,
+
+  // 4. QA
+  qaFundamentalsCourse,
+  qaAutomationCourse,
+  qaSeniorCourse,
+
+  // 5. Контейнеры и оркестрация
+  dockerCourse,
+  k8sBasicsCourse,
+  k8sAdvancedCourse,
+
+  // 6. IaC и автоматизация
+  terraformBasicsCourse,
+  ansibleBasicsCourse,
+  kafkaBasicsCourse,
+
+  // 7. CI/CD и доставка
+  cicdBasicsCourse,
+  gitopsCourse,
+
+  // 8. AI
+  agentsCourse,
+
+  // 9. Архитектура
+  designCourse,
 ];
 
 export const baseSlugs = new Set(baseCourses.map((c) => c.slug));
