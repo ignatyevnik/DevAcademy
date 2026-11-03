@@ -314,18 +314,27 @@ export default function EditorPage() {
                               />
                             ))}
                             <div className="flex flex-wrap gap-1">
-                              {(['p', 'h3', 'list', 'code', 'note', 'table', 'image', 'mermaid'] as const).map((t) => (
-                                <Button key={t} variant="outline" size="sm" onClick={() => {
-                                  const newBlock: any = { type: t };
-                                  if (t === 'p' || t === 'h3' || t === 'note') newBlock.text = '';
-                                  else if (t === 'list') newBlock.items = [''];
-                                  else if (t === 'code') { newBlock.lang = 'text'; newBlock.code = ''; }
-                                  else if (t === 'table') { newBlock.head = ['A', 'B']; newBlock.rows = [['', '']]; }
-                                  const n = [...course.modules];
-                                  (n[mIdx].lessons[lIdx].steps[sIdx] as any).blocks.push(newBlock);
-                                  setCourse({ ...course, modules: n });
-                                }}>+ {t}</Button>
-                              ))}
+{(['p', 'h3', 'list', 'code', 'note', 'table', 'image', 'mermaid', 'sandbox'] as const).map((t) => (
+  <Button key={t} variant="outline" size="sm" onClick={() => {
+    const newBlock: any = { type: t };
+    if (t === 'p' || t === 'h3' || t === 'note') newBlock.text = '';
+    else if (t === 'list') newBlock.items = [''];
+    else if (t === 'code') { newBlock.lang = 'text'; newBlock.code = ''; }
+    else if (t === 'table') { newBlock.head = ['A', 'B']; newBlock.rows = [['', '']]; }
+    else if (t === 'image') { newBlock.src = ''; newBlock.alt = ''; }
+    else if (t === 'mermaid') { newBlock.code = 'graph TD\n  A --> B'; }
+    else if (t === 'sandbox') {
+      newBlock.sandbox = {
+        schema: 'CREATE TABLE users (id INTEGER, email TEXT);\nINSERT INTO users VALUES (1, \'a@x.com\');',
+        task: 'Выберите все email.',
+        solution: 'SELECT email FROM users;',
+      };
+    }
+    const n = [...course.modules];
+    (n[mIdx].lessons[lIdx].steps[sIdx] as any).blocks.push(newBlock);
+    setCourse({ ...course, modules: n });
+  }}>+ {t}</Button>
+))}
                             </div>
                           </div>
                         )}

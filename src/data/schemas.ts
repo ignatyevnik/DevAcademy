@@ -43,6 +43,24 @@ const textBlockSchema = z.discriminatedUnion('type', [
     code: z.string().min(1, 'Нужен код диаграммы'),
     caption: z.string().optional(),
   }),
+z.object({
+  type: z.literal('sandbox'),
+  sandbox: z.object({
+    schema: z.string().min(1, 'sandbox.schema пустой'),
+    task: z.string().min(1, 'sandbox.task пустой'),
+    solution: z.string().min(1, 'sandbox.solution пустой'),
+    expected: z
+      .object({
+        columns: z.array(z.string().min(1)).min(1),
+        rows: z.array(z.array(z.union([z.string(), z.number(), z.null()]))),
+        order: z.enum(['order', 'set']).optional(),
+      })
+      .optional(),
+    forbidden: z.array(z.string()).optional(),
+    hint: z.string().optional(),
+    caption: z.string().optional(),
+  }),
+}),
 ]);
 
 // ─────────────────────────────────────────────

@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { getCourse, findLesson, allLessons } from '@/data';
 import type { Step } from '@/data';
 import { useProgress, stepKey } from '@/lib/progress';
+import type { QuizResult } from '@/lib/progress';
 import { TextBlocks, QuizView } from '@/components/StepContent';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -57,7 +58,10 @@ export default function LessonPage() {
   const navigate = useNavigate();
   const course = getCourse(slug ?? '');
   const found = course && lessonId ? findLesson(course, lessonId) : null;
-  const { isStepDone, completeStep, visit, state, isBookmarked, toggleBookmark } = useProgress();
+  const {
+  isStepDone, completeStep, setQuizResult, visit,
+  state, isBookmarked, toggleBookmark,
+} = useProgress();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const h1Ref = useRef<HTMLHeadingElement>(null);
 
@@ -84,11 +88,21 @@ export default function LessonPage() {
   }, [course?.slug, lesson?.id, stepIndex, visit]);
 
   // Теория засчитывается при открытии
-  useEffect(() => {
-    if (course && step && step.type === 'theory' && !isStepDone(course.slug, step.id)) {
-      completeStep(course.slug, step.id);
-    }
-  }, [course?.slug, step?.id, step?.type, isStepDone, completeStep, step]);
+const hasSandbox =
+  step?.type === 'theory' && step.blocks.some((b) => b.type === 'sandbox');
+
+// Теория засчитывается при открытии, но шаги с sandbox — только после проверки
+useEffect(() => {
+  if (
+    course &&
+    step &&
+    step.type === 'theory' &&
+    !hasSandbox &&
+    !isStepDone(course.slug, step.id)
+  ) {
+    completeStep(course.slug, step.id);
+  }
+}, [course?.slug, step?.id, step?.type, hasSandbox, isStepDone, completeStep, step]);
 
   // Фокус на заголовке при смене шага (для скринридера и клавиатуры)
   useEffect(() => {
@@ -260,7 +274,20 @@ export default function LessonPage() {
           <h1 ref={h1Ref} tabIndex={-1} className="mt-2 text-2xl font-extrabold tracking-tight focus:outline-none">{step.title}</h1>
 
           <div className="mt-6">
-            {step.type === 'theory' ? <TextBlocks blocks={step.blocks} /> : <QuizView slug={course.slug} step={step} />}
+            {step.type === 'theory' ? (
+<TextBlocks
+  blocks={step.blocks}
+  onResult={(result: QuizResult) => {
+    if (result === 'ok') {
+      completeStep(course.slug, step.id);
+    } else if (result === 'fail') {
+      setQuizResult(course.slug, step.id, 'fail');
+    }
+  }}
+/>
+) : (
+  <QuizView slug={course.slug} step={step} />
+)}
           </div>
           
           <StepNotes slug={course.slug} stepId={step.id} />

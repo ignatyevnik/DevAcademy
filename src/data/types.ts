@@ -6,7 +6,8 @@ export type TextBlock =
   | { type: 'note'; text: string }
   | { type: 'table'; head: string[]; rows: string[][]; caption?: string }
   | { type: 'image'; src: string; alt: string; caption?: string }
-  | { type: 'mermaid'; code: string; caption?: string };
+  | { type: 'mermaid'; code: string; caption?: string }
+  | { type: 'sandbox'; sandbox: SandboxBlock }; 
 
 export interface QuizBase {
   question: string;
@@ -158,5 +159,25 @@ export interface CodeQuiz extends QuizBase {
   placeholder?: string;
   mustInclude: { pattern: string; message: string }[];
   mustNotInclude?: { pattern: string; message: string }[];
+}
+
+export interface SandboxBlock {
+  /** SQL для CREATE TABLE + INSERT. Выполняется один раз при открытии шага. */
+  schema: string;
+  /** Задание для пользователя. */
+  task: string;
+  /** Эталонный запрос: показывается в «Показать решение» и используется как fallback для проверки. */
+  solution: string;
+  /** Ожидаемый результат. Если нет — сравниваем с результатом solution. */
+  expected?: {
+    columns: string[];
+    rows: (string | number | null)[][];
+    /** 'order' — порядок важен, 'set' — не важен. По умолчанию 'order'. */
+    order?: 'order' | 'set';
+  };
+  /** Дополнительные regex-запреты (кроме встроенного DDL/DML). */
+  forbidden?: string[];
+  hint?: string;
+  caption?: string;
 }
 

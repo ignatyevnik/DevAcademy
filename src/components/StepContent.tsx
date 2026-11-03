@@ -7,11 +7,13 @@ import type {
   SortingQuiz, TableQuiz, NumberQuiz, ClozeQuiz, CodeQuiz
 } from '@/data';
 import { useProgress } from '@/lib/progress';
+import type { QuizResult } from '@/lib/progress';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useTheme } from '@/lib/theme';
+import { SandboxView } from '@/components/SandboxView';
 
 type ResultType = 'ok' | 'partial' | 'fail';
 
@@ -78,7 +80,13 @@ function MermaidDiagram({ code, caption }: { code: string; caption?: string }) {
   );
 }
 
-export function TextBlocks({ blocks }: { blocks: TextBlock[] }) {
+export function TextBlocks({
+  blocks,
+  onResult,
+}: {
+  blocks: TextBlock[];
+  onResult?: (result: QuizResult) => void;
+}) {
   return (
     <div className="space-y-4 text-[15px] leading-[1.75] sm:text-base">
       {blocks.map((b, i) => {
@@ -136,7 +144,7 @@ export function TextBlocks({ blocks }: { blocks: TextBlock[] }) {
                 </table>
               </figure>
             );
-                    case 'image':
+          case 'image':
             return (
               <figure key={i} className="my-6">
                 <img src={b.src} alt={b.alt} loading="lazy" className="rounded-lg border border-border w-full max-w-2xl mx-auto object-cover" />
@@ -145,6 +153,9 @@ export function TextBlocks({ blocks }: { blocks: TextBlock[] }) {
             );
           case 'mermaid':
             return <MermaidDiagram key={i} code={b.code} caption={b.caption} />;
+
+          case 'sandbox':
+            return <SandboxView key={i} sandbox={b.sandbox} onResult={onResult} />;
         }
       })}
     </div>

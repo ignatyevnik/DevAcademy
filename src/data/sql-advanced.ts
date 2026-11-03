@@ -192,6 +192,49 @@ ORDER BY tu.revenue DESC;`,
                 explanation: 'WITH name AS (SELECT ...) SELECT ... FROM name. WITH — «с этим подзапросом, сделай основной».',
               },
             },
+            {
+              id: 'sql-l10-s4',
+              title: 'Практика: CTE для фильтра по агрегату',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'CTE удобен, когда нужно сначала посчитать агрегат, а потом отфильтровать по нему. HAVING тоже умеет, но CTE читается лучше, когда агрегатов несколько.',
+                },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE orders (id INTEGER, user_id INTEGER, total INTEGER, status TEXT);
+            INSERT INTO orders VALUES
+              (1, 1, 1000, 'paid'),
+              (2, 1, 500, 'paid'),
+              (3, 2, 2000, 'paid'),
+              (4, 2, 500, 'cancelled'),
+              (5, 3, 300, 'new');`,
+                    task: 'Через CTE найдите пользователей, у которых сумма оплаченных заказов больше 1000. Колонки: user_id, revenue. Отсортируйте по user_id.',
+                    solution: `WITH paid AS (
+              SELECT user_id, SUM(total) AS revenue
+              FROM orders
+              WHERE status = 'paid'
+              GROUP BY user_id
+            )
+            SELECT user_id, revenue
+            FROM paid
+            WHERE revenue > 1000
+            ORDER BY user_id;`,
+                    expected: {
+                      columns: ['user_id', 'revenue'],
+                      rows: [
+                        [1, 1500],
+                        [2, 2000],
+                      ],
+                      order: 'order',
+                    },
+                    hint: 'WITH paid AS (SELECT user_id, SUM(total) FROM orders WHERE status = ...) SELECT ... WHERE revenue > ...',
+                  },
+                },
+              ],
+            },
           ],
         },
         {
@@ -804,6 +847,46 @@ GROUP BY DATE(created_at);`,
                 correct: ['b'],
                 explanation: 'ROW_NUMBER с PARTITION BY user_id и ORDER BY total DESC даёт rn=1 для самого дорогого заказа каждого юзера. Затем фильтр WHERE rn = 1 (через CTE).',
               },
+            },
+            {
+              id: 'sql-l16-s4',
+              title: 'Практика: ROW_NUMBER в оконных функциях',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Оконные функции позволяют пронумеровать строки внутри группы, не схлопывая их. Классика — «топ-N по каждому пользователю».',
+                },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE orders (id INTEGER, user_id INTEGER, total INTEGER);
+            INSERT INTO orders VALUES
+              (1, 1, 1000),
+              (2, 1, 500),
+              (3, 1, 200),
+              (4, 2, 3000),
+              (5, 2, 100);`,
+                    task: 'Пронумеруйте заказы внутри каждого пользователя по убыванию суммы (колонка rn). Выведите user_id, id, total, rn. Отсортируйте по user_id и rn.',
+                    solution: `SELECT user_id, id, total,
+              ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY total DESC) AS rn
+            FROM orders
+            ORDER BY user_id, rn;`,
+                    expected: {
+                      columns: ['user_id', 'id', 'total', 'rn'],
+                      rows: [
+                        [1, 1, 1000, 1],
+                        [1, 2, 500, 2],
+                        [1, 3, 200, 3],
+                        [2, 4, 3000, 1],
+                        [2, 5, 100, 2],
+                      ],
+                      order: 'order',
+                    },
+                    hint: 'ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY total DESC)',
+                  },
+                },
+              ],
             },
           ],
         },

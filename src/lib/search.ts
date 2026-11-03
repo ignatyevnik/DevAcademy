@@ -25,6 +25,8 @@ function extractText(blocks: TextBlock[]): string {
           return b.items.join(' ');
         case 'code':
           return b.code;
+        case 'sandbox':                                        // ← добавить
+          return `${b.sandbox.task} ${b.sandbox.solution}`; 
         case 'table':
           return [...b.head, ...b.rows.flat()].join(' ');
         default:

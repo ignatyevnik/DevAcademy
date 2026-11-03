@@ -193,6 +193,32 @@ export const sqlBasicsCourse: Course = {
                 explanation: 'IN — список, BETWEEN — диапазон, LIKE — шаблон, IS NULL — проверка на NULL. Именно IS NULL, не = NULL: = NULL в SQL всегда даёт NULL.',
               },
             },
+            {
+              id: 'sql-l2-s5',
+              title: 'Практика: SELECT с WHERE',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `
+            CREATE TABLE users (id INTEGER, email TEXT, age INTEGER);
+            INSERT INTO users VALUES
+              (1, 'a@x.com', 20),
+              (2, 'b@x.com', 30),
+              (3, 'c@x.com', 25);
+                    `.trim(),
+                    task: 'Выберите email пользователей старше 25 лет.',
+                    solution: 'SELECT email FROM users WHERE age > 25;',
+                    expected: {
+                      columns: ['email'],
+                      rows: [['b@x.com']],
+                    },
+                    hint: 'Используйте WHERE age > 25',
+                  },
+                },
+              ],
+            },
           ],
         },
         {
@@ -444,6 +470,43 @@ export const sqlBasicsCourse: Course = {
                 explanation: 'FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT. Поэтому HAVING может содержать агрегаты (они уже вычислены), а WHERE — нет.',
               },
             },
+            {
+              id: 'sql-l6-s5',
+              title: 'Практика: агрегаты по группам',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Соберите статистику по статусам: количество заказов и их сумму.',
+                },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE orders (id INTEGER, status TEXT, total INTEGER);
+            INSERT INTO orders VALUES
+              (1, 'paid', 1000),
+              (2, 'paid', 2000),
+              (3, 'new', 500),
+              (4, 'cancelled', 300);`,
+                    task: 'Для каждого статуса посчитайте количество заказов (колонка cnt) и сумму (колонка sum). Отсортируйте по статусу по возрастанию.',
+                    solution: `SELECT status, COUNT(*) AS cnt, SUM(total) AS sum
+            FROM orders
+            GROUP BY status
+            ORDER BY status;`,
+                    expected: {
+                      columns: ['status', 'cnt', 'sum'],
+                      rows: [
+                        ['cancelled', 1, 300],
+                        ['new', 1, 500],
+                        ['paid', 2, 3000],
+                      ],
+                      order: 'order',
+                    },
+                    hint: 'GROUP BY status + COUNT(*) + SUM(total) + ORDER BY status',
+                  },
+                },
+              ],
+            },
           ],
         },
         {
@@ -533,6 +596,47 @@ export const sqlBasicsCourse: Course = {
                 correct: ['b'],
                 explanation: 'Псевдонимы — краткость и однозначность. Без них: orders.id, users.id — а если обе таблицы имеют id, придётся писать полные имена везде.',
               },
+            },
+            {
+              id: 'sql-l7-s4',
+              title: 'Практика: JOIN + агрегат',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Соедините пользователей с их заказами и посчитайте сумму заказов каждого пользователя. Пользователи без заказов в результат не попадают — это обычный INNER JOIN.',
+                },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE users (id INTEGER, email TEXT);
+            CREATE TABLE orders (id INTEGER, user_id INTEGER, total INTEGER);
+            INSERT INTO users VALUES
+              (1, 'a@x.com'),
+              (2, 'b@x.com'),
+              (3, 'c@x.com');
+            INSERT INTO orders VALUES
+              (10, 1, 1000),
+              (11, 1, 500),
+              (12, 2, 2000);`,
+                    task: 'Выведите email пользователя (колонка email) и сумму его заказов (колонка total). Отсортируйте по email.',
+                    solution: `SELECT u.email, SUM(o.total) AS total
+            FROM users u
+            JOIN orders o ON o.user_id = u.id
+            GROUP BY u.email
+            ORDER BY u.email;`,
+                    expected: {
+                      columns: ['email', 'total'],
+                      rows: [
+                        ['a@x.com', 1500],
+                        ['b@x.com', 2000],
+                      ],
+                      order: 'order',
+                    },
+                    hint: 'JOIN users u ... orders o ON o.user_id = u.id, затем GROUP BY u.email и SUM(o.total)',
+                  },
+                },
+              ],
             },
           ],
         },

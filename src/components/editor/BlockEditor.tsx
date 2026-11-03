@@ -1,6 +1,7 @@
 import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { SandboxEditor } from '@/components/editor/SandboxEditor';
 import type { TextBlock } from '@/data';
 
 interface Props {
@@ -143,6 +144,13 @@ export function BlockEditor({ block, onChange, onDelete }: Props) {
           <Input value={block.caption || ''} onChange={(e) => field('caption', e.target.value)} placeholder="Подпись (опционально)" className="bg-background" />
         </>
       )}
+
+      {block.type === 'sandbox' && (
+  <SandboxEditor
+    sandbox={block.sandbox}
+    onChange={(next) => field('sandbox', next)}
+  />
+        )}
     </div>
   );
 }
