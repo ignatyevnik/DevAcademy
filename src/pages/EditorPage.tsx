@@ -330,6 +330,14 @@ export default function EditorPage() {
         solution: 'SELECT email FROM users;',
       };
     }
+    else if (t === "python") {
+        newBlock.python = {
+          starterCode: "# ваш код\n",
+          task: "Напечатайте Hello, World!",
+          solution: "print('Hello, World!')",
+          expected: { type: "stdout", value: "Hello, World!" },
+        };
+      }
     const n = [...course.modules];
     (n[mIdx].lessons[lIdx].steps[sIdx] as any).blocks.push(newBlock);
     setCourse({ ...course, modules: n });

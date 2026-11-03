@@ -89,7 +89,8 @@ export default function LessonPage() {
 
   // Теория засчитывается при открытии
 const hasSandbox =
-  step?.type === 'theory' && step.blocks.some((b) => b.type === 'sandbox');
+  step?.type === "theory" &&
+  step.blocks.some((b) => b.type === "sandbox" || b.type === "python");
 
 // Теория засчитывается при открытии, но шаги с sandbox — только после проверки
 useEffect(() => {

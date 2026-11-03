@@ -110,6 +110,25 @@ export const pythonAdvancedCourse: Course = {
                   'Атрибут класса создаётся один раз и разделяется между всеми экземплярами. Если он изменяемый (list, dict), то c1.add() изменит список и у c2. Правило: изменяемые атрибуты — всегда в __init__.',
               },
             },
+            {
+              id: 'py-l15-s4',
+              title: 'Практика: класс Counter',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode:
+                      'class Counter:\n    def __init__(self):\n        self.count = 0\n    def increment(self):\n        # увеличьте count на 1\n        pass\n',
+                    task: 'Допишите `Counter.increment()` — увеличивает `self.count` на 1. Создайте экземпляр, вызовите `increment()` трижды, сохраните `c.count` в переменную `result`.',
+                    solution:
+                      'class Counter:\n    def __init__(self):\n        self.count = 0\n    def increment(self):\n        self.count += 1\n\nc = Counter()\nc.increment()\nc.increment()\nc.increment()\nresult = c.count',
+                    expected: { type: 'variable', name: 'result', value: 3 },
+                    hint: 'self.count += 1',
+                  },
+                },
+              ],
+            },
           ],
         },
         {
@@ -282,6 +301,25 @@ export const pythonAdvancedCourse: Course = {
                 explanation:
                   '__eq__ (equals). Если определить — сравнение через == будет сравнивать то, что вы хотите, а не идентичность объектов в памяти. Dataclass генерирует его автоматически.',
               },
+            },
+            {
+              id: 'py-l17-s4',
+              title: 'Практика: dataclass',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode:
+                      'from dataclasses import dataclass\n\n@dataclass\nclass Point:\n    x: int\n    y: int\n',
+                    task: 'Создайте экземпляр `p = Point(3, 4)` и сохраните `p.x` в переменную `result`.',
+                    solution:
+                      'from dataclasses import dataclass\n\n@dataclass\nclass Point:\n    x: int\n    y: int\n\np = Point(3, 4)\nresult = p.x',
+                    expected: { type: 'variable', name: 'result', value: 3 },
+                    hint: 'Point(3, 4) — конструктор уже сгенерирован @dataclass',
+                  },
+                },
+              ],
             },
           ],
         },
@@ -531,6 +569,25 @@ export const pythonAdvancedCourse: Course = {
                   'Без wraps обёрнутая функция «потеряет лицо»: __name__ станет "wrapper", __doc__ пустой, аннотации пропадут. Для pytest это критично: он собирает тесты по имени и смотрит на аннотации. functools.wraps восстанавливает метаданные.',
               },
             },
+            {
+              id: 'py-l20-s5',
+              title: 'Практика: декоратор',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode:
+                      'import functools\n\ndef double(func):\n    # верните обёртку, удваивающую результат func\n    pass\n\n@double\ndef add(a, b):\n    return a + b\n',
+                    task: 'Допишите декоратор `double` — он вызывает `func(*args, **kwargs)` и удваивает результат. После декорирования `add(2, 3)` должно вернуть `10`. Сохраните результат в переменную `result`.',
+                    solution:
+                      'import functools\n\ndef double(func):\n    @functools.wraps(func)\n    def wrapper(*args, **kwargs):\n        return func(*args, **kwargs) * 2\n    return wrapper\n\n@double\ndef add(a, b):\n    return a + b\n\nresult = add(2, 3)',
+                    expected: { type: 'variable', name: 'result', value: 10 },
+                    hint: 'wrapper(*args, **kwargs) вызывает func и умножает результат на 2',
+                  },
+                },
+              ],
+            },
           ],
         },
         {
@@ -605,6 +662,25 @@ export const pythonAdvancedCourse: Course = {
                 explanation:
                   'Генератор выдаёт по одному значению, не создавая список. Для 10 миллионов элементов — разница в 80 МБ vs 200 байт. Скорость примерно та же (а иногда медленнее), зато памяти — в разы меньше. И повторно использовать нельзя — только создать новый.',
               },
+            },
+            {
+              id: 'py-l21-s4',
+              title: 'Практика: генератор',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode:
+                      'def squares(n):\n    # выдайте i * i для i от 0 до n - 1\n    pass\n',
+                    task: 'Допишите генератор `squares(n)`, который выдаёт квадраты чисел от 0 до n-1. Соберите первые 5 значений в список `result` и напечатайте его.',
+                    solution:
+                      'def squares(n):\n    for i in range(n):\n        yield i * i\n\nresult = list(squares(5))\nprint(result)',
+                    expected: { type: 'stdout', value: '[0, 1, 4, 9, 16]' },
+                    hint: 'yield i * i внутри for i in range(n)',
+                  },
+                },
+              ],
             },
           ],
         },
@@ -967,6 +1043,24 @@ export const pythonAdvancedCourse: Course = {
                   'Type hints — только подсказки. Python не проверяет их во время выполнения. Функция вернёт 5 (int), несмотря на -> str. Проверка — задача mypy/pyright/IDE. Это частая ошибка новичков: «зачем типы, если они не работают?» — работают, но в статическом анализе.',
               },
             },
+            {
+              id: 'py-l25-s4',
+              title: 'Практика: type hints',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode:
+                      'def add(a: int, b: int) -> int:\n    return a + b\n\n# TODO: присвойте результат add(2, 3) переменной result\n',
+                    task: 'Присвойте `add(2, 3)` переменной `result`. `add` уже с type hints — просто вызовите её.',
+                    solution: 'def add(a: int, b: int) -> int:\n    return a + b\n\nresult = add(2, 3)',
+                    expected: { type: 'variable', name: 'result', value: 5 },
+                    hint: 'result = add(2, 3)',
+                  },
+                },
+              ],
+            },
           ],
         },
         {
@@ -1222,6 +1316,25 @@ export const pythonAdvancedCourse: Course = {
                 explanation:
                   'HTTP-запрос — I/O-bound: во время ожидания ответа GIL отпускается. Потоки работают параллельно. multiprocessing тоже сработает, но это оверкилл: процессы дороже в создании, и обмен данными через IPC медленнее. Для I/O — потоки или asyncio.',
               },
+            },
+            {
+              id: 'py-l28-s4',
+              title: 'Практика: CPU-bound vs I/O-bound',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode:
+                      'def cpu_work(n):\n    total = 0\n    for i in range(n):\n        total += i * i\n    return total\n',
+                    task: 'Вычислите `cpu_work(1000)` и сохраните результат в переменную `result`.',
+                    solution:
+                      'def cpu_work(n):\n    total = 0\n    for i in range(n):\n        total += i * i\n    return total\n\nresult = cpu_work(1000)',
+                    expected: { type: 'variable', name: 'result', value: 332833500 },
+                    hint: 'result = cpu_work(1000)',
+                  },
+                },
+              ],
             },
           ],
         },

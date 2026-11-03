@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useTheme } from '@/lib/theme';
 import { SandboxView } from '@/components/SandboxView';
+import { PythonView } from '@/components/PythonView';
 
 type ResultType = 'ok' | 'partial' | 'fail';
 
@@ -156,6 +157,8 @@ export function TextBlocks({
 
           case 'sandbox':
             return <SandboxView key={i} sandbox={b.sandbox} onResult={onResult} />;
+          case 'python':
+          return <PythonView key={i} python={b.python} onResult={onResult} />;
         }
       })}
     </div>

@@ -383,7 +383,23 @@ export const pythonBasicsCourse: Course = {
                 explanation:
                   'Сложение строк — конкатенация. "5" + "5" = "55". Если нужна арифметика, приводите к int: int(x) + int(x).',
               },
-            },
+            },{
+            id: "py-l1-s4",
+            title: "Практика: первая программа",
+            type: "theory",
+            blocks: [
+              {
+                type: "python",
+                python: {
+                  starterCode: "# Напечатайте Hello, World!\n",
+                  task: "Напечатайте строку `Hello, World!` с помощью `print()`.",
+                  solution: "print('Hello, World!')",
+                  expected: { type: "stdout", value: "Hello, World!" },
+                  hint: "print('...') — выводит строку в stdout",
+                },
+              },
+            ],
+          },
           ],
         },
         {
@@ -455,6 +471,24 @@ export const pythonBasicsCourse: Course = {
                   '0 в логическом контексте ложен (falsy), поэтому сработает ветка else. То же — с пустой строкой, пустым списком и None.',
               },
             },
+            {
+              id: 'py-l2-s4',
+              title: 'Практика: if / elif / else',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode: 'score = 80\n# Присвойте grade букву A, B или C\n',
+                    task: 'Дано `score = 80`. Присвойте переменной `grade` букву: `A` если `score >= 90`, `B` если `score >= 75`, иначе `C`.',
+                    solution:
+                      'score = 80\nif score >= 90:\n    grade = "A"\nelif score >= 75:\n    grade = "B"\nelse:\n    grade = "C"',
+                    expected: { type: 'variable', name: 'grade', value: 'B' },
+                    hint: 'if / elif / else, не забудьте отступы',
+                  },
+                },
+              ],
+            },
           ],
         },
         {
@@ -521,6 +555,23 @@ export const pythonBasicsCourse: Course = {
                   'break и continue — ключевые слова управления циклом. range — генератор последовательности, который часто используется для счётных циклов.',
               },
             },
+           {
+              id: 'py-l3-s4',
+              title: 'Практика: цикл и сумма',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode: 'total = 0\n# Сложите числа от 1 до 10\n',
+                    task: 'Посчитайте сумму чисел от 1 до 10 включительно и сохраните в переменную `total`.',
+                    solution: 'total = sum(range(1, 11))',
+                    expected: { type: 'variable', name: 'total', value: 55 },
+                    hint: 'sum(range(1, 11)) или цикл for',
+                  },
+                },
+              ],
+            }, 
           ],
         },
       ],
@@ -593,6 +644,23 @@ export const pythonBasicsCourse: Course = {
                   'Кортежи неизменяемы. Если нужна изменяемость — используйте список. Если фиксированный набор — кортеж, и это гарантия от случайных изменений.',
               },
             },
+            {
+              id: 'py-l4-s4',
+              title: 'Практика: сортировка списка',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode: 'nums = [3, 1, 4, 1, 5, 9]\n',
+                    task: 'Отсортируйте `nums` по возрастанию (не меняя исходный список) и напечатайте результат через `print()`.',
+                    solution: 'nums = [3, 1, 4, 1, 5, 9]\nprint(sorted(nums))',
+                    expected: { type: 'stdout', value: '[1, 1, 3, 4, 5, 9]' },
+                    hint: 'sorted(nums) возвращает новый список, nums.sort() меняет на месте',
+                  },
+                },
+              ],
+            },
           ],
         },
         {
@@ -651,6 +719,23 @@ export const pythonBasicsCourse: Course = {
                 explanation:
                   'user.get("key") вернёт None, если ключа нет; user.get("key", default) — указанное значение. Обращение через [] выбросило бы KeyError.',
               },
+            },
+            {
+              id: 'py-l5-s4',
+              title: 'Практика: словарь',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode: 'user = {"name": "Анна", "age": 25}\n',
+                    task: 'Напечатайте значение по ключу `age` из словаря `user`.',
+                    solution: 'user = {"name": "Анна", "age": 25}\nprint(user["age"])',
+                    expected: { type: 'stdout', value: '25' },
+                    hint: 'user["age"] или user.get("age")',
+                  },
+                },
+              ],
             },
           ],
         },
@@ -730,6 +815,23 @@ export const pythonBasicsCourse: Course = {
                 explanation:
                   'Значение по умолчанию вычисляется при объявлении функции, а не при каждом вызове. Изменения, сделанные внутри функции, «утекают» между вызовами. Решение: `items=None` и `items = items or []`.',
               },
+            },
+            {
+              id: 'py-l6-s4',
+              title: 'Практика: функция',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode: 'def square(n):\n    # верните n в квадрате\n    pass\n',
+                    task: 'Допишите функцию `square(n)`, возвращающую `n * n`. Присвойте результат `square(7)` переменной `result`.',
+                    solution: 'def square(n):\n    return n * n\n\nresult = square(7)',
+                    expected: { type: 'variable', name: 'result', value: 49 },
+                    hint: 'return n * n',
+                  },
+                },
+              ],
             },
           ],
         },
@@ -909,6 +1011,26 @@ export const pythonBasicsCourse: Course = {
                   'Сначала фильтр `if x > 1` оставляет [2, 3]. Затем каждый умножается на 2 → [4, 6]. Единица отброшена.',
               },
             },
+            {
+              id: 'py-l13-s3',
+              title: 'Практика: list comprehension',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode: '# Создайте squares — квадраты чисел от 0 до 9\n',
+                    task: 'С помощью list comprehension создайте список `squares` — квадраты чисел от 0 до 9 включительно. Напечатайте результат.',
+                    solution: 'squares = [x ** 2 for x in range(10)]\nprint(squares)',
+                    expected: {
+                      type: 'stdout',
+                      value: '[0, 1, 4, 9, 16, 25, 36, 49, 64, 81]',
+                    },
+                    hint: '[x ** 2 for x in range(10)]',
+                  },
+                },
+              ],
+            },
           ],
         },
         {
@@ -971,6 +1093,23 @@ export const pythonBasicsCourse: Course = {
                 explanation:
                   'key=len задаёт ключ «длина», reverse=True — порядок по убыванию. Вариант A сортирует по алфавиту, C — синтаксическая ошибка, D разворачивает алфавитный порядок.',
               },
+            },
+                        {
+              id: 'py-l14-s4',
+              title: 'Практика: sorted с key',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode: 'words = ["banana", "apple", "cherry"]\n',
+                    task: 'Отсортируйте `words` по длине слова (от короткого к длинному) и напечатайте результат.',
+                    solution: 'words = ["banana", "apple", "cherry"]\nprint(sorted(words, key=len))',
+                    expected: { type: 'stdout', value: "['apple', 'banana', 'cherry']" },
+                    hint: 'sorted(words, key=len)',
+                  },
+                },
+              ],
             },
           ],
         },

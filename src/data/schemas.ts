@@ -61,6 +61,29 @@ z.object({
     caption: z.string().optional(),
   }),
 }),
+z.object({
+  type: z.literal("python"),
+  python: z.object({
+    starterCode: z.string().optional(),
+    task: z.string().min(1, "python.task пустой"),
+    solution: z.string().min(1, "python.solution пустой"),
+    expected: z.discriminatedUnion("type", [
+      z.object({
+        type: z.literal("stdout"),
+        value: z.string(),
+        normalize: z.enum(["trim", "lines"]).optional(),
+      }),
+      z.object({
+        type: z.literal("variable"),
+        name: z.string().min(1),
+        value: z.union([z.string(), z.number(), z.boolean()]),
+      }),
+    ]),
+    hint: z.string().optional(),
+    forbidden: z.array(z.string()).optional(),
+    caption: z.string().optional(),
+  }),
+}),
 ]);
 
 // ─────────────────────────────────────────────

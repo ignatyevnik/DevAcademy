@@ -2,6 +2,7 @@ import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SandboxEditor } from '@/components/editor/SandboxEditor';
+import { PythonEditor } from '@/components/editor/PythonEditor'; 
 import type { TextBlock } from '@/data';
 
 interface Props {
@@ -151,6 +152,13 @@ export function BlockEditor({ block, onChange, onDelete }: Props) {
     onChange={(next) => field('sandbox', next)}
   />
         )}
+
+        {block.type === "python" && (
+  <PythonEditor
+    python={block.python}
+    onChange={(next) => field("python", next)}
+  />
+)}
     </div>
   );
 }

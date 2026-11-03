@@ -7,6 +7,7 @@ export type TextBlock =
   | { type: 'table'; head: string[]; rows: string[][]; caption?: string }
   | { type: 'image'; src: string; alt: string; caption?: string }
   | { type: 'mermaid'; code: string; caption?: string }
+  | { type: 'python'; python: PythonBlock }
   | { type: 'sandbox'; sandbox: SandboxBlock }; 
 
 export interface QuizBase {
@@ -178,6 +179,18 @@ export interface SandboxBlock {
   /** Дополнительные regex-запреты (кроме встроенного DDL/DML). */
   forbidden?: string[];
   hint?: string;
+  caption?: string;
+}
+
+export interface PythonBlock {
+  starterCode?: string;
+  task: string;
+  solution: string;
+  expected:
+    | { type: 'stdout'; value: string; normalize?: 'trim' | 'lines' }
+    | { type: 'variable'; name: string; value: string | number | boolean };
+  hint?: string;
+  forbidden?: string[];
   caption?: string;
 }
 
