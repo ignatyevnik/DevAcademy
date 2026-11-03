@@ -154,14 +154,20 @@ export function SandboxView({ sandbox, onResult }: Props) {
       </div>
 
       <div className="space-y-3 p-5">
-        <textarea
-          value={sql}
-          onChange={(e) => setSql(e.target.value)}
-          spellCheck={false}
-          placeholder="SELECT ..."
-          rows={5}
-          className="w-full resize-y rounded-lg border border-input bg-background p-3 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
+          <textarea
+            value={sql}
+            onChange={(e) => setSql(e.target.value)}
+            onKeyDown={(e) => {
+              if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && sql.trim()) {
+                e.preventDefault();
+                handleCheck();
+              }
+            }}
+            spellCheck={false}
+            placeholder="SELECT ..."
+            rows={5}
+            className="w-full resize-y rounded-lg border border-input bg-background p-3 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
 
         <div className="flex flex-wrap gap-2">
           <Button onClick={handleRun} variant="outline" disabled={!sql.trim()}>

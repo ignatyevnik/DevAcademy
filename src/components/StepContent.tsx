@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import {
-  Check, Info, CircleHelp, Lightbulb, ArrowUp, ArrowDown, Code2,
+  Check, Info, CircleHelp, Lightbulb, ArrowUp, ArrowDown, Code2, Copy,
 } from 'lucide-react';
 import type {
   Step, TextBlock, Quiz, MultipleQuiz, FillQuiz, MatchingQuiz,
@@ -38,6 +38,46 @@ function InlineText({ text }: { text: string }) {
         return part;
       })}
     </>
+  );
+}
+
+function CodeBlock({ code, caption }: { code: string; caption?: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Не удалось скопировать');
+    }
+  };
+  return (
+    <figure className="code-block">
+      {caption && (
+        <figcaption className="code-caption">
+          <InlineText text={caption} />
+        </figcaption>
+      )}
+      <div className="relative group">
+        <button
+          type="button"
+          onClick={copy}
+          aria-label={copied ? 'Скопировано' : 'Копировать код'}
+          className={cn(
+            'absolute right-2 top-2 z-10 grid h-8 w-8 place-items-center rounded-md',
+            'border border-border bg-card/90 text-muted-foreground backdrop-blur transition-all',
+            'hover:text-foreground hover:border-primary/40',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            'opacity-0 group-hover:opacity-100 focus-visible:opacity-100',
+            copied && 'opacity-100 text-primary border-primary/40',
+          )}
+        >
+          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+        </button>
+        <pre><code>{code}</code></pre>
+      </div>
+    </figure>
   );
 }
 
@@ -108,12 +148,7 @@ export function TextBlocks({
               </ul>
             );
           case 'code':
-            return (
-              <figure key={i} className="code-block">
-                {b.caption && <figcaption className="code-caption"><InlineText text={b.caption} /></figcaption>}
-                <pre><code>{b.code}</code></pre>
-              </figure>
-            );
+            return <CodeBlock key={i} code={b.code} caption={b.caption} />;
           case 'note':
             return (
               <div key={i} className="flex gap-3 rounded-lg border border-primary/25 bg-accent/50 p-4">

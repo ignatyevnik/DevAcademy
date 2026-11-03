@@ -109,6 +109,12 @@ async function handleCheck() {
         <textarea
           value={code}
           onChange={(e) => setCode(e.target.value)}
+          onKeyDown={(e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && code.trim()) {
+              e.preventDefault();
+              handleCheck();
+            }
+          }}
           rows={6}
           spellCheck={false}
           placeholder="print('Hello')"
