@@ -1,7 +1,7 @@
 import { Link, useParams, useSearchParams, Navigate, useNavigate } from 'react-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ArrowLeft, ArrowRight, Check, CheckCircle2, CircleHelp, FileText, ListTree, X, Bookmark, BookmarkCheck, StickyNote 
+  ArrowLeft, ArrowRight, Check, CheckCircle2, CircleHelp, FileText, ListTree, X, Bookmark, BookmarkCheck, StickyNote, Library 
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getCourse, findLesson, allLessons } from '@/data';
@@ -234,6 +234,16 @@ useEffect(() => {
               <Bookmark className="h-5 w-5 text-muted-foreground" />
             )}
           </button>
+          {/* НОВАЯ ССЫЛКА: Переход ко всем закладкам */}
+          <Link
+            to="/bookmarks"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            title="Все закладки"
+            aria-label="Перейти ко всем закладкам"
+          >
+            <Library className="h-5 w-5 text-muted-foreground" />
+          </Link>
+
           <div className="hidden items-center gap-2 sm:flex" aria-hidden="true">
             <div className="h-1.5 w-28 overflow-hidden rounded-full bg-secondary">
               <div className="h-full rounded-full bg-primary transition-[width] duration-300" style={{ width: `${lessonPct}%` }} />
