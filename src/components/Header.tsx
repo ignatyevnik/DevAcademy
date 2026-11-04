@@ -1,14 +1,17 @@
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useState } from 'react';
-import { Search, GraduationCap, Menu, X } from 'lucide-react';
+import { Search, GraduationCap, Menu, X, Bookmark } from 'lucide-react';
 import { useSearch } from '@/components/SearchProvider';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useProgress } from '@/lib/progress';
 
 export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { openSearch } = useSearch();
+  const { state } = useProgress(); // если ещё не используется
+  const bookmarksCount = Object.keys(state.bookmarks).length;
 
   const goMyCourses = () => {
     setMobileOpen(false);
@@ -59,6 +62,19 @@ export function Header() {
           
           {/* ВОЗВРАЩАЕМ ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ СЮДА */}
           <ThemeToggle />
+
+          <Link
+            to="/bookmarks"
+            className="relative grid h-9 w-9 place-items-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Закладки"
+          >
+            <Bookmark className="h-5 w-5 text-muted-foreground" />
+            {bookmarksCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                {bookmarksCount > 9 ? '9+' : bookmarksCount}
+              </span>
+            )}
+          </Link>
         </nav>
 
         <button

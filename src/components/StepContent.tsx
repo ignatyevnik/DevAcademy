@@ -130,7 +130,8 @@ export function TextBlocks({
   onResult?: (result: QuizResult) => void;
 }) {
   return (
-    <div className="space-y-4 text-[15px] leading-[1.75] sm:text-base">
+    <div className="space-y-4 leading-[1.75] transition-[font-size] duration-200"
+      style={{ fontSize: 'var(--reading-font-size, 16px)' }}>
       {blocks.map((b, i) => {
         switch (b.type) {
           case 'p':

@@ -14,6 +14,7 @@ import { ReportError } from '@/components/ReportError';
 import { Skeleton } from '@/components/ui/skeleton';
 import { categories, courseCategory } from '@/data/categories';
 import { cn } from '@/lib/utils';
+import { StreakWidget } from '@/components/StreakWidget';
 
 const ALL_TAGS = ['Все', ...Array.from(new Set(courses.flatMap((c) => c.tags)))];
 
@@ -129,10 +130,12 @@ const toggleAll = () => {
 
       <main className="mx-auto max-w-6xl px-4 pb-20">
         <section className="py-10 sm:py-14">
-          <p className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-accent/50 px-3.5 py-1.5 text-xs font-semibold text-primary">
-            <WifiOff className="h-3.5 w-3.5" aria-hidden="true" />
-            Работает полностью офлайн
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-accent/50 px-3.5 py-1.5 text-xs font-semibold text-primary">
+              <WifiOff className="h-3.5 w-3.5" aria-hidden="true" />
+              Работает полностью офлайн
+            </p>
+          </div>
           <h1 className="mt-4 max-w-2xl text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
             Инженерная база знаний: тестирование, Python, Docker, Kubernetes и ИИ-агенты
           </h1>
@@ -140,8 +143,8 @@ const toggleAll = () => {
             Пошаговые уроки с проверочными вопросами. Прогресс сохраняется на устройстве — учитесь
             дома, в метро или на даче без интернета.
           </p>
-
-          <div className="mt-6 flex flex-wrap gap-6 text-sm">
+          
+          <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-4 text-sm">
             <div>
               <p className="text-2xl font-extrabold tracking-tight text-primary">{courses.length}</p>
               <p className="text-muted-foreground">{coursesWord(courses.length)} в базе</p>
@@ -153,6 +156,11 @@ const toggleAll = () => {
             <div>
               <p className="text-2xl font-extrabold tracking-tight text-primary">{stats.donePct}%</p>
               <p className="text-muted-foreground">пройдено вами</p>
+            </div>
+            
+            {/* Стрик справа */}
+            <div className="sm:ml-auto">
+              <StreakWidget />
             </div>
           </div>
         </section>

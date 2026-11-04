@@ -1,8 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { courses, type Step } from '@/data';
 import type { SrsCard } from './srs';
 import { calculateSrs } from './srs';
+import { useStreak } from './streak';
 
 const STORAGE_KEY = 'devlearn-progress-v1';
 
@@ -60,6 +61,21 @@ const Ctx = createContext<ProgressApi | null>(null);
 
 export function ProgressProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<ProgressState>(load);
+  const { recordActivity } = useStreak();
+  const prevDoneRef = useRef(state.done);
+
+  useEffect(() => {
+  const prev = prevDoneRef.current;
+  const curr = state.done;
+  let added = 0;
+  for (const k in curr) {
+    if (!prev[k]) added++;
+  }
+  if (added > 0) {
+    recordActivity(added * 2); // Считаем каждый шаг за 2 минуты
+  }
+  prevDoneRef.current = curr;
+}, [state.done, recordActivity]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));

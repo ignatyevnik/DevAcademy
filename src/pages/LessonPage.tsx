@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ReportError } from '@/components/ReportError';
+import { FontSizeToggle } from '@/components/FontSizeToggle';
 
 function StepNotes({ slug, stepId }: { slug: string; stepId: string }) {
   const { getNote, setNote } = useProgress();
@@ -238,6 +239,9 @@ useEffect(() => {
               <div className="h-full rounded-full bg-primary transition-[width] duration-300" style={{ width: `${lessonPct}%` }} />
             </div>
             <span className="text-xs font-semibold text-muted-foreground">{lessonPct}%</span>
+          </div>
+          <div className="hidden sm:block">
+            <FontSizeToggle />
           </div>
           <ThemeToggle />
           <button
