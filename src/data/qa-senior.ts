@@ -2,38 +2,37 @@ import type { Course } from './types';
 
 export const qaSeniorCourse: Course = {
   slug: 'qa-senior',
-  title: 'QA Senior',
-  subtitle: 'Стратегия, метрики, observability, менторство и качество на уровне процесса',
+  title: 'QA Senior: архитектура качества',
+  subtitle: 'Стратегия, экономика качества, архитектура фреймворков, безопасность и Observability',
   description:
-    'Курс для тех, кто вырос из автоматизации и хочет влиять на процесс. Разберём тест-стратегию и risk-based подход, DORA-метрики и покрытие vs mutation, архитектуру тестового фреймворка, управление данными и флаки, security и performance на масштабе, quality gates в CI, observability (метрики/логи/трейсы, Sentry), service virtualization, BDD и Three Amigos, Test Impact Analysis. Плюс лидерство: код-ревью тестов, собеседования, документация, менторство. Практикум — комплексный экзамен по всем темам.',
+    'Продвинутый курс для тех, кто влияет на процесс. Разберём тест-стратегию, DORA-метрики, Cost of Quality (CoQ), архитектурные паттерны (Screenplay), Testcontainers, управление данными (TDM), математику нагрузки (Закон Литтла), глубокий аудит безопасности (SAST/DAST/IAST), Threat Modeling (STRIDE), оптимизацию CI (TIA, Merge Queue), Service Virtualization, BDD и Observability (Sentry, OpenTelemetry).',
   level: 'Продвинутый',
-  tags: ['QA', 'Senior', 'Стратегия', 'Observability', 'Менторство'],
+  tags: ['QA', 'Senior', 'Архитектура', 'Стратегия', 'SRE'],
   accent: '#0e9f6e',
   icon: 'qa-senior',
   outcomes: [
-    'Строить тест-стратегию по рискам, а не «всё подряд»',
-    'Использовать DORA-метрики и понимать, что они говорят о процессе',
-    'Проектировать архитектуру тестового фреймворка (слои, данные, фабрики)',
-    'Бороться с флакающими тестами системно, а не ретраями',
-    'Оценивать security через SAST/DAST/SCA, а нагрузку — через SLO',
-    'Настраивать quality gates и политику merge в CI',
-    'Читать метрики, логи и трейсы: Grafana, Jaeger, Sentry',
-    'Применять BDD и Three Amigos для раннего тестирования',
-    'Использовать Test Impact Analysis для ускорения CI',
-    'Менторить команду: код-ревью тестов, собеседования, документация',
+    'Строить тест-стратегию по рискам и считать Cost of Quality (CoQ)',
+    'Использовать DORA-метрики для оценки здоровья процесса',
+    'Проектировать тестовые фреймворки по паттерну Screenplay',
+    'Управлять тестовыми данными (Data Masking, Synthetic Data) и изолировать тесты (Testcontainers)',
+    'Рассчитывать пропускную способность через Закон Литтла',
+    'Применять SAST, DAST, IAST, SCA и STRIDE в пайплайне',
+    'Настраивать Test Impact Analysis, Merge Queue и Feature Flags',
+    'Применять BDD, Three Amigos и Service Virtualization',
+    'Читать трейсы (OpenTelemetry) и триажить ошибки в Sentry',
+    'Проводить Code Review тестов и собеседования на позицию Senior',
   ],
   requirements: [
-    'Пройдены курсы «QA: основы» и «QA Automation»',
-    'Опыт автоматизации тестов (pytest + Playwright)',
-    'Понимание CI/CD и базовой observability',
+    'Опыт работы QA Automation от 2 лет',
+    'Понимание CI/CD и Docker',
   ],
   modules: [
     // ─────────────────────────────────────────────
-    // m1 — Тест-стратегия и метрики (было qa-m14)
+    // m1 — Стратегия и экономика качества (3 урока)
     // ─────────────────────────────────────────────
     {
       id: 'qa-s-m1',
-      title: 'Тест-стратегия и метрики',
+      title: 'Стратегия и экономика качества',
       lessons: [
         {
           id: 'qa-l56',
@@ -47,7 +46,7 @@ export const qaSeniorCourse: Course = {
               blocks: [
                 {
                   type: 'p',
-                  text: `Тест-стратегия — это ответ на вопрос «что и как мы тестируем, чтобы покрыть риски бизнеса». Senior QA не просто пишет тест-кейсы, а определяет приоритеты: где риск потери денег/репутации выше, там и тестируем глубже.`,
+                  text: 'Тест-стратегия — это ответ на вопрос «что и как мы тестируем, чтобы покрыть риски бизнеса». Senior QA не просто пишет тест-кейсы, а определяет приоритеты: где риск потери денег/репутации выше, там и тестируем глубже.',
                 },
                 {
                   type: 'list',
@@ -55,12 +54,7 @@ export const qaSeniorCourse: Course = {
                     'Risk-based: оцениваем вероятность сбоя и ущерб. Тестируем то, где «вероятность × ущерб» максимально.',
                     'Shift-left: тестирование начинается на этапе требований (ревью, BDD), а не после кода.',
                     'Shift-right: тестирование в проде (canary, мониторинг, A/B, feature flags).',
-                    'Test Pyramid vs Test Trophy: классическая пирамида (много unit, мало e2e) или «трофей» (акцент на интеграционных тестах). Выбор зависит от архитектуры.',
                   ],
-                },
-                {
-                  type: 'note',
-                  text: 'На собеседовании Senior: «Как вы выбираете, что автоматизировать в первую очередь?» Ответ — по рискам и частоте регрессий, а не «всё подряд».',
                 },
                 {
                   type: 'mermaid',
@@ -70,18 +64,29 @@ export const qaSeniorCourse: Course = {
                     Risk --> Approach["Подходы<br/>unit / api / e2e /<br/>нагрузка / security"]
                     Approach --> Env["Окружения<br/>dev → staging → prod"]
                     Env --> Exit["Exit criteria<br/>все P0/P1 закрыты,<br/>smoke зелёный"]
-                    Exit --> Release["Релиз"]`
-                },
-                {
-                  type: 'code',
-                  lang: 'markdown',
-                  caption: 'Шаблон тест-стратегии',
-                  code: `# Тест-стратегия: [Название проекта]\n\n## Scope (что тестируем)\n- In scope: оплата, корзина, авторизация\n- Out of scope: админка (тестируется отдельной командой)\n\n## Риски (top-3)\n1. Оплата: деньги, регуляторика — критично\n2. Авторизация: безопасность, доступ к данным\n3. Корзина: конверсия, деньги\n\n## Подходы\n- Unit: 70% (pytest, coverage > 80%)\n- API: 20% (Playwright + requests, все эндпоинты)\n- E2E: 10% (только критичные пути: логин, оплата)\n- Нагрузка: k6, p95 < 500 мс, error < 1%\n- Безопасность: ZAP на staging nightly, SAST на PR\n\n## Окружения\n- dev (моки), staging (реальная БД), prod (canary 5%)\n\n## Exit criteria (когда релизим)\n- Все P0/P1 баги закрыты\n- Smoke на staging зелёный\n- Canary 5% без ошибок 30 минут`,
+                    Exit --> Release["Релиз"]`,
                 },
               ],
             },
             {
               id: 'qa-l56-s2',
+              title: 'Шаблон тест-стратегии',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Хорошая стратегия умещается на 1–2 страницы и отвечает на вопросы: что делаем, что не делаем и почему. Вот типичный шаблон:',
+                },
+                {
+                  type: 'code',
+                  lang: 'markdown',
+                  caption: 'Шаблон тест-стратегии',
+                  code: `# Тест-стратегия: [Название проекта]\n\n## Scope (что тестируем)\n- In scope: оплата, корзина, авторизация\n- Out of scope: админка (тестируется отдельной командой)\n\n## Риски (top-3)\n1. Оплата: деньги, регуляторика — критично\n2. Авторизация: безопасность, доступ к данным\n3. Корзина: конверсия, деньги\n\n## Подходы\n- Unit: 70% (pytest, coverage > 80%)\n- API: 20% (Playwright + requests, все эндпоинты)\n- E2E: 10% (только критичные пути: логин, оплата)\n- Нагрузка: k6, p95 < 500 мс, error < 1%\n- Безопасность: ZAP на staging nightly, SAST на PR\n\n## Exit criteria (когда релизим)\n- Все P0/P1 баги закрыты\n- Smoke на staging зелёный\n- Canary 5% без ошибок 30 минут`,
+                },
+              ],
+            },
+            {
+              id: 'qa-l56-s3',
               title: 'Проверь себя: стратегия',
               type: 'quiz',
               quiz: {
@@ -95,11 +100,11 @@ export const qaSeniorCourse: Course = {
                 ],
                 correct: ['a'],
                 explanation:
-                  'Shift-left — «сдвиг влево» по временной шкале: тестировать раньше, на этапе требований и дизайна. Дефект в требованиях дешевле исправить, чем в проде. Shift-right — наоборот, тестирование в проде (canary, мониторинг).',
+                  'Shift-left — «сдвиг влево» по временной шкале: тестировать раньше, на этапе требований и дизайна. Дефект в требованиях дешевле исправить, чем в проде.',
               },
             },
             {
-              id: 'qa-l56-s3',
+              id: 'qa-l56-s4',
               title: 'Проверь себя: стратегия vs план',
               type: 'quiz',
               quiz: {
@@ -113,7 +118,129 @@ export const qaSeniorCourse: Course = {
                 ],
                 correct: ['b'],
                 explanation:
-                  'Стратегия — про подход и риски (на год-проект). План — про конкретный релиз: кто, когда, что проверяет. Стратегия отвечает «почему именно так», план — «что делаем на этой неделе».',
+                  'Стратегия — про подход и риски (на год-проект). План — про конкретный релиз: кто, когда, что проверяет.',
+              },
+            },
+            {
+              id: 'qa-l56-s5',
+              title: 'Проверь себя: пирамида vs трофей',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'В чем отличие «Трофея» (Test Trophy) от классической «Пирамиды»?',
+                options: [
+                  { id: 'a', text: 'В Трофее вообще нет тестов' },
+                  { id: 'b', text: 'Трофей делает акцент на интеграционных тестах, а не на Unit-тестах' },
+                  { id: 'c', text: 'Трофей используется только для мобильной разработки' },
+                  { id: 'd', text: 'Пирамида устарела и больше не используется' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'Пирамида Майка Кона опирается на Unit-тесты. Трофей Кента Доддса смещает акцент на интеграционные тесты (UI/API), так как они лучше проверяют стыки компонентов.',
+              },
+            },
+          ],
+        },
+        {
+          id: 'qa-l101',
+          title: 'Cost of Quality: сколько стоит баг',
+          minutes: 30,
+          steps: [
+            {
+              id: 'qa-l101-s1',
+              title: 'Четыре категории затрат (CoQ)',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Senior QA мыслит не количеством найденных багов, а деньгами компании. Концепция **Cost of Quality (CoQ)** делит все затраты на качество на четыре категории.',
+                },
+                {
+                  type: 'table',
+                  caption: 'Cost of Quality (CoQ)',
+                  head: ['Категория', 'Что это', 'Пример'],
+                  rows: [
+                    ['Prevention (Превентивные)', 'Затраты на предотвращение багов', 'Code Review, написание автотестов, обновление документации'],
+                    ['Appraisal (Оценочные)', 'Затраты на поиск багов', 'Ручное тестирование, запуск CI-пайплайнов, аудит безопасности'],
+                    ['Internal Failure (Внутренние)', 'Баги, найденные до релиза', 'Переделывание кода, повторный прогон регресса, сорванный дедлайн спринта'],
+                    ['External Failure (Внешние)', 'Баги, найденные в проде', 'Потеря клиентов, штрафы, откат релиза (Rollback), репутационный ущерб'],
+                  ],
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Правило 1-10-100',
+                  code: `graph LR
+                    P["Prevention<br/>$1"] -->|"если не предотвратили"| A["Appraisal<br/>$10"]
+                    A -->|"если не нашли"| F["Failure (в проде)<br/>$100"]`,
+                },
+              ],
+            },
+            {
+              id: 'qa-l101-s2',
+              title: 'ROI автоматизации: когда писать тест?',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Автотест стоит дорого (написание + поддержка). Если тест запускается раз в год — он никогда не окупится. Senior QA считает ROI (Return on Investment) автоматизации.',
+                },
+                {
+                  type: 'code',
+                  lang: 'text',
+                  caption: 'Формула окупаемости',
+                  code: `Затраты на ручной прогон = Время прогона × Частота (в год) × Стоимость часа QA
+Затраты на автотест = Время написания + (Время поддержки × Годы)
+
+Если Затраты на ручной прогон > Затраты на автотест → тест выгоден.`,
+                },
+              ],
+            },
+            {
+              id: 'qa-l101-s3',
+              title: 'Проверь себя: CoQ',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'К какой категории Cost of Quality относится автоматический прогон регрессионных тестов в CI на каждый Pull Request?',
+                options: [
+                  { id: 'a', text: 'Prevention (Превентивные)' },
+                  { id: 'b', text: 'Appraisal (Оценочные)' },
+                  { id: 'c', text: 'Internal Failure (Внутренние)' },
+                  { id: 'd', text: 'External Failure (Внешние)' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'Запуск тестов — это оценка (Appraisal). Если баг найден в CI — это Internal Failure. Prevention — это написание тестов и ревью.',
+              },
+            },
+            {
+              id: 'qa-l101-s4',
+              title: 'Проверь себя: ROI',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'У вас есть ручной тест, который занимает 2 часа и запускается раз в квартал. Стоит ли его автоматизировать, если написание займет 40 часов?',
+                options: [
+                  { id: 'a', text: 'Да, автоматизация всегда выгодна' },
+                  { id: 'b', text: 'Нет, затраты на написание (40ч) превысят затраты на ручной прогон за несколько лет (8ч в год)' },
+                  { id: 'c', text: 'Да, потому что ручное тестирование — это зло' },
+                  { id: 'd', text: 'Нет, потому что автотесты часто падают' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'Ручной прогон 4 раза в год по 2 часа = 8 часов в год. Автотест стоит 40 часов. Окупится только через 5 лет, что экономически нецелесообразно. Лучше оставить ручной чек-лист.',
+              },
+            },
+            {
+              id: 'qa-l101-s5',
+              title: 'Проверь себя: правило 1-10-100',
+              type: 'quiz',
+              quiz: {
+                kind: 'number',
+                question: 'Согласно правилу 1-10-100, во сколько раз дороже исправить баг в продакшене (External Failure), чем на этапе требований (Prevention), если Prevention принять за 1?',
+                correct: 100,
+                explanation:
+                  'Правило 1-10-100: Требования ($1) -> QA ($10) -> Продакшен ($100).',
               },
             },
           ],
@@ -128,10 +255,6 @@ export const qaSeniorCourse: Course = {
               title: 'Четыре метрики DORA',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: `DORA (DevOps Research and Assessment) — стандарт измерения эффективности доставки. Senior QA должен знать эти метрики и уметь их улучшать.`,
-                },
                 {
                   type: 'table',
                   caption: 'DORA-метрики (пороги по отчёту 2024)',
@@ -150,41 +273,31 @@ export const qaSeniorCourse: Course = {
                     DF["Deployment Frequency<br/>↑ элита: по требованию"] --> Perf["DORA:<br/>скорость + стабильность"]
                     LT["Lead Time for Changes<br/>↓ элита: менее 1 дня"] --> Perf
                     CFR["Change Failure Rate<br/>↓ элита: около 5%"] --> Perf
-                    MTTR["Failed Deployment Recovery<br/>↓ элита: менее 1 часа"] --> Perf`
-                },
-                {
-                  type: 'note',
-                  text: 'Пороги «элита» и «high» — из отчёта DORA 2024. Change Failure Rate 5% — элита, 10% — high, 15% — medium, 64% — low. MTTR переименован в «Failed Deployment Recovery Time» — суть та же (время восстановления после сбоя).',
-                },
-                {
-                  type: 'code',
-                  lang: 'text',
-                  caption: 'Инструменты для DORA-метрик',
-                  code: `GitHub Insights → метрики репозитория (Lead Time, PR frequency)\nLinearB, Sleuth, Faros AI — специализированные DORA-дашборды\nFour Keys (Google, open-source) — сбор из GitHub/GitLab\nGrafana + Prometheus — кастомные метрики (deploy count, MTTR)\n\nПрактика: раз в спринт смотрим тренд:\n  Deployment Frequency ↑ хорошо\n  Lead Time ↓ хорошо\n  Change Failure Rate ↓ хорошо\n  MTTR ↓ хорошо`,
+                    MTTR["Failed Deployment Recovery<br/>↓ элита: менее 1 часа"] --> Perf`,
                 },
               ],
             },
             {
               id: 'qa-l57-s2',
-              title: 'Проверь себя: DORA',
-              type: 'quiz',
-              quiz: {
-                kind: 'single',
-                question: 'Какая DORA-метрика показывает, как быстро мы восстанавливаемся после сбоя?',
-                options: [
-                  { id: 'a', text: 'Deployment Frequency' },
-                  { id: 'b', text: 'Lead Time for Changes' },
-                  { id: 'c', text: 'Change Failure Rate' },
-                  { id: 'd', text: 'Mean Time to Recover' },
-                ],
-                correct: ['d'],
-                explanation:
-                  'MTTR (Mean Time to Recover) — среднее время восстановления. Change Failure Rate — доля сбоев, Deployment Frequency — частота релизов, Lead Time — скорость доставки изменений.',
-              },
+              title: 'Как QA влияет на DORA',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'QA не может напрямую контролировать деплой, но Senior QA напрямую влияет на **Change Failure Rate (CFR)** и **Failed Deployment Recovery Time (MTTR)**.',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    '**CFR (Доля сбоев)**: Снижаем через качественные автотесты (особенно интеграционные), Canary Deployments и Feature Flags.',
+                    '**MTTR (Время восстановления)**: Снижаем через observability (быстро находим баг по трейсам/Sentry) и автоматизацию откатов (Rollback).',
+                  ],
+                },
+              ],
             },
             {
               id: 'qa-l57-s3',
-              title: 'Проверь себя: диагноз по DORA',
+              title: 'Проверь себя: DORA',
               type: 'quiz',
               quiz: {
                 kind: 'single',
@@ -197,80 +310,43 @@ export const qaSeniorCourse: Course = {
                 ],
                 correct: ['b'],
                 explanation:
-                  'Высокий CFR + падающая Frequency = релизы «страшно делать». Причины: нет автотестов на регресс, нет feature flags, rollback руками. Нанимать QA — лечить симптом. Senior смотрит на процесс: CI, тесты, безопасность деплоя.',
-              },
-            },
-          ],
-        },
-        {
-          id: 'qa-l58',
-          title: 'Метрики покрытия и отчётность',
-          minutes: 20,
-          steps: [
-            {
-              id: 'qa-l58-s1',
-              title: 'Почему 100% покрытия — миф',
-              type: 'theory',
-              blocks: [
-                {
-                  type: 'p',
-                  text: `Code coverage (покрытие кода тестами) — полезная метрика, но не цель. 100% покрытия не значит «нет багов» — тесты могут быть пустыми (assert true) или проверять не то. Senior понимает, что важнее покрытие бизнес-сценариев, а не строк кода.`,
-                },
-                {
-                  type: 'list',
-                  items: [
-                    'Coverage 80% — хороший ориентир, но не догма',
-                    'Mutation testing (Stryker, PIT) — проверяет качество тестов, а не количество',
-                    'Тест, который не падает при поломке кода — бесполезен',
-                    'Отчётность: стейкхолдерам важны риски, а не проценты',
-                  ],
-                },
-                {
-                  type: 'note',
-                  text: 'Senior QA готовит отчёт, где отвечает на вопросы бизнеса: «Какие риски покрыты?», «Что не тестировали и почему?», «Какие баги нашли и как их приоритизировали?». Проценты — вторичны.',
-                },
-                {
-                  type: 'code',
-                  lang: 'python',
-                  caption: 'Mutation testing: ловит пустые тесты',
-                  code: `# Код\ndef is_adult(age: int) -> bool:\n    return age >= 18\n\n# Тест с 100% coverage и 0% пользы\ndef test_is_adult_bad():\n    is_adult(20)      # вызвали — coverage есть, assert нет\n    assert True       # всегда зелёный\n\n# Mutation testing: mutmut меняет ">=" на ">"\n# Если тест всё равно зелёный — тест плохой\n\n# Хороший тест\ndef test_is_adult_good():\n    assert is_adult(18) is True    # граница\n    assert is_adult(17) is False\n    assert is_adult(100) is True`,
-                },
-              ],
-            },
-            {
-              id: 'qa-l58-s2',
-              title: 'Проверь себя: покрытие',
-              type: 'quiz',
-              quiz: {
-                kind: 'single',
-                question: 'Почему 100% code coverage не гарантирует отсутствие багов?',
-                options: [
-                  { id: 'a', text: 'Покрытие считается только для Python' },
-                  { id: 'b', text: 'Тесты могут не проверять логику (пустые assert) или не покрывать граничные случаи' },
-                  { id: 'c', text: 'Покрытие всегда врёт' },
-                  { id: 'd', text: 'Баги бывают только в проде' },
-                ],
-                correct: ['b'],
-                explanation:
-                  'Покрытие показывает, что строка выполнилась, а не что она проверена. Тест с `assert true` даст 100% покрытия и 0 пользы. Mutation testing проверяет качество: если сломать код — упадёт ли тест?',
+                  'Высокий CFR + падающая Frequency = релизы «страшно делать». Причины: нет автотестов на регресс, нет feature flags, rollback руками.',
               },
             },
             {
-              id: 'qa-l58-s3',
-              title: 'Проверь себя: coverage vs mutation',
+              id: 'qa-l57-s4',
+              title: 'Проверь себя: MTTR',
               type: 'quiz',
               quiz: {
                 kind: 'single',
-                question: 'Coverage 100%, mutation score 10%. Что это значит?',
+                question: 'Что означает метрика Failed Deployment Recovery Time (ранее MTTR)?',
                 options: [
-                  { id: 'a', text: 'Тесты хорошие' },
-                  { id: 'b', text: 'Тесты выполняют код, но не проверяют логику — 90% мутаций не ловятся' },
-                  { id: 'c', text: 'Ошибка в инструменте' },
-                  { id: 'd', text: 'Пора на прод' },
+                  { id: 'a', text: 'Как часто мы деплоим' },
+                  { id: 'b', text: 'Время от обнаружения сбоя в проде до его устранения' },
+                  { id: 'c', text: 'Время прохождения тестов в CI' },
+                  { id: 'd', text: 'Количество сбоев за месяц' },
                 ],
                 correct: ['b'],
                 explanation:
-                  'Coverage — «код выполнился». Mutation — «тест упал, если сломать код». Если coverage 100%, но mutation 10% — тесты пустые (assert true). Senior смотрит на mutation score, а не на проценты coverage.',
+                  'MTTR (Mean Time to Recover) — среднее время восстановления после сбоя. Это метрика стабильности.',
+              },
+            },
+            {
+              id: 'qa-l57-s5',
+              title: 'Проверь себя: Quality Gate',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие проверки стоит делать блокирующими (Quality Gate) для Pull Request?',
+                options: [
+                  { id: 'a', text: 'Lint (стиль кода)' },
+                  { id: 'b', text: 'Unit-тесты' },
+                  { id: 'c', text: 'Полный регресс (1000 E2E-тестов на 3 часа)' },
+                  { id: 'd', text: 'SAST (Критичные уязвимости)' },
+                ],
+                correct: ['a', 'b', 'd'],
+                explanation:
+                  'Lint, Unit и SAST (Critical) — быстрые проверки. Полный регресс на 3 часа блокировать нельзя, его запускают ночью (Nightly).',
               },
             },
           ],
@@ -279,25 +355,25 @@ export const qaSeniorCourse: Course = {
     },
 
     // ─────────────────────────────────────────────
-    // m2 — Автоматизация на масштабе (было qa-m15)
+    // m2 — Архитектура тестовых фреймворков (3 урока)
     // ─────────────────────────────────────────────
     {
       id: 'qa-s-m2',
-      title: 'Автоматизация на масштабе',
+      title: 'Архитектура тестовых фреймворков',
       lessons: [
         {
           id: 'qa-l59',
-          title: 'Архитектура тестового фреймворка',
+          title: 'Слои фреймворка и Page Object',
           minutes: 30,
           steps: [
             {
               id: 'qa-l59-s1',
-              title: 'Слои фреймворка',
+              title: 'Зачем выносить слои',
               type: 'theory',
               blocks: [
                 {
                   type: 'p',
-                  text: `Хороший фреймворк — это не «папка с тестами». Это слои: тесты (что проверяем), Page Objects / API clients (как взаимодействуем), хелперы (данные, утилиты), конфиги (окружения). Senior проектирует эту структуру, чтобы 1000 тестов оставались поддерживаемыми.`,
+                  text: 'Хороший фреймворк — это не «папка с тестами». Это слои: тесты (что проверяем), Page Objects / API clients (как взаимодействуем), хелперы (данные, утилиты), конфиги (окружения).',
                 },
                 {
                   type: 'mermaid',
@@ -306,35 +382,8 @@ export const qaSeniorCourse: Course = {
                     Tests["tests/<br/>только сценарии и asserts"] --> Pages["pages/<br/>Page Object"]
                     Tests --> API["api_clients/<br/>обёртки над HTTP API"]
                     Tests --> Fix["fixtures/<br/>данные и подготовка"]
-                    Tests --> Utils["utils/<br/>хелперы"]
                     Pages --> Base["pages/base.py<br/>BasePage"]
-                    Pages --> Config["config/<br/>dev / staging / prod"]
-                    API --> Config`
-                },
-                {
-                  type: 'code',
-                  lang: 'text',
-                  caption: 'Типичная архитектура',
-                  code: `tests/            ← только сценарии
-  e2e/
-  api/
-  unit/
-pages/            ← Page Object Model
-api_clients/      ← обёртки над API
-fixtures/         ← тестовые данные, фикстуры
-utils/            ← хелперы, генераторы
-config/           ← окружения (dev, stage, prod)
-conftest.py       ← общие фикстуры pytest`,
-                },
-                {
-                  type: 'note',
-                  text: 'Senior QA пишет не только тесты, но и «каркас»: как создаются данные, как мокаются сервисы, как параллелятся тесты. Плохой фреймворк = каждый новый тест пишется 2 дня и падает через неделю.',
-                },
-                {
-                  type: 'code',
-                  lang: 'python',
-                  caption: 'Скелет фреймворка: conftest.py + Page Object',
-                  code: `# conftest.py\nimport pytest\nfrom playwright.sync_api import sync_playwright\nfrom pages.login_page import LoginPage\n\n@pytest.fixture(scope="session")\ndef browser():\n    with sync_playwright() as p:\n        b = p.chromium.launch(headless=True)\n        yield b\n        b.close()\n\n@pytest.fixture\ndef page(browser):\n    ctx = browser.new_context()\n    pg = ctx.new_page()\n    yield pg\n    ctx.close()\n\n@pytest.fixture\ndef login_page(page):\n    return LoginPage(page)\n\n# pages/base.py\nclass BasePage:\n    def __init__(self, page):\n        self.page = page\n\n    def open(self, path):\n        self.page.goto(path)\n        return self\n\n# tests/e2e/test_login.py\ndef test_login_ok(login_page):\n    login_page.open("/login").login("a@x.com", "secret")\n    assert login_page.page.url.endswith("/dashboard")`,
+                    API --> Config["config/<br/>dev / staging / prod"]`,
                 },
               ],
             },
@@ -353,134 +402,456 @@ conftest.py       ← общие фикстуры pytest`,
                 ],
                 correct: ['b'],
                 explanation:
-                  'Изоляция: тест не знает про CSS-селекторы или URL API. Изменилась кнопка — правим только Page Object. Это главный принцип поддерживаемости на масштабе.',
+                  'Изоляция: тест не знает про CSS-селекторы или URL API. Изменилась кнопка — правим только Page Object.',
               },
             },
             {
               id: 'qa-l59-s3',
-              title: 'Проверь себя: слои',
+              title: 'Проверь себя: структура',
               type: 'quiz',
               quiz: {
                 kind: 'matching',
-                question: 'Сопоставьте слой и его ответственность',
+                question: 'Сопоставьте папку и её содержимое',
                 pairs: [
-                  { left: 'tests/', right: 'Только сценарии и ассерты' },
+                  { left: 'tests/', right: 'Сценарии и Assert' },
                   { left: 'pages/', right: 'Локаторы и методы страниц' },
-                  { left: 'api_clients/', right: 'Обёртки над HTTP API' },
-                  { left: 'fixtures/', right: 'Тестовые данные и подготовка' },
+                  { left: 'api_clients/', right: 'HTTP-запросы' },
+                  { left: 'fixtures/', right: 'Подготовка данных' },
                 ],
                 explanation:
-                  'Тест читается как сценарий: «открыл, залогинился, проверил». Всё остальное — в слоях. Изменилась вёрстка — правим pages/, не тесты. Изменился API — api_clients/.',
+                  'Тесты вызывают методы из pages/ и api_clients/, а фикстуры готовят данные.',
+              },
+            },
+            {
+              id: 'qa-l59-s4',
+              title: 'Когда Page Object становится проблемой',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Если в Page Object появляются методы вроде `login_and_add_to_cart_and_checkout()`, значит, он превращается в «божественный объект». Page Object должен описывать **только элементы страницы**, а бизнес-логику нужно выносить выше (в Screenplay или хелперы).',
+                },
+              ],
+            },
+            {
+              id: 'qa-l59-s5',
+              title: 'Проверь себя: антипаттерн',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Какой метод в Page Object считается антипаттерном?',
+                options: [
+                  { id: 'a', text: 'def click_submit(self):' },
+                  { id: 'b', text: 'def get_error_text(self):' },
+                  { id: 'c', text: 'def buy_iphone_with_promo_and_send_email(self):' },
+                  { id: 'd', text: 'def open(self, url):' },
+                ],
+                correct: ['c'],
+                explanation:
+                  'Page Object должен уметь работать со страницей (клик, ввод, чтение текста). Сквозной бизнес-сценарий (купить + промокод + email) в Page Object — это нарушение ответственности.',
               },
             },
           ],
         },
         {
-          id: 'qa-l60',
-          title: 'Управление тестовыми данными',
-          minutes: 25,
+          id: 'qa-l103',
+          title: 'Паттерн Screenplay (Актеры и Задачи)',
+          minutes: 35,
           steps: [
             {
-              id: 'qa-l60-s1',
-              title: 'Генерация, изоляция и очистка',
+              id: 'qa-l103-s1',
+              title: 'Проблема Page Object в сложных тестах',
               type: 'theory',
               blocks: [
                 {
                   type: 'p',
-                  text: `На масштабе данные — главная боль. Если все тесты используют одного пользователя — они падают при параллельном запуске. Если данные не чистятся — БД растёт, тесты замедляются.`,
-                },
-                {
-                  type: 'list',
-                  items: [
-                    'Уникальные данные на тест: uuid, timestamp в email/логине',
-                    'Фабрики данных (Factory Boy, Faker) вместо хардкода',
-                    'API-подготовка данных (быстрее, чем через UI)',
-                    'Очистка: teardown фикстуры или «эфемерные» БД (Testcontainers)',
-                    'Анонимизация прод-данных для staging (GDPR!)',
-                  ],
-                },
-                {
-                  type: 'note',
-                  text: 'Testcontainers — поднять реальную БД в Docker на время теста. Senior использует их, чтобы тесты не зависели от «загрязнённого» staging.',
+                  text: 'Page Object отлично работает для простых страниц. Но когда бизнес-сценарий разрастается (логин → поиск → корзина → оплата), тесты становятся похожи на «простыни» вызовов методов. Паттерн **Screenplay** решает это, смещая фокус с *страниц* на *актеров и их задачи*.',
                 },
                 {
                   type: 'code',
                   lang: 'python',
-                  caption: 'Factory Boy + Faker: генерация данных',
-                  code: `import factory\nfrom faker import Faker\nfrom myapp.models import User\n\nfake = Faker("ru_RU")\n\nclass UserFactory(factory.Factory):\n    class Meta:\n        model = User\n\n    # Уникальный email на каждый вызов — нет коллизий\n    email = factory.Sequence(lambda n: f"user{n}_{fake.uuid4()[:8]}@test.com")\n    name = factory.LazyFunction(lambda: fake.name())\n    age = factory.LazyFunction(lambda: fake.random_int(min=18, max=80))\n    is_active = True\n\n# Использование в тестах\nuser = UserFactory()                     # уникальные данные\ndmin = UserFactory(is_active=False)      # override поля\nbatch = UserFactory.create_batch(50)     # 50 уникальных пользователей\n\n# С реальным API\nuser = UserFactory()\nresponse = requests.post("/api/users", json=user.to_dict())\nassert response.status_code == 201`,
+                  caption: 'Сравнение подходов',
+                  code: `# Page Object: тест знает про страницы
+login_page.open().login(user, pass)
+catalog_page.search("iphone")
+product_page.add_to_cart()
+checkout_page.pay(card)
+
+# Screenplay: тест описывает бизнес-задачу
+actor.attempts_to(
+    Login(user, pass),
+    Search_for_item("iphone"),
+    Add_to_cart(),
+    Checkout(card)
+)`,
+                },
+              ],
+            },
+            {
+              id: 'qa-l103-s2',
+              title: 'Компоненты Screenplay',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'mermaid',
+                  caption: 'Структура Screenplay',
+                  code: `graph TD
+                    A["Actor (Актер)"] -->|"выполняет"| T["Task (Задача)"]
+                    T -->|"состоит из"| I["Interaction (Шаг)"]
+                    T -->|"проверяет"| Q["Question (Вопрос)"]
+                    A -->|"имеет"| Ab["Abilities (Способности)<br/>например, BrowseTheWeb"]`,
+                },
+                {
+                  type: 'list',
+                  items: [
+                    '**Actor**: Кто выполняет действия (например, "Покупатель").',
+                    '**Ability**: Что он умеет (например, "ходить по сайту" или "делать API-запросы").',
+                    '**Task**: Бизнес-шаг (например, "Войти в систему").',
+                    '**Question**: Проверка (например, "Видит ли он кнопку?").',
+                  ],
+                },
+              ],
+            },
+            {
+              id: 'qa-l103-s3',
+              title: 'Проверь себя: Screenplay',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'В чем главное отличие Screenplay от Page Object?',
+                options: [
+                  { id: 'a', text: 'Screenplay работает быстрее' },
+                  { id: 'b', text: 'Screenplay моделирует действия пользователя (бизнес-задачи), а не структуру страниц' },
+                  { id: 'c', text: 'Screenplay не использует Selenium' },
+                  { id: 'd', text: 'Page Object не поддерживает Python' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'Screenplay позволяет писать тесты на языке бизнеса («Актер пытается Войти, затем Купить товар»). Это делает тесты читаемыми для Product Owner.',
+              },
+            },
+            {
+              id: 'qa-l103-s4',
+              title: 'Пример на Python',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'code',
+                  lang: 'python',
+                  caption: 'Реализация Screenplay',
+                  code: `class Login(Task):
+    def __init__(self, email, password):
+        self.email = email
+        self.password = password
+
+    def perform_as(self, actor):
+        actor.attempts_to(
+            Enter.the_value(self.email).into(LoginPage.EMAIL_FIELD),
+            Enter.the_value(self.password).into(LoginPage.PASSWORD_FIELD),
+            Click.on(LoginPage.SUBMIT_BUTTON)
+        )
+
+# В тесте:
+buyer.attempts_to(
+    Login("test@x.com", "secret"),
+    See.that(Header.WELCOME_TEXT).is_visible()
+)`,
+                },
+              ],
+            },
+            {
+              id: 'qa-l103-s5',
+              title: 'Плюсы и минусы',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'list',
+                  items: [
+                    '✅ Переиспользование: Задачу `Login` можно вызывать в 100 разных тестах.',
+                    '✅ Читаемость: Тест выглядит как бизнес-требование.',
+                    '✅ Масштабируемость: Легко комбинировать Задачи в новые сценарии.',
+                    '❌ Порог входа: Требует больше абстракций, чем Page Object.',
+                    '❌ Избыточность: Для простого сайта на 3 страницы Screenplay будет оверкиллом.',
+                  ],
+                },
+              ],
+            },
+            {
+              id: 'qa-l103-s6',
+              title: 'Проверь себя: Actor',
+              type: 'quiz',
+              quiz: {
+                kind: 'fill',
+                question: 'Как называется компонент в Screenplay, который представляет собой пользователя (например, "Покупатель"), выполняющего действия? (одно слово)',
+                accepted: ['Actor', 'actor', 'Актер'],
+                placeholder: 'Название компонента',
+                hint: 'От английского «актер»',
+                explanation:
+                  'Actor (Актер) — это центральная фигура в Screenplay. Он имеет Abilities (Способности) и выполняет Tasks (Задачи).',
+              },
+            },
+          ],
+        },
+        {
+          id: 'qa-l104',
+          title: 'Testcontainers: реальные зависимости',
+          minutes: 30,
+          steps: [
+            {
+              id: 'qa-l104-s1',
+              title: 'Проблема локальных моков БД',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Интеграционные тесты часто используют H2 или моки. В итоге тесты зеленые, а в проде падают из-за специфичного SQL-синтаксиса Postgres. **Testcontainers** поднимает реальный Docker-контейнер с БД (Postgres, Redis, Kafka) прямо во время теста и убивает его после.',
+                },
+                {
+                  type: 'code',
+                  lang: 'python',
+                  caption: 'Пример на Python (pytest)',
+                  code: `from testcontainers.postgres import PostgresContainer
+import pytest
+
+@pytest.fixture(scope="session")
+def postgres():
+    with PostgresContainer("postgres:15-alpine") as postgres:
+        yield postgres
+
+def test_user_creation(postgres):
+    engine = create_engine(postgres.get_connection_url())
+    # ... выполнение теста`,
+                },
+              ],
+            },
+            {
+              id: 'qa-l104-s2',
+              title: 'Проверь себя: Testcontainers',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Зачем использовать Testcontainers вместо H2 или моков БД?',
+                options: [
+                  { id: 'a', text: 'Они работают быстрее' },
+                  { id: 'b', text: 'Они гарантируют совместимость тестов с реальной СУБД (версия, синтаксис)' },
+                  { id: 'c', text: 'Они не требуют Docker' },
+                  { id: 'd', text: 'Они нужны только для UI-тестов' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'H2 или SQLite имеют отличия в SQL-синтаксисе от Postgres. Testcontainers запускает реальный Docker-образ Postgres.',
+              },
+            },
+            {
+              id: 'qa-l104-s3',
+              title: 'Как это работает под капотом',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Testcontainers использует Docker API. При запуске теста он скачивает образ (если его нет), запускает контейнер, ждёт, пока БД инициализируется, и прокидывает порт (например, 5432) на хост.',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Жизненный цикл Testcontainer',
+                  code: `sequenceDiagram
+                    participant Test as pytest
+                    participant TC as Testcontainers
+                    participant Docker
+                    participant DB as Postgres Container
+
+                    Test->>TC: Запусти Postgres:15
+                    TC->>Docker: docker run
+                    Docker->>DB: Start
+                    TC->>DB: Ждём готовности (Healthcheck)
+                    DB-->>TC: Ready
+                    TC-->>Test: Connection URL
+                    Test->>DB: Выполняем SQL
+                    Test->>TC: Тест завершен
+                    TC->>Docker: docker stop
+                    Docker->>DB: Убить контейнер`,
+                },
+              ],
+            },
+            {
+              id: 'qa-l104-s4',
+              title: 'Проблемы производительности',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Запуск контейнера занимает время (1–5 секунд). Если поднимать БД на каждый тест (scope="function"), тесты будут идти вечность. Senior QA использует `scope="session"` для БД и очищает таблицы между тестами (TRUNCATE), либо использует транзакции с откатом (Rollback).',
+                },
+              ],
+            },
+            {
+              id: 'qa-l104-s5',
+              title: 'Проверь себя: оптимизация',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Как оптимизировать тесты с Testcontainers, чтобы они не шли слишком долго?',
+                options: [
+                  { id: 'a', text: 'Запускать контейнер для каждого теста (function scope)' },
+                  { id: 'b', text: 'Использовать session scope для контейнера и очищать данные (TRUNCATE) между тестами' },
+                  { id: 'c', text: 'Вообще не использовать Testcontainers' },
+                  { id: 'd', text: 'Запускать тесты только по ночам' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'Запуск контейнера — это секунды. Если в наборе 100 тестов, запуск на каждый = 5 минут оверхеда. Правильно — поднять один контейнер на всю сессию (session scope) и очищать данные между тестами.',
+              },
+            },
+          ],
+        },
+      ],
+    },
+
+    // ─────────────────────────────────────────────
+    // m3 — Данные и флаки (2 урока)
+    // ─────────────────────────────────────────────
+    {
+      id: 'qa-s-m3',
+      title: 'Тестовые данные и флаки',
+      lessons: [
+        {
+          id: 'qa-l60',
+          title: 'Test Data Management (TDM)',
+          minutes: 30,
+          steps: [
+            {
+              id: 'qa-l60-s1',
+              title: 'Synthetic vs Masked Data',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Тестам нужны данные. Использовать копию прода — плохо (GDPR/152-ФЗ) и опасно. Есть два подхода к генерации данных.',
+                },
+                {
+                  type: 'table',
+                  caption: 'Подходы к данным',
+                  head: ['Подход', 'Суть', 'Плюсы', 'Минусы'],
+                  rows: [
+                    ['Synthetic (Синтетика)', 'Генерация данных с нуля (Faker, FactoryBoy)', 'Безопасно, легко создать миллион записей', 'Может не отражать реальные аномалии'],
+                    ['Masked (Маскирование)', 'Взять прод-данные и заменить PII (имена, телефоны) на фейки', 'Реалистичные граничные случаи', 'Сложно настроить, риск утечки'],
+                  ],
                 },
               ],
             },
             {
               id: 'qa-l60-s2',
-              title: 'Проверь себя: данные',
+              title: 'Проверь себя: TDM',
               type: 'quiz',
               quiz: {
-                kind: 'multiple',
-                question: 'Какие подходы помогают изолировать тестовые данные?',
+                kind: 'single',
+                question: 'Вам нужно протестировать систему с 5 миллионами пользователей. Какой подход к данным выбрать?',
                 options: [
-                  { id: 'a', text: 'Уникальные email с uuid на каждый тест' },
-                  { id: 'b', text: 'Testcontainers с чистой БД' },
-                  { id: 'c', text: 'Один общий тестовый пользователь для всех' },
-                  { id: 'd', text: 'Teardown-фикстуры, удаляющие созданные данные' },
+                  { id: 'a', text: 'Сгенерировать 5 миллионов пользователей через Faker' },
+                  { id: 'b', text: 'Взять дамп прода и загрузить на тестовый стенд' },
+                  { id: 'c', text: 'Использовать маскированные данные (Masked Data) с сохранением распределения' },
+                  { id: 'd', text: 'Создать одного пользователя и запустить тест 5 миллионов раз' },
                 ],
-                correct: ['a', 'b', 'd'],
+                correct: ['c'],
                 explanation:
-                  'Один общий пользователь (c) — источник race condition при параллельных тестах. Уникальные данные, Testcontainers и teardown — три кита изоляции.',
+                  'Для объемных тестов важны паттерны распределения. Faker даст равномерное распределение, что нереалистично. Дамп прода нарушает закон. Masked Data сохраняет паттерны.',
               },
             },
             {
               id: 'qa-l60-s3',
-              title: 'Проверь себя: фабрики',
+              title: 'Инструменты маскирования',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'list',
+                  items: [
+                    '**Delphix**: Коммерческий инструмент, автоматически находит PII и заменяет его.',
+                    '**Tonic.ai**: Генерация синтетических данных на основе схемы БД.',
+                    '**Faker (Python)**: Библиотека для генерации фейковых имен, адресов, телефонов.',
+                    '**Factory Boy**: Создание объектов для тестов с уникальными полями.',
+                  ],
+                },
+              ],
+            },
+            {
+              id: 'qa-l60-s4',
+              title: 'Проверь себя: закон',
               type: 'quiz',
               quiz: {
                 kind: 'single',
-                question: 'Зачем в Factory Boy используется `Sequence` или `uuid` для email?',
+                question: 'Почему нельзя просто скопировать прод-базу на staging для тестов?',
                 options: [
-                  { id: 'a', text: 'Для красоты' },
-                  { id: 'b', text: 'Чтобы каждый тест получил уникальные данные — нет коллизий при параллельном запуске' },
-                  { id: 'c', text: 'Это требование Faker' },
-                  { id: 'd', text: 'Для безопасности' },
+                  { id: 'a', text: 'Это занимает много места' },
+                  { id: 'b', text: 'Это нарушает законы о персональных данных (GDPR, 152-ФЗ), так как содержит PII реальных людей' },
+                  { id: 'c', text: 'Тесты будут работать медленнее' },
+                  { id: 'd', text: 'Это запрещено лицензией PostgreSQL' },
                 ],
                 correct: ['b'],
                 explanation:
-                  'Хардкод «test@x.com» в 100 тестах при параллельном запуске → race condition. Sequence/uuid гарантирует уникальность: каждый тест создаёт своего пользователя, ни с кем не пересекается.',
+                  'База содержит имена, телефоны, email реальных людей. Их передача на тестовые стенды без маскирования — это утечка персональных данных.',
+              },
+            },
+            {
+              id: 'qa-l60-s5',
+              title: 'Стратегия очистки данных',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Если тест создает пользователя, он должен его удалить (Teardown). Иначе база распухнет, а тесты начнут падать из-за дублей. Подходы:',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    '**Teardown**: Удаление созданных записей в блоке `finally` или pytest-фикстуре (yield).',
+                    '**Ephemeral DB**: Поднять контейнер (Testcontainers), убить контейнер (все данные удалены).',
+                    '**Транзакции**: Начать транзакцию перед тестом, сделать Rollback после теста (данные не сохраняются).',
+                  ],
+                },
+              ],
+            },
+            {
+              id: 'qa-l60-s6',
+              title: 'Проверь себя: очистка',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'В чем главное преимущество использования транзакций (Rollback) для очистки данных после теста?',
+                options: [
+                  { id: 'a', text: 'Транзакции быстрее, чем DROP TABLE' },
+                  { id: 'b', text: 'Не нужно писать SQL-запросы на удаление (DELETE) — база откатывается к состоянию до теста' },
+                  { id: 'c', text: 'Транзакции позволяют тестам работать параллельно' },
+                  { id: 'd', text: 'Они не требуют подключения к БД' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'Вместо того чтобы вручную удалять созданные записи (что легко забыть), можно откатить транзакцию. База вернется в исходное состояние автоматически.',
               },
             },
           ],
         },
         {
           id: 'qa-l61',
-          title: 'Флакающие тесты',
+          title: 'Flaky Tests: системный подход',
           minutes: 25,
           steps: [
             {
               id: 'qa-l61-s1',
-              title: 'Почему тесты падают «через раз»',
+              title: 'Flaky Management Policy',
               type: 'theory',
               blocks: [
                 {
                   type: 'p',
-                  text: `Флакающий тест — тот, что падает без изменений в коде. Причины: гонки (race condition), тайминги, зависимость от порядка, общие данные, сеть. На масштабе 10% флаков убивают доверие к CI.`,
+                  text: 'Флакающий тест хуже, чем отсутствие теста: он подрывает доверие к CI. Senior QA внедряет политику работы с флаками.',
                 },
                 {
                   type: 'list',
                   items: [
-                    'Карантин: пометить как flaky и вынести из основного пайплайна',
-                    'Ретраи: временное решение (pytest-rerunfailures), не лечение',
-                    'Поиск корня: логи, трейсы (Playwright trace), повтор 100 раз',
-                    'Стабильность: auto-waiting вместо sleep, уникальные данные, изоляция',
+                    '**Rule of 3**: Тест, упавший 3 раза подряд без изменения кода, переводится в статус `@flaky`.',
+                    '**Quarantine (Карантин)**: Флаки выносятся из блокирующего CI в отдельную ночную сборку.',
+                    '**Ownership**: У каждого флака есть ответственный (автор теста).',
+                    '**Metrics**: Метрика `Flaky Rate` (процент флаков). Если > 2%, релиз блокируется до починки.',
                   ],
-                },
-                {
-                  type: 'note',
-                  text: 'Senior не игнорирует флаки. Метрика: «flaky rate» (доля нестабильных тестов). Хорошая команда держит < 2%.',
-                },
-                {
-                  type: 'code',
-                  lang: 'bash',
-                  caption: 'Как дебажить флак',
-                  code: `# 1. Воспроизвести локально (только упавшие в прошлый раз)\npytest --lf -x\n\n# 2. Прогнать 100 раз — 1 из 100 упадёт\npip install pytest-repeat\npytest tests/test_flaky.py --count=100 -x\n\n# 3. Сохранить trace (Playwright)\npytest --tracing=retain-on-failure\nplaywright show-trace test-results/.../trace.zip\n\n# 4. Изолировать: запустить один, без параллели\npytest tests/test_flaky.py -p no:xdist\n\n# 5. Запустить в цикле с логами\necho "while pytest tests/test_x.py; do :; done" > run.sh`,
                 },
               ],
             },
@@ -489,79 +860,92 @@ conftest.py       ← общие фикстуры pytest`,
               title: 'Проверь себя: флаки',
               type: 'quiz',
               quiz: {
+                kind: 'multiple',
+                question: 'Какие меры помогают эффективно бороться с флакающими тестами?',
+                options: [
+                  { id: 'a', text: 'Настроить автоматический retry в CI, чтобы тест не падал' },
+                  { id: 'b', text: 'Внедрить карантин (quarantine) для нестабильных тестов' },
+                  { id: 'c', text: 'Сделать так, чтобы каждый тест генерировал уникальные данные (uuid)' },
+                  { id: 'd', text: 'Назначить ответственного за каждый нестабильный тест' },
+                ],
+                correct: ['b', 'c', 'd'],
+                explanation:
+                  'Автоматический retry (a) — это антипаттерн, он маскирует проблему. Остальные три (b, c, d) — правильная стратегия.',
+              },
+            },
+            {
+              id: 'qa-l61-s3',
+              title: 'Причины флаков',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'table',
+                  caption: 'Почему тесты падают «через раз»',
+                  head: ['Причина', 'Пример', 'Решение'],
+                  rows: [
+                    ['Гонки (Race Conditions)', 'Два теста пишут в одну БД', 'Уникальные данные, изоляция'],
+                    ['Тайминги', 'Тест ждет 2 секунды, а сервер отвечает за 3', 'Умные ожидания (Playwright expect)'],
+                    ['Зависимость от порядка', 'Тест 2 зависит от данных Теста 1', 'Независимые тесты (Arrange для каждого)'],
+                    ['Внешние API', 'Сторонний сервис лежит', 'Моки (WireMock) для внешних систем'],
+                  ],
+                },
+              ],
+            },
+            {
+              id: 'qa-l61-s4',
+              title: 'Инструменты дебага',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'Поиск причины флака',
+                  code: `# Запустить только упавшие в прошлый раз тесты
+pytest --lf
+
+# Прогнать тест 100 раз (найти закономерность)
+pytest tests/test_flaky.py --count=100
+
+# Сохранить Trace (Playwright) при падении
+pytest --tracing=retain-on-failure
+playwright show-trace trace.zip`,
+                },
+              ],
+            },
+            {
+              id: 'qa-l61-s5',
+              title: 'Проверь себя: правило 3 страйков',
+              type: 'quiz',
+              quiz: {
                 kind: 'single',
-                question: 'Какая самая частая причина флакающих тестов?',
+                question: 'Что гласит правило "Rule of 3" для флакающих тестов?',
+                options: [
+                  { id: 'a', text: 'Тест можно перезапускать 3 раза' },
+                  { id: 'b', text: 'Если тест упал 3 раза без изменений в коде, он переводится в карантин (@flaky)' },
+                  { id: 'c', text: 'Над тестом должны работать 3 QA' },
+                  { id: 'd', text: 'Тест удаляется после 3-го падения' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'Если тест падает без изменения кода 3 раза, это флак. Его изолируют, чтобы он не блокировал разработку, и чинят.',
+              },
+            },
+            {
+              id: 'qa-l61-s6',
+              title: 'Проверь себя: дебаг',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Какая самая частая причина флакающих тестов в автотестах?',
                 options: [
                   { id: 'a', text: 'Медленный интернет' },
-                  { id: 'b', text: 'Гонки и общие данные между тестами (race condition)' },
+                  { id: 'b', text: 'Гонки (race condition) и общие данные между тестами' },
                   { id: 'c', text: 'Плохой синтаксис Python' },
                   { id: 'd', text: 'Мало памяти' },
                 ],
                 correct: ['b'],
                 explanation:
-                  'При параллельном запуске или общем стейте (один пользователь, одна запись в БД) тесты мешают друг другу. Лечение — уникальные данные и изоляция.',
-              },
-            },
-            {
-              id: 'qa-l61-s3',
-              title: 'Проверь себя: дебаг флака',
-              type: 'quiz',
-              quiz: {
-                kind: 'multiple',
-                question: 'Тест падает 1 из 10. Какие первые шаги по дебагу?',
-                options: [
-                  { id: 'a', text: 'Воспроизвести локально через pytest --lf' },
-                  { id: 'b', text: 'Прогнать 100 раз с pytest-repeat' },
-                  { id: 'c', text: 'Сразу добавить retry в CI' },
-                  { id: 'd', text: 'Собрать trace/screenshot с падения' },
-                ],
-                correct: ['a', 'b', 'd'],
-                explanation:
-                  'Retry (c) — не дебаг, а маскировка. Сначала воспроизвести, прогнать много раз, собрать trace. Найти корень (race, таймаут, данные) — только потом решать, ретрай или фикс.',
-              },
-            },
-          ],
-        },
-        {
-          id: 'qa-l62',
-          title: 'Контрактное и визуальное тестирование',
-          minutes: 25,
-          steps: [
-            {
-              id: 'qa-l62-s1',
-              title: 'Pact и визуальные регрессии',
-              type: 'theory',
-              blocks: [
-                {
-                  type: 'p',
-                  text: `Контрактное тестирование (Pact) проверяет, что клиент и сервер «договорились» о формате данных. Клиент генерирует контракт, сервер его валидирует. Если сервер сломает API — CI упадёт до релиза.`,
-                },
-                {
-                  type: 'p',
-                  text: `Визуальное тестирование (Percy, Applitools, Playwright screenshots) ловит регрессии вёрстки, которые не видит DOM: сдвиг кнопки, неверный цвет, наложение текста.`,
-                },
-                {
-                  type: 'note',
-                  text: 'На собеседовании Senior: «Как тестируете микросервисы?» — контрактные тесты (Pact) вместо полного E2E, чтобы не поднимать весь кластер для каждого теста.',
-                },
-              ],
-            },
-            {
-              id: 'qa-l62-s2',
-              title: 'Проверь себя: контракты',
-              type: 'quiz',
-              quiz: {
-                kind: 'single',
-                question: 'Что проверяет контрактное тестирование (Pact)?',
-                options: [
-                  { id: 'a', text: 'Скорость ответа сервера' },
-                  { id: 'b', text: 'Соответствие формата API ожиданиям клиента (схема, поля)' },
-                  { id: 'c', text: 'Визуальную вёрстку' },
-                  { id: 'd', text: 'Безопасность' },
-                ],
-                correct: ['b'],
-                explanation:
-                  'Pact проверяет контракт: клиент ожидает поля A, B, C. Если сервер убирает B — контракт нарушен, CI падает. Это дешевле и быстрее, чем поднимать весь E2E.',
+                  'При параллельном запуске или общем стейте (один пользователь, одна запись в БД) тесты мешают друг другу.',
               },
             },
           ],
@@ -570,321 +954,436 @@ conftest.py       ← общие фикстуры pytest`,
     },
 
     // ─────────────────────────────────────────────
-    // m3 — Security и Performance на Senior-уровне (было qa-m16)
+    // m4 — Performance & Security (3 урока)
     // ─────────────────────────────────────────────
     {
-      id: 'qa-s-m3',
-      title: 'Security и Performance на Senior-уровне',
+      id: 'qa-s-m4',
+      title: 'Performance & Security',
       lessons: [
         {
-          id: 'qa-l63',
-          title: 'SAST, DAST, SCA: уровни безопасности',
-          minutes: 25,
+          id: 'qa-l107',
+          title: 'Математика нагрузки: Закон Литтла',
+          minutes: 30,
           steps: [
             {
-              id: 'qa-l63-s1',
-              title: 'Три подхода к security testing',
+              id: 'qa-l107-s1',
+              title: 'L = λ × W',
               type: 'theory',
               blocks: [
                 {
-                  type: 'table',
-                  caption: 'Виды security-тестов',
-                  head: ['Тип', 'Что проверяет', 'Инструменты'],
-                  rows: [
-                    ['SAST (Static)', 'Код без запуска — ищет уязвимости в исходниках', 'SonarQube, Semgrep, CodeQL'],
-                    ['DAST (Dynamic)', 'Запущенное приложение — как чёрный ящик', 'OWASP ZAP, Burp Suite'],
-                    ['SCA (Composition)', 'Зависимости на известные CVE', 'Dependabot, Snyk, Trivy'],
+                  type: 'p',
+                  text: 'Senior QA понимает физику нагрузки. Закон Литтла связывает три величины:',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    '**L (Length)**: Среднее число пользователей, одновременно находящихся в системе.',
+                    '**λ (Lambda)**: Интенсивность поступления (Throughput, RPS).',
+                    '**W (Wait Time)**: Среднее время, которое пользователь проводит в системе (Latency).',
                   ],
                 },
                 {
-                  type: 'mermaid',
-                  caption: 'SAST, DAST, SCA — три уровня проверки',
-                  code: `graph LR
-                    Code["Исходный код"] -->|"SAST"| SAST["SonarQube, Semgrep<br/>уязвимости в коде"]
-                    App["Запущенное<br/>приложение"] -->|"DAST"| DAST["ZAP, Burp<br/>уязвимости в рантайме"]
-                    Deps["Зависимости<br/>requirements, package.json"] -->|"SCA"| SCA["Dependabot, Snyk<br/>CVE в библиотеках"]
-                    SAST --> PR["Проверки в CI<br/>(на каждый PR)"]
-                    SCA --> PR
-                    DAST --> Nightly["DAST nightly<br/>(на staging)"]`
+                  type: 'code',
+                  lang: 'text',
+                  caption: 'Формула и пример',
+                  code: `L = λ × W
+
+Пример: Мы хотим, чтобы система держала 100 RPS (λ = 100).
+Среднее время ответа должно быть не более 200 мс (W = 0.2 сек).
+L = 100 * 0.2 = 20 (concurrent users).`,
+                },
+              ],
+            },
+            {
+              id: 'qa-l107-s2',
+              title: 'Проверь себя: Law of Little',
+              type: 'quiz',
+              quiz: {
+                kind: 'number',
+                question: 'Система обрабатывает 300 RPS, среднее время ответа 0.1 сек. Сколько одновременных запросов находится в системе? (L = λ * W)',
+                correct: 30,
+                explanation: 'L = 300 * 0.1 = 30.',
+              },
+            },
+            {
+              id: 'qa-l107-s3',
+              title: 'Диагностика боттлнеков',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Если при нагрузке RPS растет, а Latency тоже растет — мы уперлись в ресурсы. Смотреть нужно на метрики CPU, Memory и I/O.',
                 },
                 {
-                  type: 'note',
-                  text: 'Senior QA встраивает все три в CI: SAST и SCA — на каждый PR, DAST — на staging nightly. Это не замена ручному пентесту, а первый барьер.',
+                  type: 'table',
+                  caption: 'Где искать узкое место',
+                  head: ['Метрика', 'Наблюдение', 'Причина'],
+                  rows: [
+                    ['CPU App-сервера', '100%', 'Код тормозит (тяжелые вычисления)'],
+                    ['CPU App-сервера', 'Низкий, но Latency растет', 'I/O Wait. БД или внешний API тормозит'],
+                    ['Memory', 'Растет, потом OOM', 'Утечка памяти'],
+                    ['DB Connections', 'Уперлись в лимит', 'Неправильный пул соединений'],
+                  ],
+                },
+              ],
+            },
+            {
+              id: 'qa-l107-s4',
+              title: 'Проверь себя: боттлнеки',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'При нагрузочном тесте CPU приложения 20%, но Latency выросла с 200мс до 2 секунд. В чем вероятная причина?',
+                options: [
+                  { id: 'a', text: 'Не хватает CPU' },
+                  { id: 'b', text: 'Утечка памяти' },
+                  { id: 'c', text: 'I/O Wait (база данных или внешний API не успевают отвечать)' },
+                  { id: 'd', text: 'Ошибка в коде приложения' },
+                ],
+                correct: ['c'],
+                explanation:
+                  'Низкий CPU и высокий Latency — классический признак I/O Wait. Приложение ждет ответа от БД или внешнего сервиса, само при этом ничего не вычисляя.',
+              },
+            },
+            {
+              id: 'qa-l107-s5',
+              title: 'Профилирование',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Чтобы найти, какая именно функция тормозит на сервере, используют профайлеры. Для Python — `py-spy` или `cProfile`. Для Go — `pprof`. Senior QA умеет приложить профиль к баг-репорту.',
+                },
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'py-spy: профилирование без перезапуска',
+                  code: `# Профилирование работающего процесса (PID)
+py-spy top --pid 1234
+py-spy record -o profile.svg --pid 1234`,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: 'qa-l63',
+          title: 'SAST, DAST, IAST и SCA: глубокое погружение',
+          minutes: 40,
+          steps: [
+            {
+              id: 'qa-l63-s1',
+              title: 'SAST: как статический анализ «видит» уязвимости',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: `SAST (Static Application Security Testing) анализирует исходный код без его запуска. Чтобы не искать просто совпадения по регуляркам, современные SAST-сканеры строят абстрактное синтаксическое дерево (AST) и анализируют граф потока данных (DFG).`,
+                },
+                {
+                  type: 'p',
+                  text: `Главный механизм поиска инъекций в SAST — это **Taint Analysis**. Сканер ищет три компонента:
+                  1. **Source (Источник)**: откуда приходят недоверенные данные (например, \`request.args.get('id')\`).
+                  2. **Sink (Сточка)**: куда эти данные попадают (например, \`cursor.execute(query)\`).
+                  3. **Sanitizer (Очиститель)**: функция, которая обезвреживает данные (например, \`int()\`).
+                  Если данные проходят от Source к Sink **без** Sanitizer'а, сканер поднимает тревогу.`,
+                },
+                {
+                  type: 'code',
+                  lang: 'python',
+                  caption: 'Пример Taint Analysis',
+                  code: `# Опасность: Source -> Sink без Sanitizer
+def get_user(request):
+    user_id = request.GET.get('id')  # SOURCE
+    query = f"SELECT * FROM users WHERE id = {user_id}"
+    cursor.execute(query)            # SINK (SQL Injection)
+
+# Безопасно: есть Sanitizer
+def get_user_safe(request):
+    user_id = int(request.GET.get('id')) # SANITIZER
+    cursor.execute("SELECT * FROM users WHERE id = %s", [user_id])`,
                 },
               ],
             },
             {
               id: 'qa-l63-s2',
-              title: 'Проверь себя: SAST vs DAST',
-              type: 'quiz',
-              quiz: {
-                kind: 'matching',
-                question: 'Сопоставьте тип и инструмент',
-                pairs: [
-                  { left: 'SAST', right: 'Semgrep, SonarQube' },
-                  { left: 'DAST', right: 'OWASP ZAP, Burp' },
-                  { left: 'SCA', right: 'Dependabot, Snyk' },
-                  { left: 'Ручной пентест', right: 'Burp Suite с экспертизой' },
-                ],
-                explanation:
-                  'SAST — анализ кода. DAST — сканирование приложения. SCA — проверка зависимостей. Пентест — ручной поиск сложных логических уязвимостей.',
-              },
-            },
-          ],
-        },
-        {
-          id: 'qa-l64',
-          title: 'Нагрузочное тестирование на масштабе',
-          minutes: 30,
-          steps: [
-            {
-              id: 'qa-l64-s1',
-              title: 'Распределённая нагрузка и SLO',
+              title: 'Плюсы и минусы SAST',
               type: 'theory',
               blocks: [
                 {
-                  type: 'p',
-                  text: `Когда один load-generator не справляется — используют распределённую нагрузку (k6 distributed, Locust master/worker, JMeter distributed). Senior проектирует тест так, чтобы метрики отражали реальные SLO.`,
-                },
-                {
                   type: 'list',
                   items: [
-                    'SLO (Service Level Objective): p95 < 500 мс, error rate < 1%',
-                    'Ramp-up: плавный вход, чтобы не словить ложный спайк',
-                    'Soak test: 8–24 часа под нагрузкой — ловит утечки',
-                    'Тест на 1%: можно ли увеличить нагрузку, не меняя систему',
+                    '✅ **Работает до запуска кода (Shift-Left)**: на Pull Request.',
+                    '✅ **Указывает точную строку**: разработчику легко исправить.',
+                    '✅ **Находит ошибки в конфигурациях IaC**: Terraform, Kubernetes YAML.',
+                    '❌ **Ложные срабатывания (False Positives)**: если не понимает кастомный Sanitizer.',
+                    '❌ **Не находит логические дыры**: например, Broken Access Control (IDOR).',
                   ],
-                },
-                {
-                  type: 'note',
-                  text: 'Senior связывает нагрузочные тесты с бизнес-метриками: «выдержит ли система Чёрную пятницу». Не просто «RPS вырос», а «при 10x трафика заказы проходят без ошибок».',
                 },
               ],
             },
             {
-              id: 'qa-l64-s2',
-              title: 'Проверь себя: SLO',
-              type: 'quiz',
-              quiz: {
-                kind: 'single',
-                question: 'Что такое SLO в нагрузочном тестировании?',
-                options: [
-                  { id: 'a', text: 'Максимальное количество запросов' },
-                  { id: 'b', text: 'Численный целевой уровень: например, p95 latency < 500 мс' },
-                  { id: 'c', text: 'Тип базы данных' },
-                  { id: 'd', text: 'Скрипт Locust' },
-                ],
-                correct: ['b'],
-                explanation:
-                  'SLO (Service Level Objective) — измеримая цель: «95% запросов быстрее 500 мс», «ошибок не более 1%». Без SLO нагрузочный тест превращается в «красивый график».',
-              },
-            },
-          ],
-        },
-        {
-          id: 'qa-l65',
-          title: 'Chaos Engineering',
-          minutes: 20,
-          steps: [
-            {
-              id: 'qa-l65-s1',
-              title: 'Ломаем систему специально',
+              id: 'qa-l63-s3',
+              title: 'DAST и IAST: динамика',
               type: 'theory',
               blocks: [
                 {
                   type: 'p',
-                  text: `Chaos Engineering — намеренное внесение сбоев (отключение узла, задержка сети, падение БД), чтобы проверить, как система восстанавливается. Netflix Chaos Monkey — родоначальник.`,
-                },
-                {
-                  type: 'list',
-                  items: [
-                    'Гипотеза: «если убьём один под, сервис продолжит работать»',
-                    'Эксперимент: в контролируемой среде (staging) убиваем под',
-                    'Наблюдение: проверяем, восстановилось ли (SLO не нарушены)',
-                    'Инструменты: Chaos Mesh, LitmusChaos, Gremlin',
-                  ],
+                  text: `DAST (Dynamic Application Security Testing) сканирует запущенное приложение, отправляя тысячи вредоносных HTTP-запросов. Основные этапы: **Spidering** (обход ссылок) и **Fuzzing** (подстановка пейлоадов XSS, SQLi).`,
                 },
                 {
                   type: 'note',
-                  text: 'Senior QA вместе с SRE внедряет Chaos Engineering как регулярную практику (game days). Это ловит проблемы отказоустойчивости, которые не видны в обычных тестах.',
+                  text: `**Проблема SPA (React/Vue)**: DAST-сканеры часто не умеют выполнять JavaScript. Они видят пустой \`<div id="root">\`. Для SPA нужны headless-браузеры внутри DAST (ZAP Ajax Spider). Также сканеру нужна настройка токенов, чтобы ходить под авторизацией.`,
+                },
+                {
+                  type: 'p',
+                  text: `**IAST (Interactive Application Security Testing)** — гибрид. Агент внедряется в рантайм приложения. Когда QA гоняет автотесты, агент видит точную строку кода и срабатывает только при реальной атаке. Идеален для CI.`,
                 },
               ],
             },
             {
-              id: 'qa-l65-s2',
-              title: 'Проверь себя: chaos',
+              id: 'qa-l63-s4',
+              title: 'SCA и SBOM',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: `SCA (Software Composition Analysis) анализирует зависимости (package-lock.json, requirements.txt). В одной из транзитивных библиотек может быть критическая уязвимость (CVE), как это было с Log4Shell.`,
+                },
+                {
+                  type: 'note',
+                  text: `**SBOM (Software Bill of Materials)** — это «состав» вашего приложения (JSON-файл со списком всех зависимостей). По новым законам (США, ЕС) наличие SBOM обязательно для госсектора. QA Senior должен уметь генерировать SBOM (через Trivy или Syft) и прикреплять его к артефактам релиза.`,
+                },
+              ],
+            },
+            {
+              id: 'qa-l63-s5',
+              title: 'Сводная таблица',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'table',
+                  caption: 'Сравнение подходов',
+                  head: ['Критерий', 'SAST', 'DAST', 'IAST', 'SCA'],
+                  rows: [
+                    ['Что анализирует', 'Исходный код', 'HTTP-запросы/ответы', 'Рантайм во время тестов', 'Зависимости'],
+                    ['Когда запускать', 'На каждый PR', 'Nightly / Staging', 'Во время E2E-тестов', 'На каждый PR'],
+                    ['Точность указания', 'Файл и строка', 'Только URL', 'Файл, строка, стек', 'Имя библиотеки'],
+                    ['Ложные срабатывания', 'Высокие', 'Нулевые', 'Нулевые', 'Средние'],
+                    ['Скорость', 'Секунды/минуты', 'Часы', 'Зависит от тестов', 'Секунды'],
+                  ],
+                },
+              ],
+            },
+            {
+              id: 'qa-l63-s6',
+              title: 'Проблема триажа (Triage)',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: `Если включить SonarQube на старый проект, он выдаст 5000 ошибок. Если сделать их все блокирующими — разработка остановится. Senior QA внедряет **Baselining** и **Security Gate**.`,
+                },
+                {
+                  type: 'list',
+                  items: [
+                    '**Baselining**: старые уязвимости фиксируются в базе, новые PR проверяются только на **новые** уязвимости.',
+                    '**Gate по критичности**: Блокируем PR только при наличии уязвимостей уровня **Critical** и **High**. Medium/Low — создают тикеты в Jira.',
+                    '**False Positive**: если сканер ошибается, в коде ставится комментарий-подавление (например, `// nosemgrep: sql-injection`).',
+                  ],
+                },
+              ],
+            },
+            {
+              id: 'qa-l63-s7',
+              title: 'Проверь себя: механизмы SAST',
               type: 'quiz',
               quiz: {
                 kind: 'single',
-                question: 'Что такое Chaos Engineering?',
+                question: 'Что такое Taint Analysis в контексте SAST?',
                 options: [
-                  { id: 'a', text: 'Автоматическое исправление багов' },
-                  { id: 'b', text: 'Намеренное внесение сбоев для проверки отказоустойчивости' },
-                  { id: 'c', text: 'Хаотичное тестирование без плана' },
-                  { id: 'd', text: 'Тип нагрузки' },
+                  { id: 'a', text: 'Поиск запрещенных слов в коде (пароли, токены)' },
+                  { id: 'b', text: 'Анализ пути данных от источника (Source) до опасной функции (Sink) без очистки' },
+                  { id: 'c', text: 'Сканирование открытых портов на сервере' },
+                  { id: 'd', text: 'Проверка лицензий сторонних библиотек' },
                 ],
                 correct: ['b'],
-                explanation:
-                  'Chaos Engineering — управляемый эксперимент: «что будет, если упадёт БД?». Проверяем не наличие бага, а способность системы восстановиться. Ключевое слово — «управляемый», а не хаос.',
+                explanation: 'Taint Analysis (анализ заражения) отслеживает, как недоверенные данные от пользователя (Source) достигают базы данных или консоли (Sink) без использования очищающих функций (Sanitizer).',
               },
             },
-          ],
-        },
-      ],
-    },
-
-    // ─────────────────────────────────────────────
-    // m4 — Лидерство и менторство (было qa-m17)
-    // ─────────────────────────────────────────────
-    {
-      id: 'qa-s-m4',
-      title: 'Лидерство и менторство',
-      lessons: [
-        {
-          id: 'qa-l66',
-          title: 'Code review тестов и менторство',
-          minutes: 25,
-          steps: [
             {
-              id: 'qa-l66-s1',
-              title: 'Как ревьюить тесты',
-              type: 'theory',
-              blocks: [
-                {
-                  type: 'p',
-                  text: `Senior QA ревьюит не только код продукта, но и тесты. Хороший тест — читаемый, независимый, падает при поломке. Плохой — «зелёный всегда» или «падает иногда».`,
-                },
-                {
-                  type: 'list',
-                  items: [
-                    'Проверяем: есть ли assert? Упадёт ли тест, если сломать код?',
-                    'Проверяем: изолирован ли? Не зависит от других тестов?',
-                    'Проверяем: понятно ли, что тест проверяет (имя, структура)',
-                    'Проверяем: нет ли sleep, хардкода, гонок',
-                    'Не придирайтесь к стилю — для этого линтер. Фокус на логике.',
-                  ],
-                },
-                {
-                  type: 'note',
-                  text: 'Менторство: не «сделай так», а «почему ты выбрал этот подход?». Senior развивает команду, а не пишет всё сам.',
-                },
-              ],
-            },
-            {
-              id: 'qa-l66-s2',
-              title: 'Проверь себя: ревью',
+              id: 'qa-l63-s8',
+              title: 'Проверь себя: ограничения DAST',
               type: 'quiz',
               quiz: {
                 kind: 'multiple',
-                question: 'Что важно проверять при code review автотеста?',
+                question: 'С какими проблемами сталкивается QA при настройке DAST-сканера?',
                 options: [
-                  { id: 'a', text: 'Есть ли assert' },
-                  { id: 'b', text: 'Изолирован ли тест от других' },
-                  { id: 'c', text: 'Используется ли пробел вместо таба' },
-                  { id: 'd', text: 'Упадёт ли тест, если сломать код' },
+                  { id: 'a', text: 'Трудности со сканированием SPA-приложений (React/Vue), так как нужен JS-движок' },
+                  { id: 'b', text: 'Невозможность сканировать закрытые страницы без настройки авторизации в сканере' },
+                  { id: 'c', text: 'Сканер не указывает точную строку в исходном коде' },
+                  { id: 'd', text: 'DAST генерирует много ложных срабатываний на безопасный код' },
                 ],
-                correct: ['a', 'b', 'd'],
-                explanation:
-                  'Assert, изоляция и «тест ловит баг» — суть. Стиль (пробелы, скобки) — задача линтера (ruff, flake8), не ревьюера.',
+                correct: ['a', 'b', 'c'],
+                explanation: 'DAST не видит код (c), плохо работает с SPA (a) и требует настройки токенов (b). У DAST нет ложных срабатываний.',
+              },
+            },
+            {
+              id: 'qa-l63-s9',
+              title: 'Проверь себя: стратегия внедрения',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Вы внедрили SonarQube (SAST), и он выдал 5000 ошибок на легаси-коде. PR стали красными. Что делать?',
+                options: [
+                  { id: 'a', text: 'Отключить SonarQube' },
+                  { id: 'b', text: 'Заставить разработчиков исправить все 5000 ошибок' },
+                  { id: 'c', text: 'Внедрить Baselining (зафиксировать старые ошибки) и блокировать только новые Critical/High' },
+                  { id: 'd', text: 'Сделать все проверки неблокирующими (warning)' },
+                ],
+                correct: ['c'],
+                explanation: 'Внедрение безопасности в легаси требует компромисса. Baselining (фиксация текущего состояния) позволяет не блокировать разработку из-за старых проблем, но жестко блокирует новые критические уязвимости.',
               },
             },
           ],
         },
         {
-          id: 'qa-l67',
-          title: 'Собеседования QA: как искать Senior',
-          minutes: 25,
+          id: 'qa-l108',
+          title: 'Threat Modeling (STRIDE)',
+          minutes: 35,
           steps: [
             {
-              id: 'qa-l67-s1',
-              title: 'Что спрашивать на интервью',
+              id: 'qa-l108-s1',
+              title: 'Моделирование угроз на этапе дизайна',
               type: 'theory',
               blocks: [
                 {
                   type: 'p',
-                  text: `Senior QA ищет не «человека с 10 годами опыта», а того, кто умеет принимать решения в условиях неопределённости. На собеседовании важны кейсы, а не заученные термины.`,
+                  text: 'Искать уязвимости постфактум — дорого. Senior QA участвует в Threat Modeling на этапе проектирования фичи. Фреймворк **STRIDE** (Microsoft):',
                 },
                 {
-                  type: 'list',
-                  items: [
-                    'Кейс: «Прод упал, что делаешь?» (диагностика, коммуникация, rollback)',
-                    'Кейс: «Нужно протестировать за 2 дня, что делаешь?» (риски, приоритизация)',
-                    'Кейс: «Как убедить PM, что баг критичен?» (аргументация, бизнес-эффект)',
-                    'Вопрос: «Какую метрику улучшил на прошлом месте?» (DORA, flaky rate)',
-                    'Вопрос: «Как обучал джунов?» (менторство, документация)',
+                  type: 'table',
+                  caption: 'STRIDE',
+                  head: ['Угроза', 'Расшифровка', 'Что нарушает', 'Пример'],
+                  rows: [
+                    ['Spoofing', 'Подмена личности', 'Аутентификация', 'Кража JWT-токена'],
+                    ['Tampering', 'Изменение данных', 'Целостность', 'Подмена цены в запросе на оплату'],
+                    ['Repudiation', 'Отказ от действий', 'Неоспоримость', 'Нет логов IP и времени заказа'],
+                    ['Information Disclosure', 'Утечка информации', 'Конфиденциальность', 'API отдает хэши паролей'],
+                    ['Denial of Service', 'Отказ в обслуживании', 'Доступность', 'DDoS или Billion Laughs'],
+                    ['Elevation of Privilege', 'Повышение привилегий', 'Авторизация', 'IDOR: юзер получает доступ к админке'],
                   ],
-                },
-                {
-                  type: 'note',
-                  text: 'Плохой вопрос: «Что такое эквивалентное разбиение?» — это знает джун. Хороший: «Приведи пример, когда пришлось идти на компромисс с качеством. Почему?».',
                 },
               ],
             },
             {
-              id: 'qa-l67-s2',
-              title: 'Проверь себя: интервью',
+              id: 'qa-l108-s2',
+              title: 'Пример: моделируем загрузку аватара',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Представьте фичу: «Пользователь загружает аватарку». Прогоняем по STRIDE:',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    '**Spoofing**: Может ли злоумышленник загрузить аватар вместо другого пользователя? (Ответ: да, если нет проверки токена).',
+                    '**Tampering**: Может ли он загрузить .exe файл вместо картинки, изменив заголовок? (Нужна проверка MIME-типа).',
+                    '**Info Disclosure**: Доступен ли URL картинки по прямому перебору имен (image1.jpg, image2.jpg)? (Нужны UUID-имена).',
+                    '**DoS**: Может ли он загрузить файл на 10 ГБ? (Нужен лимит размера).',
+                  ],
+                },
+              ],
+            },
+            {
+              id: 'qa-l108-s3',
+              title: 'Проверь себя: STRIDE',
               type: 'quiz',
               quiz: {
-                kind: 'single',
-                question: 'Какой вопрос лучше всего проверяет Senior QA?',
-                options: [
-                  { id: 'a', text: 'Что такое граничные значения?' },
-                  { id: 'b', text: 'Как вы приоритизируете тестирование, когда времени мало?' },
-                  { id: 'c', text: 'Какие методы HTTP знаете?' },
-                  { id: 'd', text: 'Что такое pytest?' },
+                kind: 'matching',
+                question: 'Сопоставьте угрозу STRIDE и уязвимость',
+                pairs: [
+                  { left: 'Tampering', right: 'IDOR (подмена ID в запросе)' },
+                  { left: 'Elevation of Privilege', right: 'Обычный юзер получает доступ к админке' },
+                  { left: 'Information Disclosure', right: 'API отдает хэши паролей' },
+                  { left: 'Spoofing', right: 'Использование чужого JWT токена' },
                 ],
-                correct: ['b'],
-                explanation:
-                  'Вопрос про приоритизацию и компромиссы — про реальный опыт. Остальные — базовые знания джуна.',
+                explanation: 'Tampering — изменение параметра. Elevation — повышение прав. Information Disclosure — утечка. Spoofing — подмена токена.',
               },
             },
-          ],
-        },
-        {
-          id: 'qa-l68',
-          title: 'Документация и онбординг',
-          minutes: 20,
-          steps: [
             {
-              id: 'qa-l68-s1',
-              title: 'Тест-документация, которая работает',
+              id: 'qa-l108-s4',
+              title: 'Как QA проводит Threat Modeling',
               type: 'theory',
               blocks: [
                 {
                   type: 'p',
-                  text: `Senior QA отвечает за то, чтобы новые люди быстро включались. Документация — не «ради галочки», а инструмент: как запускать тесты, какие окружения, где данные, кому писать при падении.`,
+                  text: 'Обычно это 1-часовой воркшоп с архитектором и разработчиком. QA рисует диаграмму потоков данных (DFD) и задает вопросы по каждой стрелке и узлу.',
                 },
                 {
-                  type: 'list',
-                  items: [
-                    'README для QA: как запустить, как читать отчёт, где конфиги',
-                    'Чек-листы для релиза (smoke, security, a11y)',
-                    'Confluence/Notion: описание архитектуры тестов',
-                    'Onboarding-план: что прочитать, что попробовать в первую неделю',
-                  ],
-                },
-                {
-                  type: 'note',
-                  text: 'Хорошая документация = новый QA запускает тесты и делает первый PR за 1 день. Плохая = «спроси у Пети, он знает». Senior делает так, чтобы Петя не был единственной точкой отказа.',
+                  type: 'code',
+                  lang: 'text',
+                  caption: 'Вопросы для каждого компонента',
+                  code: `Для каждого узла (база, сервер, клиент) и связи:
+- Аутентифицирован ли этот запрос? (Spoofing)
+- Можно ли изменить данные в пути? (Tampering)
+- Логируются ли действия? (Repudiation)
+- Не отдаем ли мы лишние данные? (Info Disclosure)
+- Есть ли rate-limiting? (DoS)
+- Проверяются ли права на сервере? (Elevation)`,
                 },
               ],
             },
             {
-              id: 'qa-l68-s2',
-              title: 'Проверь себя: онбординг',
+              id: 'qa-l108-s5',
+              title: 'Проверь себя: моделирование',
               type: 'quiz',
               quiz: {
                 kind: 'single',
-                question: 'Какой главный признак хорошей QA-документации?',
+                question: 'На каком этапе лучше всего проводить Threat Modeling (STRIDE)?',
                 options: [
-                  { id: 'a', text: 'Она очень длинная' },
-                  { id: 'b', text: 'Новый человек может запустить тесты и сделать первый PR за 1 день' },
-                  { id: 'c', text: 'Она написана на английском' },
-                  { id: 'd', text: 'Она в Confluence' },
+                  { id: 'a', text: 'После релиза в продакшене' },
+                  { id: 'b', text: 'На этапе проектирования архитектуры (до написания кода)' },
+                  { id: 'c', text: 'Только когда найдена уязвимость' },
+                  { id: 'd', text: 'Во время нагрузочного тестирования' },
                 ],
                 correct: ['b'],
                 explanation:
-                  'Критерий — «время до первого PR» (Time to first PR). Если новый QA неделю разбирается — документация плохая, даже если она красивая и длинная.',
+                  'Threat Modeling на этапе дизайна — это Shift-Left в безопасности. Найти ошибку в архитектуре до кода в 100 раз дешевле, чем чинить её после релиза.',
+              },
+            },
+            {
+              id: 'qa-l108-s6',
+              title: 'Инструменты',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'list',
+                  items: [
+                    '**Microsoft Threat Modeling Tool**: Бесплатная программа для рисования DFD и генерации угроз по STRIDE.',
+                    '**IriusRisk**: Коммерческий инструмент с автоматизацией.',
+                    '**OWASP Threat Dragon**: Open-source веб-инструмент.',
+                  ],
+                },
+              ],
+            },
+            {
+              id: 'qa-l108-s7',
+              title: 'Проверь себя: DFD',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Что такое DFD (Data Flow Diagram) в контексте Threat Modeling?',
+                options: [
+                  { id: 'a', text: 'Схема потоков данных, показывающая, как информация движется между компонентами системы' },
+                  { id: 'b', text: 'Формат логов' },
+                  { id: 'c', text: 'Тип базы данных' },
+                  { id: 'd', text: 'Инструмент для написания автотестов' },
+                ],
+                correct: ['a'],
+                explanation:
+                  'DFD (Data Flow Diagram) — это диаграмма, на которой основан STRIDE. На ней рисуют узлы (процессы, хранилища данных) и стрелки (потоки данных), чтобы понять, где злоумышленник может вмешаться.',
               },
             },
           ],
@@ -893,170 +1392,196 @@ conftest.py       ← общие фикстуры pytest`,
     },
 
     // ─────────────────────────────────────────────
-    // m5 — Quality Gates и CI-политика (было qa-m18)
+    // m5 — CI/CD, TIA и Shift-Right (2 урока)
     // ─────────────────────────────────────────────
     {
       id: 'qa-s-m5',
-      title: 'Quality Gates и CI-политика',
+      title: 'CI/CD, TIA и Shift-Right',
       lessons: [
         {
-          id: 'qa-l69',
-          title: 'Что блокирует merge, а что — предупреждает',
+          id: 'qa-l109',
+          title: 'Test Impact Analysis и Merge Queue',
           minutes: 25,
           steps: [
             {
-              id: 'qa-l69-s1',
-              title: 'Required checks vs advisory',
+              id: 'qa-l109-s1',
+              title: 'Граф зависимостей вместо полного прогона',
               type: 'theory',
               blocks: [
                 {
                   type: 'p',
-                  text: `Quality Gate — правило в CI, которое не даёт слить PR, если что-то не прошло. Senior QA решает, какие проверки блокирующие (нельзя мержить), а какие — только информационные. Слишком строгие — команда обходит; слишком мягкие — регрессии в проде.`,
-                },
-                {
-                  type: 'table',
-                  caption: 'Типичные проверки и их статус',
-                  head: ['Проверка', 'Блокирует?', 'Почему'],
-                  rows: [
-                    ['Lint (ruff, eslint)', 'Да', 'Стиль легко исправить, дёшево'],
-                    ['Type check (mypy)', 'Да', 'Ошибки типов = баги'],
-                    ['Unit-тесты', 'Да', '2 минуты, ловят 80% регрессий'],
-                    ['Coverage < 80%', 'Иногда', 'Зависит от команды; часто advisory'],
-                    ['E2E (Playwright)', 'Да, если < 10 мин', 'Медленные — можно в nightly'],
-                    ['Load test', 'Нет', 'Только nightly / перед релизом'],
-                    ['SAST (SonarQube)', 'High/Critical — да', 'Low — advisory'],
-                    ['A11y (axe)', 'Warning', 'Часто технический долг'],
-                  ],
-                },
-                {
-                  type: 'mermaid',
-                  caption: 'Что блокирует merge, а что нет',
-                  code: `graph TD
-                    PR["Pull Request"] --> Lint["lint<br/>ruff, eslint"]
-                    PR --> Types["typecheck<br/>mypy"]
-                    PR --> Unit["unit tests<br/>pytest"]
-                    PR --> E2E["E2E smoke<br/>5–10 сценариев"]
-                    Lint --> All{"Все checks<br/>зелёные?"}
-                    Types --> All
-                    Unit --> All
-                    E2E --> All
-                    All -->|"Да"| Merge["Merge в main"]
-                    All -->|"Нет"| Fix["Fix + push<br/>новая итерация"]`
-                },
-                {
-                  type: 'note',
-                  text: 'Правило: блокирующих проверок должно быть 3–5. Если 15 — команда начнёт искать обходные пути (--no-verify, merge без CI). Каждая блокирующая проверка должна быть быстрой (< 5 мин) и иметь понятное сообщение об ошибке.',
-                },
-              ],
-            },
-            {
-              id: 'qa-l69-s2',
-              title: 'Branch protection и required checks',
-              type: 'theory',
-              blocks: [
-                {
-                  type: 'code',
-                  lang: 'text',
-                  caption: 'GitHub: Branch protection для main',
-                  code: `Settings → Branches → Add rule → "main"\n\n✓ Require a pull request before merging (1–2 approvals)\n✓ Require status checks to pass before merging\n    - lint\n    - typecheck\n    - test (3.12)\n    - e2e-smoke\n✓ Require branches to be up to date before merging\n✓ Require conversation resolution\n✓ Do not allow bypassing the above settings (для админов тоже)\n\n✗ Require signed commits (опционально)`,
-                },
-                {
-                  type: 'code',
-                  lang: 'yaml',
-                  caption: '.github/workflows/ci.yml — required checks',
-                  code: `name: CI\non: [pull_request]\n\njobs:\n  lint:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: pip install ruff && ruff check .\n\n  typecheck:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: pip install mypy && mypy src/\n\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        python: ['3.11', '3.12']\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with: { python-version: '\${{ matrix.python }}' }\n      - run: pip install -r requirements-dev.txt\n      - run: pytest -q --junitxml=report.xml --cov=src --cov-fail-under=80\n      - uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: reports-\${{ matrix.python }}\n          path: report.xml`,
-                },
-                {
-                  type: 'note',
-                  text: '--cov-fail-under=80 в pytest = блокирующая проверка на coverage. Если упадёт ниже 80% — PR не смержится. Работает, если команда согласна с порогом. Иначе — advisory (без fail-under), смотрят в отчёте.',
-                },
-              ],
-            },
-            {
-              id: 'qa-l69-s3',
-              title: 'Проверь себя: gates',
-              type: 'quiz',
-              quiz: {
-                kind: 'single',
-                question: 'Сколько блокирующих проверок оптимально в CI для PR?',
-                options: [
-                  { id: 'a', text: '1 — только unit-тесты' },
-                  { id: 'b', text: '3–5 быстрых проверок (lint, typecheck, unit, e2e-smoke)' },
-                  { id: 'c', text: '15 — чем больше, тем лучше' },
-                  { id: 'd', text: 'Не важно' },
-                ],
-                correct: ['b'],
-                explanation:
-                  '3–5 быстрых проверок — золотая середина. Если больше 5–7 блокирующих — CI идёт > 15 минут, команда ищет обходные пути. Остальное (нагрузка, security-скан, a11y) — nightly или перед релизом.',
-              },
-            },
-            {
-              id: 'qa-l69-s4',
-              title: 'Проверь себя: what blocks',
-              type: 'quiz',
-              quiz: {
-                kind: 'multiple',
-                question: 'Что стоит сделать блокирующим (required check) в PR?',
-                options: [
-                  { id: 'a', text: 'Lint и typecheck' },
-                  { id: 'b', text: 'Unit-тесты' },
-                  { id: 'c', text: 'Полный нагрузочный тест на 30 минут' },
-                  { id: 'd', text: 'E2E smoke (5–10 критичных сценариев)' },
-                ],
-                correct: ['a', 'b', 'd'],
-                explanation:
-                  'Lint, typecheck, unit, e2e-smoke — быстрые и ловят 90% регрессий. Полный нагрузочный тест (30 мин) — только nightly: он не должен блокировать PR, иначе CI станет невыносимым.',
-              },
-            },
-          ],
-        },
-        {
-          id: 'qa-l70',
-          title: 'Исключения и hotfix',
-          minutes: 20,
-          steps: [
-            {
-              id: 'qa-l70-s1',
-              title: 'Когда gate можно обойти',
-              type: 'theory',
-              blocks: [
-                {
-                  type: 'p',
-                  text: `Иногда нужно срочно выкатить hotfix, а CI падает из-за флака или несвязанной проблемы. Senior QA заранее продумывает процедуру «аварийного обхода», а не импровизирует в 3 часа ночи.`,
+                  text: 'Когда тестов 5000, они идут 2 часа. PR висит, разработчики злятся. TIA запускает только те тесты, которые затронул коммит.',
                 },
                 {
                   type: 'list',
                   items: [
-                    'Отдельный label: hotfix — CI автоматически применяет урезанный набор (только smoke)',
-                    'Явный approve от tech lead + QA lead в PR',
-                    'Обязательный post-mortem после hotfix: почему срочно, что сломалось',
-                    'Не более N hotfix в месяц — иначе процесс надо менять',
-                    'Skip CI только через override в настройках branch protection (не через --no-verify)',
+                    '**Coverage-based**: `pytest-testmon` запоминает, какие строки кода покрывал тест. Изменили `cart.py` — запустили тесты для `cart.py`.',
+                    '**Path-based**: Монорепозитории (Nx) знают граф пакетов. Изменили `ui-button` — запустили тесты `ui-button`.',
                   ],
-                },
-                {
-                  type: 'note',
-                  text: 'Anti-pattern: разрешить админам мержить без CI. Однажды это приведёт к «пятничному релизу без тестов». Лучше — явная процедура с ограничениями и последующим разбором.',
                 },
               ],
             },
             {
-              id: 'qa-l70-s2',
-              title: 'Проверь себя: hotfix',
+              id: 'qa-l109-s2',
+              title: 'Проверь себя: TIA',
               type: 'quiz',
               quiz: {
                 kind: 'single',
-                question: 'Что должно быть в процедуре hotfix?',
+                question: 'Как TIA (например, pytest-testmon) понимает, какие тесты запускать на PR?',
                 options: [
-                  { id: 'a', text: 'Просто мерж без CI — доверяем разработчику' },
-                  { id: 'b', text: 'Минимальный набор проверок (smoke), явный approve, post-mortem после' },
-                  { id: 'c', text: 'Запуск полного CI на 40 минут' },
-                  { id: 'd', text: 'Ничего — hotfix не нужен' },
+                  { id: 'a', text: 'По названию измененного файла' },
+                  { id: 'b', text: 'По графу покрытия: запускает тесты, которые в прошлый раз выполняли измененные строки кода' },
+                  { id: 'c', text: 'Запускает все тесты, но с меньшим таймаутом' },
+                  { id: 'd', text: 'Спрашивает у разработчика' },
                 ],
                 correct: ['b'],
                 explanation:
-                  'Hotfix-процедура: снижаем строгость, но не до нуля. Smoke-тесты (5 минут) + approve от двух лидов + разбор после. Полный CI в hotfix — противоречие: он уже прошёл на основной ветке. Ноль проверок — путь к инцидентам.',
+                  'Coverage-based TIA (testmon) сохраняет в базу, какой тест какие строки кода покрыл. Если вы изменили функцию в utils.py, он найдет все тесты, которые проходили через эту функцию.',
               },
+            },
+            {
+              id: 'qa-l109-s3',
+              title: 'Merge Queue (Очередь слияния)',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Проблема: 10 разработчиков сделали PR. Каждый зеленый по отдельности. Мержим первый — остальные 9 ломаются (Semantic Conflict). Merge Queue решает это.',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Как работает Merge Queue',
+                  code: `graph TD
+                    PR1["PR 1"] -->|"CI Green"| MQ["Merge Queue"]
+                    PR2["PR 2"] -->|"CI Green"| MQ
+                    PR3["PR 3"] -->|"CI Green"| MQ
+                    MQ -->|"1. Создает временную ветку PR1 + PR2"| CI["Запуск CI"]
+                    CI -->|"2. Если Green"| Main["Merge в Main"]
+                    CI -->|"3. Если Red (конфликт)"| PR2["Выкинуть PR2 из очереди"]`,
+                },
+              ],
+            },
+            {
+              id: 'qa-l109-s4',
+              title: 'Проверь себя: Merge Queue',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Какую проблему решает Merge Queue?',
+                options: [
+                  { id: 'a', text: 'Ускоряет написание тестов' },
+                  { id: 'b', text: 'Предотвращает Semantic Conflicts, когда два зеленых PR ломают друг друга при слиянии' },
+                  { id: 'c', text: 'Заменяет Code Review' },
+                  { id: 'd', text: 'Автоматически исправляет баги' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'Два PR по отдельности зеленые, но вместе — красные. Merge Queue тестирует комбинацию PR перед мержем.',
+              },
+            },
+            {
+              id: 'qa-l109-s5',
+              title: 'Риски TIA',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'note',
+                  text: 'Риск TIA: если тест использует рефлексию или динамическую подгрузку, граф зависимостей может ошибиться. Поэтому полный прогон (Full Regression) оставляют на main-ветку или nightly сборку.',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: 'qa-l110',
+          title: 'Shift-Right: Canary и Feature Flags',
+          minutes: 30,
+          steps: [
+            {
+              id: 'qa-l110-s1',
+              title: 'Тестирование в продакшене',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Shift-Right означает, что релиз — это не конец тестирования, а его продолжение.',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    '**Canary Release**: Выкатываем новую версию на 5% серверов. Если метрики в норме — на 100%.',
+                    '**Feature Flags (Фича-флаги)**: Код в проде, но «выключен» флагом. QA включает для тестирования, потом для 1% юзеров.',
+                    '**Dark Launch**: Отправляем реальный трафик на новый сервис, но игнорируем его ответы.',
+                  ],
+                },
+              ],
+            },
+            {
+              id: 'qa-l110-s2',
+              title: 'Проверь себя: Feature Flags',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'В чем главное преимущество Feature Flags?',
+                options: [
+                  { id: 'a', text: 'Они ускоряют приложение' },
+                  { id: 'b', text: 'Они позволяют отделить деплой (Deploy) от релиза (Release)' },
+                  { id: 'c', text: 'Они заменяют CI/CD' },
+                  { id: 'd', text: 'Они автоматически пишут документацию' },
+                ],
+                correct: ['b'],
+                explanation: 'Деплой — выкладка кода. Релиз — включение фичи. Флаги позволяют выкатить код и включить его позже (или откатить за секунды).',
+              },
+            },
+            {
+              id: 'qa-l110-s3',
+              title: 'Как QA тестирует фича-флаги',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'При тестировании Feature Flags проверяются комбинации: флаг включен, флаг выключен, флаг включен только для 50% (если это A/B-тест).',
+                },
+                {
+                  type: 'table',
+                  caption: 'Матрица тестирования флага',
+                  head: ['Состояние флага', 'Ожидаемое поведение'],
+                  rows: [
+                    ['ON (для QA)', 'Новая фича видна и работает'],
+                    ['OFF', 'Новая фича скрыта, работает старый код'],
+                    ['Kill Switch (Аварийный)', 'Фича отключена, даже если код задеплоен'],
+                  ],
+                },
+              ],
+            },
+            {
+              id: 'qa-l110-s4',
+              title: 'Проверь себя: тестирование флагов',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Что обязательно нужно проверить QA при тестировании фичи за Feature Flag?',
+                options: [
+                  { id: 'a', text: 'Работу фичи при включенном флаге' },
+                  { id: 'b', text: 'Работу старой версии при выключенном флаге' },
+                  { id: 'c', text: 'Что фича не сломала другие части приложения (регресс)' },
+                  { id: 'd', text: 'Что флаг нельзя переключить из кода' },
+                ],
+                correct: ['a', 'b', 'c'],
+                explanation:
+                  'Флаг — это две разные ветки кода. Нужно проверить обе (Вкл и Выкл) и убедиться, что обе не ломают систему.',
+              },
+            },
+            {
+              id: 'qa-l110-s5',
+              title: 'Технический долг флагов',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'note',
+                  text: 'Флаги — это технический долг. Если флаг включен для 100% пользователей и фича стабильна, флаг нужно удалить из кода (и из тестов), иначе через год в коде будет 50 мертвых ветвлений.',
+                },
+              ],
             },
           ],
         },
@@ -1064,247 +1589,251 @@ conftest.py       ← общие фикстуры pytest`,
     },
 
     // ─────────────────────────────────────────────
-    // m6 — Observability для QA (было qa-m19)
+    // m6 — Observability и Service Virtualization (3 урока)
     // ─────────────────────────────────────────────
     {
       id: 'qa-s-m6',
-      title: 'Observability для QA',
+      title: 'Observability и Service Virtualization',
       lessons: [
         {
-          id: 'qa-l71',
-          title: 'Метрики, логи, трейсы',
-          minutes: 25,
+          id: 'qa-l111',
+          title: 'OpenTelemetry: распределенный трейсинг',
+          minutes: 30,
           steps: [
             {
-              id: 'qa-l71-s1',
-              title: 'Три столпа observability',
+              id: 'qa-l111-s1',
+              title: 'Анатомия трейса',
               type: 'theory',
               blocks: [
                 {
-                  type: 'table',
-                  caption: 'Три столпа observability',
-                  head: ['Столп', 'Что', 'Инструменты', 'Зачем QA'],
-                  rows: [
-                    ['Метрики', 'Числа во времени (RPS, latency, error rate)', 'Prometheus + Grafana', 'Увидеть проблему до баг-репорта'],
-                    ['Логи', 'Структурированные события', 'Loki, Elasticsearch', 'Разобрать конкретный запрос'],
-                    ['Трейсы', 'Путь запроса через все сервисы', 'Jaeger, Tempo, OTEL', 'Найти, в каком сервисе деградация'],
-                  ],
+                  type: 'p',
+                  text: 'В микросервисах логи разбросаны по серверам. OpenTelemetry собирает **Трейсы** — путь одного запроса. Senior QA использует трейсы, чтобы найти, где именно тормозит система.',
                 },
                 {
                   type: 'mermaid',
-                  caption: 'Observability: метрики, логи, трейсы и куда они попадают',
-                  code: `graph LR
-                    App["Приложение"]
-                    App --> M["Метрики<br/>RPS, latency, errors"]
-                    App --> L["Логи<br/>события с контекстом"]
-                    App --> T["Трейсы<br/>путь запроса"]
-                    M --> Prom[("Prometheus")]
-                    L --> Loki[("Loki / ELK")]
-                    T --> Jaeger[("Jaeger / Tempo")]
-                    Prom --> G["Grafana"]
-                    Loki --> G
-                    Jaeger --> G
-                    G --> QA["QA видит проблему<br/>до жалоб пользователей"]`
-                },
-                {
-                  type: 'p',
-                  text: `Для QA это не «DevOps-штуки», а рабочий инструмент. Проверяя API, вы можете зайти в Grafana и убедиться, что p95 latency реально в норме. Или найти в Jaeger трейс того самого «медленного» запроса.`,
-                },
-                {
-                  type: 'note',
-                  text: 'Senior QA умеет сам открыть Grafana, Jaeger или Sentry и ответить на вопрос «что сломалось». Не «передаю разработчику, он смотрит», а «вот трейс, вот ошибка, вот сервис». Это отделяет Senior от Middle.',
+                  caption: 'Пример трейса (Waterfall)',
+                  code: `sequenceDiagram
+                    participant Client
+                    participant Gateway
+                    participant OrderSvc
+                    participant PaymentSvc
+
+                    Client->>Gateway: POST /checkout
+                    Gateway->>OrderSvc: CreateOrder
+                    OrderSvc->>PaymentSvc: POST /charge
+                    Note over PaymentSvc: Задержка 2 сек! (Боттлнек)
+                    PaymentSvc-->>OrderSvc: 200 OK
+                    OrderSvc-->>Gateway: 201 Created`,
                 },
               ],
             },
             {
-              id: 'qa-l71-s2',
-              title: 'Grafana: что смотреть',
+              id: 'qa-l111-s2',
+              title: 'Span Attributes и Trace ID',
               type: 'theory',
               blocks: [
                 {
-                  type: 'code',
-                  lang: 'text',
-                  caption: 'Что QA смотрит в Grafana',
-                  code: `RED (для каждого сервиса):\n  Rate — сколько запросов в секунду\n  Errors — доля 5xx\n  Duration — p50, p95, p99\n\nUSE (для инфраструктуры):\n  Utilization — % загрузки CPU/RAM\n  Saturation — очередь, throttling\n  Errors — OOM, перезапуски\n\nБизнес-метрики:\n  Заказы/мин, регистрации/час, платежи\n  «Сломалось» видно за 1 минуту — до жалоб пользователей`,
+                  type: 'p',
+                  text: 'Каждый шаг в трейсе (Span) содержит атрибуты. QA может искать трейсы по этим атрибутам, чтобы найти проблемы конкретного пользователя.',
                 },
                 {
-                  type: 'note',
-                  text: 'Если в Grafana p95 latency вырос с 200 до 800 мс — вы это видите раньше, чем пользователи. Задача QA — заметить и открыть баг-репорт с данными из дашборда, а не «на сайте всё медленно».',
+                  type: 'code',
+                  lang: 'json',
+                  caption: 'Атрибуты спана в OTEL',
+                  code: `{
+  "name": "POST /charge",
+  "service.name": "payment-service",
+  "http.status_code": 500,
+  "user.id": "12345",
+  "error": true,
+  "duration_ms": 2000
+}`,
                 },
               ],
             },
             {
-              id: 'qa-l71-s3',
-              title: 'Проверь себя: три столпа',
+              id: 'qa-l111-s3',
+              title: 'Проверь себя: трейсы',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Пользователь жалуется, что заказ оформлялся 10 секунд. Что нужно попросить, чтобы QA нашел узкое место?',
+                options: [
+                  { id: 'a', text: 'Скриншот экрана' },
+                  { id: 'b', text: 'Trace ID из консоли браузера' },
+                  { id: 'c', text: 'Логи сервера базы данных' },
+                  { id: 'd', text: 'Название его браузера' },
+                ],
+                correct: ['b'],
+                explanation: 'Trace ID связывает все логи. По нему в Jaeger или Grafana QA найдет точный путь запроса и увидит, какой сервис съел 10 секунд.',
+              },
+            },
+            {
+              id: 'qa-l111-s4',
+              title: 'Baggage',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: '**Baggage** — это данные, которые передаются от сервиса к сервису. Например, `tenant_id` (ID компании-клиента). Если QA ищет баг у конкретного клиента, он фильтрует трейсы по `baggage.tenant_id`.',
+                },
+              ],
+            },
+            {
+              id: 'qa-l111-s5',
+              title: 'Проверь себя: инструменты',
               type: 'quiz',
               quiz: {
                 kind: 'matching',
-                question: 'Сопоставьте столп observability и его назначение',
+                question: 'Сопоставьте инструмент и его роль в Observability',
                 pairs: [
-                  { left: 'Метрики', right: 'Числа во времени: RPS, latency, errors' },
-                  { left: 'Логи', right: 'Конкретные события с контекстом' },
-                  { left: 'Трейсы', right: 'Путь запроса через сервисы' },
-                  { left: 'Grafana', right: 'Визуализация метрик' },
+                  { left: 'Jaeger', right: 'Визуализация трейсов (Waterfall)' },
+                  { left: 'Prometheus', right: 'Сбор метрик (RPS, CPU)' },
+                  { left: 'Loki', right: 'Агрегация логов' },
+                  { left: 'OpenTelemetry', right: 'Стандарт сбора телеметрии' },
                 ],
                 explanation:
-                  'Метрики — «что происходит» (числом). Логи — «что сказал сервис» (текст). Трейсы — «где именно тормозит» (путь). Grafana — дашборд поверх метрик.',
+                  'Jaeger — трейсы. Prometheus — метрики. Loki — логи. OpenTelemetry (OTEL) — единый стандарт, который собирает всё это.',
               },
             },
           ],
         },
         {
-          id: 'qa-l72',
-          title: 'Трейсинг и Sentry на практике',
+          id: 'qa-l112',
+          title: 'Sentry и алертинг',
           minutes: 25,
           steps: [
             {
-              id: 'qa-l72-s1',
-              title: 'Распределённый трейс',
+              id: 'qa-l112-s1',
+              title: 'Работа с ошибками в Sentry',
               type: 'theory',
               blocks: [
                 {
                   type: 'p',
-                  text: `Трейс — это дерево span-ов: один запрос пользователя проходит через API Gateway → Auth → Order → Payment → DB. Если payment тормозит 500 мс, вы это видите в трейсе — а не гадаете.`,
+                  text: 'Логи пишут все, но смотреть в них глазами — долго. Sentry агрегирует ошибки по сигнатурам стектрейсов, объединяя тысячи одинаковых ошибок в один "Issue".',
                 },
                 {
-                  type: 'code',
-                  lang: 'text',
-                  caption: 'Что видно в Jaeger/Tempo',
-                  code: `Трейс запроса POST /api/orders (total 1.2 сек)\n├── [20 мс] API Gateway\n├── [10 мс] Auth Service\n├── [50 мс] Order Service\n│   ├── [10 мс] validate\n│   └── [30 мс] save to DB\n└── [1100 мс] Payment Service   ← вот тут плохо\n    ├── [10 мс] validate card\n    └── [1080 мс] call external PSP   ← внешний провайдер\n\nВывод: тормозит внешний платёжный провайдер. Не наш код.`,
-                },
-                {
-                  type: 'note',
-                  text: 'Стандарт — OpenTelemetry (OTEL). Инструментирует всё автоматически (HTTP, gRPC, БД). Отправляет в Jaeger, Tempo, Datadog. QA-задача: открыть трейс, найти самый долгий span, приложить к баг-репорту.',
-                },
-              ],
-            },
-            {
-              id: 'qa-l72-s2',
-              title: 'Sentry: ошибки в проде',
-              type: 'theory',
-              blocks: [
-                {
-                  type: 'list',
-                  items: [
-                    'Sentry ловит ошибки в проде с контекстом: stack trace, браузер, user_id, action',
-                    'Группирует по «issue» — одна и та же ошибка = один issue, а не тысячи',
-                    'Показывает: сколько пользователей затронуто, в каком релизе появилось',
-                    'Интеграция с Git: видно коммит, который внёс ошибку',
-                    'Alert rules: «> 10 ошибок за 5 минут — пейдж дежурному»',
+                  type: 'table',
+                  caption: 'Метрики Sentry для QA',
+                  head: ['Метрика', 'Значение', 'Действие'],
+                  rows: [
+                    ['Users Affected', 'Сколько уникальных пользователей затронуто', 'Приоритет: High (если > 1%)'],
+                    ['First Seen', 'Когда ошибка появилась впервые', 'Связать с релизом'],
+                    ['Release', 'Версия приложения', 'Понять, какой коммит сломал'],
+                    ['Breadcrumbs', 'Действия пользователя до ошибки', 'Понять, как воспроизвести'],
                   ],
                 },
-                {
-                  type: 'code',
-                  lang: 'python',
-                  caption: 'Sentry в Python',
-                  code: `import sentry_sdk\nfrom sentry_sdk.integrations.fastapi import FastApiIntegration\n\nsentry_sdk.init(\n    dsn="https://...",\n    integrations=[FastApiIntegration()],\n    traces_sample_rate=0.1,    # 10% запросов — с трейсами\n    environment="production",\n)\n\n# Теперь любая необработанная ошибка попадёт в Sentry\n# с контекстом: URL, user, headers, request body (если разрешено)`,
-                },
-                {
-                  type: 'note',
-                  text: 'QA читает Sentry так же, как bug tracker. «Ошибка 500 у 200 пользователей за час» — это баг-репорт, уже с stack trace. Не надо спрашивать «а что вы делали?». Senior начинает разбор с Sentry, а не с «попробуйте ещё раз».',
-                },
               ],
             },
             {
-              id: 'qa-l72-s3',
-              title: 'Проверь себя: трейсинг',
-              type: 'quiz',
-              quiz: {
-                kind: 'single',
-                question: 'В трейсе самый долгий span — «call external payment provider». Что делать?',
-                options: [
-                  { id: 'a', text: 'Сказать «наш код тормозит»' },
-                  { id: 'b', text: 'Открыть баг: деградация внешнего провайдера, приложить трейс, обсудить таймауты и fallback' },
-                  { id: 'c', text: 'Увеличить таймаут' },
-                  { id: 'd', text: 'Игнорировать — это не наш сервис' },
-                ],
-                correct: ['b'],
-                explanation:
-                  'Трейс показывает: проблема во внешнем PSP. Задача QA — не «найти виноватого», а зафиксировать факт: баг-репорт с трейсом, вопрос к команде «какие таймауты и fallback?». Это не «не наш сервис», это «наш риск в проде».',
-              },
-            },
-            {
-              id: 'qa-l72-s4',
+              id: 'qa-l112-s2',
               title: 'Проверь себя: Sentry',
               type: 'quiz',
               quiz: {
                 kind: 'multiple',
-                question: 'Что даёт Sentry QA-инженеру?',
+                question: 'Какие данные из Sentry помогают QA быстрее воспроизвести баг?',
                 options: [
-                  { id: 'a', text: 'Stack trace и контекст ошибки' },
-                  { id: 'b', text: 'Сколько пользователей затронуто' },
-                  { id: 'c', text: 'Автоматически исправляет баги' },
-                  { id: 'd', text: 'В каком релизе появилась ошибка' },
+                  { id: 'a', text: 'Стектрейс (Stack trace)' },
+                  { id: 'b', text: 'Breadcrumbs (действия пользователя)' },
+                  { id: 'c', text: 'Информация о браузере и ОС' },
+                  { id: 'd', text: 'Исходный код всего проекта' },
                 ],
-                correct: ['a', 'b', 'd'],
+                correct: ['a', 'b', 'c'],
                 explanation:
-                  'Sentry даёт stack trace, затронутых пользователей и релиз, в котором появилась ошибка. Он не исправляет баги — это делает разработчик. Но баг-репорт становится в 5 раз точнее.',
+                  'Sentry дает стектрейс, breadcrumbs и контекст. Исходный код в Sentry есть, но он не нужен QA для воспроизведения.',
               },
             },
-          ],
-        },
-      ],
-    },
-
-    // ─────────────────────────────────────────────
-    // m7 — Service Virtualization (было qa-m20)
-    // ─────────────────────────────────────────────
-    {
-      id: 'qa-s-m7',
-      title: 'Service Virtualization',
-      lessons: [
-        {
-          id: 'qa-l73',
-          title: 'Зачем мокать сервисы',
-          minutes: 20,
-          steps: [
             {
-              id: 'qa-l73-s1',
-              title: 'Проблема реальных зависимостей',
+              id: 'qa-l112-s3',
+              title: 'SLO и алертинг',
               type: 'theory',
               blocks: [
                 {
                   type: 'p',
-                  text: `Микросервисное приложение зависит от десятка сервисов: платежи, доставка, уведомления, склад. Для тестов нужно, чтобы все они работали. Но: чужой сервис может быть недоступен, может быть дорогим (реальный эквайринг), может не иметь нужных edge-кейсов (таймаут, 500-я ошибка, отказ банка).`,
+                  text: 'Алерт «CPU > 80%» — плохой алерт, он будит ночью, когда ничего не сломано. Senior QA настраивает алерты на основе SLO (Service Level Objectives).',
                 },
                 {
-                  type: 'table',
-                  caption: 'Когда service virtualization оправдана',
-                  head: ['Ситуация', 'Реальный сервис', 'Виртуализация'],
-                  rows: [
-                    ['Сервис недоступен на staging', '❌', '✅'],
-                    ['Платёжный шлюз (деньги)', 'Дорого', '✅ фейк'],
-                    ['Нужен edge-кейс (timeout, 500)', 'Сложно воспроизвести', '✅ 1 строкой'],
-                    ['Сервис в разработке', '❌', '✅'],
-                    ['Интеграционный тест в CI', 'Медленно', '✅ быстро'],
-                  ],
+                  type: 'code',
+                  lang: 'yaml',
+                  caption: 'Prometheus Alert Rules (пример)',
+                  code: `groups:
+- name: slo_alerts
+  rules:
+  - alert: HighErrorRate
+    expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 0.05
+    for: 10m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Error rate exceeds 5% SLO (burn rate too high)"`,
                 },
+              ],
+            },
+            {
+              id: 'qa-l112-s4',
+              title: 'Проверь себя: алерты',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Почему алерт "CPU > 80% 5 минут" считается плохим?',
+                options: [
+                  { id: 'a', text: 'Он не показывает пользовательский опыт (может быть, CPU работает на 80%, но все запросы быстрые)' },
+                  { id: 'b', text: 'Он слишком сложный' },
+                  { id: 'c', text: 'Он требует покупки софта' },
+                  { id: 'd', text: 'Он не работает в Kubernetes' },
+                ],
+                correct: ['a'],
+                explanation:
+                  'CPU на 80% — это нормально для многих систем. Если при этом Latency 10мс и нет ошибок, будить инженера ночью незачем. Алертить нужно на SLO (Error Rate, Latency), а не на железо.',
+              },
+            },
+            {
+              id: 'qa-l112-s5',
+              title: 'Триаж инцидентов',
+              type: 'theory',
+              blocks: [
                 {
-                  type: 'note',
-                  text: 'Service virtualization — не «замена интеграционным тестам». Это инструмент для тестирования в изоляции: когда нужно проверить свою логику, а не чужой сервис. Интеграция с реальным сервисом — отдельный набор тестов (staging, e2e).',
+                  type: 'p',
+                  text: 'Когда приходит алерт, Senior QA не паникует, а следует Playbook (инструкции). Первым делом — проверить дашборды (Error Rate, Latency) и Sentry (нет ли новых Issue). Если ошибка в новой версии — откатить (Rollback) или выключить Feature Flag.',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: 'qa-l73',
+          title: 'Service Virtualization: WireMock',
+          minutes: 25,
+          steps: [
+            {
+              id: 'qa-l73-s1',
+              title: 'Зачем мокать сервисы',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Микросервис зависит от платежей, доставки, уведомлений. Для тестов нужно, чтобы они работали. Но: чужой сервис может быть недоступен, может быть дорогим (эквайринг), может не иметь нужных edge-кейсов (таймаут, 500-я).',
                 },
               ],
             },
             {
               id: 'qa-l73-s2',
-              title: 'WireMock и mountebank',
+              title: 'WireMock: стабы',
               type: 'theory',
               blocks: [
                 {
-                  type: 'table',
-                  caption: 'Инструменты',
-                  head: ['Инструмент', 'Язык', 'Плюсы'],
-                  rows: [
-                    ['WireMock', 'Java, standalone', 'Мощный, много интеграций, запись трафика'],
-                    ['mountebank', 'Node.js', 'Лёгкий, простой синтаксис'],
-                    ['Prism', 'Node.js', 'По OpenAPI-спеке генерирует моки'],
-                    ['pytest-httpserver', 'Python', 'Встроен в pytest, для unit/integration'],
-                    ['MSW (Mock Service Worker)', 'JavaScript', 'Для фронтенда, перехватывает fetch'],
-                  ],
-                },
-                {
-                  type: 'note',
-                  text: 'Выбор — по стеку. Python-проекты: pytest-httpserver (быстро, без отдельного сервиса). Команда с Java/OpenAPI: WireMock + Prism. Фронтенд: MSW. Все они делают одно — подменяют HTTP-ответы по URL.',
+                  type: 'code',
+                  lang: 'yaml',
+                  caption: 'WireMock: стаб для таймаута',
+                  code: `# mappings/payments-error.json
+{
+  "request": { "method": "POST", "url": "/api/payments" },
+  "response": {
+    "status": 504,
+    "fixedDelayMilliseconds": 5000,
+    "jsonBody": {"error": "Gateway Timeout"}
+  }
+}`,
                 },
               ],
             },
@@ -1322,80 +1851,35 @@ conftest.py       ← общие фикстуры pytest`,
                   { id: 'd', text: 'Вместо интеграционных тестов' },
                 ],
                 correct: ['b'],
-                explanation:
-                  'Виртуализация — для изоляции и edge-кейсов. Если нужно проверить реальную интеграцию — используйте staging и e2e. Замена всех интеграционных тестов моками = «тестируем себя об себя», реальные баги не ловятся.',
+                explanation: 'Виртуализация — для изоляции и edge-кейсов. Замена всех тестов моками = «тестируем себя об себя».',
               },
             },
-          ],
-        },
-        {
-          id: 'qa-l74',
-          title: 'WireMock на практике',
-          minutes: 25,
-          steps: [
             {
-              id: 'qa-l74-s1',
-              title: 'Мок HTTP-ответа',
+              id: 'qa-l73-s4',
+              title: 'Record & Replay',
               type: 'theory',
               blocks: [
                 {
-                  type: 'code',
-                  lang: 'python',
-                  caption: 'pytest-httpserver: мок для теста',
-                  code: `import pytest\nfrom pytest_httpserver import HTTPServer\nimport requests\n\n@pytest.fixture\ndef mock_payments(httpserver: HTTPServer):\n    # Успешный платёж\n    httpserver.expect_request(\n        "/api/payments",\n        method="POST",\n    ).respond_with_json(\n        {"status": "success", "tx_id": "tx-123"},\n        status=200,\n    )\n    return httpserver\n\ndef test_order_success(mock_payments):\n    # Наш сервис ходит на мок, а не на реальный платёжный шлюз\n    response = requests.post(\n        f"{mock_payments.url_for('/api/payments')}",\n        json={"amount": 1000},\n    )\n    assert response.json()["status"] == "success"\n\n# Edge-кейс: таймаут\ndef test_order_timeout(httpserver):\n    httpserver.expect_request("/api/payments").respond_with_data(\n        "Timeout", status=504, content_type="text/plain",\n    )\n    # ... проверяем, как наш сервис обрабатывает 504`,
-                },
-                {
-                  type: 'code',
-                  lang: 'yaml',
-                  caption: 'WireMock: стабы в JSON',
-                  code: `# mappings/payments-ok.json\n{\n  "request": {\n    "method": "POST",\n    "url": "/api/payments"\n  },\n  "response": {\n    "status": 200,\n    "jsonBody": {"status": "success", "tx_id": "tx-123"},\n    "headers": {"Content-Type": "application/json"}\n  }\n}\n\n# mappings/payments-error.json\n{\n  "request": { "method": "POST", "url": "/api/payments" },\n  "response": {\n    "status": 500,\n    "jsonBody": {"error": "Internal error"}\n  }\n}\n\n# Запуск:\n# docker run -p 8080:8080 -v $PWD/mappings:/home/wiremock/mappings wiremock/wiremock`,
-                },
-                {
-                  type: 'list',
-                  items: [
-                    'expect_request — «на этот запрос ответь так»',
-                    'respond_with_json / respond_with_data — что вернуть',
-                    'Можно симулировать таймаут, 500, пустой ответ, битый JSON',
-                    'WireMock умеет записывать реальный трафик (record & replay)',
-                    'Запускается как отдельный сервис (Docker) или как библиотека',
-                  ],
+                  type: 'p',
+                  text: 'В WireMock есть режим записи (Record & Replay). Вы пускаете тест на реальный API, WireMock записывает ответы. Потом тест гоняется на моках (Replay). Это удобно, когда реальный API сложный, и писать стабы руками долго.',
                 },
               ],
             },
             {
-              id: 'qa-l74-s2',
-              title: 'Проверь себя: синтаксис',
+              id: 'qa-l73-s5',
+              title: 'Проверь себя: инструменты',
               type: 'quiz',
               quiz: {
-                kind: 'single',
-                question: 'Как в pytest-httpserver замокать ответ 504 (timeout)?',
-                options: [
-                  { id: 'a', text: 'httpserver.expect_request("/api/payments").respond_with_data("Timeout", status=504)' },
-                  { id: 'b', text: 'requests.get("/api/payments")' },
-                  { id: 'c', text: 'mock.patch("requests.post", side_effect=TimeoutError)' },
-                  { id: 'd', text: 'Это невозможно' },
+                kind: 'matching',
+                question: 'Сопоставьте инструмент и его экосистему',
+                pairs: [
+                  { left: 'WireMock', right: 'Java / Docker' },
+                  { left: 'mountebank', right: 'Node.js' },
+                  { left: 'pytest-httpserver', right: 'Python / pytest' },
+                  { left: 'MSW', right: 'Frontend (JS)' },
                 ],
-                correct: ['a'],
                 explanation:
-                  'expect_request("путь").respond_with_data(..., status=504) — стандартный способ вернуть нужный HTTP-статус. mock.patch (c) работает на уровне Python-вызова, а не HTTP — это другой уровень.',
-              },
-            },
-            {
-              id: 'qa-l74-s3',
-              title: 'Проверь себя: record & replay',
-              type: 'quiz',
-              quiz: {
-                kind: 'single',
-                question: 'Что такое record & replay в WireMock?',
-                options: [
-                  { id: 'a', text: 'Логирование всех запросов' },
-                  { id: 'b', text: 'Запись реального трафика к сервису и воспроизведение его как моков' },
-                  { id: 'c', text: 'Дублирование сервиса' },
-                  { id: 'd', text: 'Резервное копирование' },
-                ],
-                correct: ['b'],
-                explanation:
-                  'Record & replay: один раз сходили в реальный сервис, записали ответы — дальше моки отвечают точно так же. Полезно для сложных API, где вручную писать моки долго.',
+                  'WireMock — мощный для бэкенда. mountebank — Node.js. pytest-httpserver — встроен в тесты Python. MSW (Mock Service Worker) — для моков в браузере (JS).',
               },
             },
           ],
@@ -1404,11 +1888,11 @@ conftest.py       ← общие фикстуры pytest`,
     },
 
     // ─────────────────────────────────────────────
-    // m8 — BDD и Three Amigos (было qa-m21)
+    // m7 — BDD и коллаборация (2 урока)
     // ─────────────────────────────────────────────
     {
-      id: 'qa-s-m8',
-      title: 'BDD и Three Amigos',
+      id: 'qa-s-m7',
+      title: 'BDD и коллаборация',
       lessons: [
         {
           id: 'qa-l75',
@@ -1422,79 +1906,90 @@ conftest.py       ← общие фикстуры pytest`,
               blocks: [
                 {
                   type: 'p',
-                  text: `BDD (Behavior-Driven Development) — подход, где требования описываются на языке, понятном и бизнесу, и разработчикам. Формат: Given (дано) — When (когда) — Then (тогда). Это не «ещё один фреймворк», а способ договориться о поведении до кода.`,
+                  text: 'BDD (Behavior-Driven Development) — подход, где требования описываются на языке, понятном и бизнесу, и разработчикам. Формат: Given (дано) — When (когда) — Then (тогда).',
                 },
                 {
                   type: 'code',
                   lang: 'gherkin',
                   caption: 'Сценарий на Gherkin',
-                  code: `Feature: Оплата заказа картой\n  Как клиент\n  Я хочу оплатить заказ картой\n  Чтобы получить товар\n\n  Scenario: Успешная оплата\n    Given в корзине товар за 1000₽\n    And у клиента валидная карта\n    When он нажимает "Оплатить"\n    Then заказ переходит в статус "paid"\n    And на почту приходит подтверждение\n\n  Scenario: Отклонённая карта\n    Given в корзине товар за 1000₽\n    And карта отклонена банком\n    When он нажимает "Оплатить"\n    Then заказ остаётся в статусе "new"\n    And показывается ошибка "Карта отклонена"`,
-                },
-                {
-                  type: 'mermaid',
-                  caption: 'Three Amigos: обсуждение до кода',
-                  code: `sequenceDiagram
-                    participant B as Бизнес
-                    participant D as Разработчик
-                    participant Q as QA
-                    participant G as Gherkin
-
-                    Note over B,Q: Three Amigos — 30 минут
-                    B->>D: зачем это нужно
-                    D->>B: технические ограничения
-                    Q->>B: edge-кейсы
-                    B->>Q: acceptance criteria
-                    Note over B,Q: договорились — пишем Gherkin
-                    Q->>G: Scenario:<br/>Given… When… Then…
-                    G-->>D: реализация
-                    G-->>Q: автотесты`
-                },
-                {
-                  type: 'note',
-                  text: 'Важно: Gherkin пишется ДО кода, вместе с бизнесом. Если QA приходит с готовыми сценариями после разработки — это не BDD, а «тесты на Gherkin». Ценность BDD — в обсуждении и едином понимании, а не в синтаксисе.',
+                  code: `Feature: Оплата заказа картой
+  Scenario: Успешная оплата
+    Given в корзине товар за 1000₽
+    And у клиента валидная карта
+    When он нажимает "Оплатить"
+    Then заказ переходит в статус "paid"`,
                 },
               ],
             },
             {
               id: 'qa-l75-s2',
-              title: 'Cucumber, Behave, pytest-bdd',
-              type: 'theory',
-              blocks: [
-                {
-                  type: 'code',
-                  lang: 'python',
-                  caption: 'pytest-bdd: шаги на Python',
-                  code: `# features/payment.feature\n# Feature: Оплата заказа\n#   Scenario: Успешная оплата\n#     Given в корзине товар за 1000₽\n#     And у клиента валидная карта\n#     When он нажимает "Оплатить"\n#     Then заказ переходит в статус "paid"\n\n# tests/test_payment.py\nfrom pytest_bdd import scenarios, given, when, then, parsers\n\nscenarios("../features/payment.feature")\n\n@given(parsers.parse("в корзине товар за {price:d}₽"), target_fixture="cart")\ndef _(price):\n    return {"total": price, "status": "new"}\n\n@given("у клиента валидная карта")\ndef _(cart):\n    cart["card"] = {"valid": True}\n\n@when(parsers.parse(\`он нажимает "{action}"\`), target_fixture="result")\ndef _(cart, action):\n    return process_payment(cart)\n\n@then(parsers.parse(\`заказ переходит в статус "{status}"\`))\ndef _(cart, status):\n    assert cart["status"] == status`,
-                },
-                {
-                  type: 'list',
-                  items: [
-                    'Cucumber (Java, JS) — стандарт де-факто',
-                    'Behave — Python-альтернатива',
-                    'pytest-bdd — интеграция с pytest (используется в Python-командах)',
-                    'Gherkin-файлы (.feature) — общие для бизнеса и QA',
-                    'Шаги (given/when/then) — код на Python/Java, реализующий сценарий',
-                  ],
-                },
-              ],
-            },
-            {
-              id: 'qa-l75-s3',
               title: 'Проверь себя: BDD',
               type: 'quiz',
               quiz: {
                 kind: 'single',
                 question: 'Что главное в BDD — синтаксис Gherkin или обсуждение?',
                 options: [
-                  { id: 'a', text: 'Синтаксис — без Given/When/Then BDD не работает' },
-                  { id: 'b', text: 'Обсуждение — BDD начинается с разговора бизнеса, разработчика и QA о поведении' },
-                  { id: 'c', text: 'Фреймворк (Cucumber)' },
+                  { id: 'a', text: 'Синтаксис' },
+                  { id: 'b', text: 'Обсуждение (Three Amigos) — BDD начинается с разговора о поведении' },
+                  { id: 'c', text: 'Фреймворк' },
                   { id: 'd', text: 'Автотесты' },
                 ],
                 correct: ['b'],
-                explanation:
-                  'BDD — это в первую очередь collaboration (Three Amigos). Gherkin — просто способ зафиксировать договорённости. «Gherkin после разработки» — не BDD, а «тесты в новом синтаксисе».',
+                explanation: 'BDD — это в первую очередь collaboration (Three Amigos). Gherkin — просто способ зафиксировать договорённости.',
               },
+            },
+            {
+              id: 'qa-l75-s3',
+              title: 'Антипаттерны Gherkin',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Если в Gherkin появляются технические детали (селекторы, кнопки, API-методы), бизнес перестаёт его понимать. Сценарий должен описывать **бизнес-ценность**, а не клики.',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    '❌ `When я нажимаю на кнопку с id="submit-btn"`',
+                    '✅ `When я подтверждаю заказ`',
+                    '❌ `Then в базе данных появляется запись с status=paid`',
+                    '✅ `Then заказ считается оплаченным`',
+                  ],
+                },
+              ],
+            },
+            {
+              id: 'qa-l75-s4',
+              title: 'Проверь себя: антипаттерн',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Какой Gherkin-сценарий считается антипаттерном?',
+                options: [
+                  { id: 'a', text: 'When пользователь вводит логин и пароль' },
+                  { id: 'b', text: 'Then система показывает сообщение об успехе' },
+                  { id: 'c', text: 'When пользователь кликает по div#header > span.username' },
+                  { id: 'd', text: 'Given баланс пользователя равен 0' },
+                ],
+                correct: ['c'],
+                explanation:
+                  'Gherkin пишется для бизнеса. CSS-селекторы и XPath — это техническая реализация. Шаги должны описывать бизнес-действия.',
+              },
+            },
+            {
+              id: 'qa-l75-s5',
+              title: 'Инструменты',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'list',
+                  items: [
+                    '**Cucumber**: Классика для Java/JS.',
+                    '**pytest-bdd**: Интеграция Gherkin в pytest (Python).',
+                    '**Behave**: Альтернатива для Python.',
+                  ],
+                },
+              ],
             },
           ],
         },
@@ -1510,21 +2005,11 @@ conftest.py       ← общие фикстуры pytest`,
               blocks: [
                 {
                   type: 'p',
-                  text: `Three Amigos — практика, где Product Owner (бизнес), разработчик и QA собираются на 30 минут перед задачей и обсуждают: «что именно мы делаем, какие edge-кейсы, как поймём, что готово». Это самая дешёвая точка, чтобы поймать недопонимание.`,
-                },
-                {
-                  type: 'list',
-                  items: [
-                    'Бизнес: «зачем это нужно» — цель и ценность',
-                    'Разработчик: «как реализуем» — технические ограничения',
-                    'QA: «как проверим» — edge-кейсы и критерии приёмки',
-                    'Результат: список acceptance criteria и Gherkin-сценариев',
-                    'Время: 30 минут, не 2 часа',
-                  ],
+                  text: 'Three Amigos — практика, где Product Owner, разработчик и QA собираются на 30 минут перед задачей и обсуждают: «что именно мы делаем, какие edge-кейсы, как поймём, что готово».',
                 },
                 {
                   type: 'note',
-                  text: 'Без Three Amigos: QA узнаёт о задаче, когда она уже готова. Баги — в требованиях, а не в коде. С Three Amigos: QA ловит «а что если пользователь отменил оплату?» ещё до первой строчки кода. Дешевле в 10–100 раз.',
+                  text: 'Без Three Amigos: QA узнаёт о задаче, когда она уже готова. С Three Amigos: QA ловит «а что если пользователь отменил оплату?» ещё до первой строчки кода.',
                 },
               ],
             },
@@ -1542,114 +2027,56 @@ conftest.py       ← общие фикстуры pytest`,
                   { id: 'd', text: 'Только менеджеры' },
                 ],
                 correct: ['b'],
-                explanation:
-                  'Три роли: бизнес (зачем), разработчик (как), QA (как проверить). Вместе — разные перспективы, ловят недопонимание на этапе требований.',
+                explanation: 'Три роли: бизнес (зачем), разработчик (как), QA (как проверить).',
               },
             },
-          ],
-        },
-      ],
-    },
-
-    // ─────────────────────────────────────────────
-    // m9 — Test Impact Analysis (было qa-m22)
-    // ─────────────────────────────────────────────
-    {
-      id: 'qa-s-m9',
-      title: 'Test Impact Analysis',
-      lessons: [
-        {
-          id: 'qa-l77',
-          title: 'Что такое TIA и когда нужна',
-          minutes: 20,
-          steps: [
             {
-              id: 'qa-l77-s1',
-              title: 'Не запускать всё на каждый PR',
+              id: 'qa-l76-s3',
+              title: 'Структура встречи',
               type: 'theory',
               blocks: [
                 {
                   type: 'p',
-                  text: `Test Impact Analysis (TIA) — техника, при которой на PR запускаются только те тесты, которые могут быть затронуты изменениями. Изменение в /users — гоняем тесты пользователей; /payments — тесты платежей. Это экономит 50–90% времени CI на больших монорепо.`,
-                },
-                {
-                  type: 'table',
-                  caption: 'TIA на практике',
-                  head: ['Подход', 'Как работает', 'Инструменты'],
-                  rows: [
-                    ['Path-based', 'Маппинг модуль → тесты', 'Nx, Turborepo'],
-                    ['Coverage-based', 'Какие тесты покрывают изменённые строки', 'jest --onlyChanged, pytest-testmon'],
-                    ['Dynamic', 'Запись, что реально покрывал тест в прошлый раз', 'Datadog TIA, Launchable'],
-                    ['Manual', 'QA помечает «критичные тесты»', 'label в pytest'],
-                  ],
-                },
-                {
-                  type: 'note',
-                  text: 'TIA — не «отменить тесты». Полный прогон остаётся: nightly, перед релизом, на main после merge. TIA — только для PR, чтобы обратная связь была быстрее. Иначе рискуем пропустить баг из-за плохой карты зависимостей.',
+                  text: 'Встреча длится 30 минут. Сначала бизнес объясняет цель. Затем QA задает вопросы про edge-кейсы и негативные сценарии. Разработчик оценивает техническую сложность. Результат — список Acceptance Criteria.',
                 },
               ],
             },
             {
-              id: 'qa-l77-s2',
-              title: 'pytest-testmon: TIA в Python',
+              id: 'qa-l76-s4',
+              title: 'Проверь себя: цель',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Какая главная цель Three Amigos?',
+                options: [
+                  { id: 'a', text: 'Написать код быстрее' },
+                  { id: 'b', text: 'Обнаружить недопонимание в требованиях до начала разработки' },
+                  { id: 'c', text: 'Проверить знания QA' },
+                  { id: 'd', text: 'Составить график релизов' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'Три разные перспективы (бизнес, разработка, тестирование) встречаются вместе, чтобы найти «слепые зоны» в требованиях на самом раннем этапе.',
+              },
+            },
+            {
+              id: 'qa-l76-s5',
+              title: 'Роль QA',
               type: 'theory',
               blocks: [
                 {
-                  type: 'code',
-                  lang: 'bash',
-                  caption: 'pytest-testmon',
-                  code: `pip install pytest-testmon\n\n# Первый прогон — запоминает, что какой тест покрывал\npytest --testmon\n\n# Следующие — только затронутые тесты\npytest --testmon\n\n# В CI:\npytest --testmon\n# Запустит только тесты, чьи покрытые строки изменились`,
+                  type: 'p',
+                  text: 'QA на этой встрече — адвокат пользователя. Задачи QA:',
                 },
                 {
                   type: 'list',
                   items: [
-                    'testmon хранит маппинг «тест → покрытые строки» в .testmondata',
-                    'При изменении файла запускает только тесты, затронутые этим файлом',
-                    'Экономия: 50–90% времени на больших проектах',
-                    'Полный прогон — nightly (testmon отключаем)',
-                    'Ограничение: не ловит баги, не связанные с покрытием (интеграции, окружение)',
+                    'Задать вопросы «что если?» (что если упадёт сеть? что если данные невалидны?).',
+                    'Предложить негативные сценарии.',
+                    'Определить, как мы проверим, что фича работает (Acceptance Criteria).',
                   ],
                 },
-                {
-                  type: 'note',
-                  text: 'TIA — продвинутая техника. Внедрять, когда полный прогон CI стал > 15 минут. До этого — оверинжиниринг. Senior QA решает, когда TIA оправдана: большая команда, много PR, монорепо.',
-                },
               ],
-            },
-            {
-              id: 'qa-l77-s3',
-              title: 'Проверь себя: TIA',
-              type: 'quiz',
-              quiz: {
-                kind: 'single',
-                question: 'Когда TIA оправдана?',
-                options: [
-                  { id: 'a', text: 'Всегда — это лучшая практика' },
-                  { id: 'b', text: 'Когда полный прогон CI > 15 минут и много PR; до этого — оверинжиниринг' },
-                  { id: 'c', text: 'Только для фронтенда' },
-                  { id: 'd', text: 'Вместо nightly-прогона' },
-                ],
-                correct: ['b'],
-                explanation:
-                  'TIA — для больших проектов, где CI стал узким местом. На маленьком проекте настройка TIA займёт больше времени, чем сэкономит. И TIA не отменяет полный nightly — иначе рискуем пропустить баг.',
-              },
-            },
-            {
-              id: 'qa-l77-s4',
-              title: 'Проверь себя: подходы',
-              type: 'quiz',
-              quiz: {
-                kind: 'matching',
-                question: 'Сопоставьте подход TIA и инструмент',
-                pairs: [
-                  { left: 'Path-based', right: 'Nx, Turborepo' },
-                  { left: 'Coverage-based', right: 'pytest-testmon' },
-                  { left: 'Dynamic', right: 'Datadog TIA, Launchable' },
-                  { left: 'Manual', right: 'pytest -m critical' },
-                ],
-                explanation:
-                  'Path-based — по путям файлов. Coverage-based — по покрытым строкам. Dynamic — по реальному трафику тестов. Manual — метки. Для Python-стека проще всего coverage-based (pytest-testmon).',
-              },
             },
           ],
         },
@@ -1657,165 +2084,370 @@ conftest.py       ← общие фикстуры pytest`,
     },
 
     // ─────────────────────────────────────────────
-    // m10 — Практикум (было qa-m23)
+    // m8 — Лидерство и менторство (2 урока)
     // ─────────────────────────────────────────────
     {
-      id: 'qa-s-m10',
+      id: 'qa-s-m8',
+      title: 'Лидерство и менторство',
+      lessons: [
+        {
+          id: 'qa-l113',
+          title: 'Code Review тестов и документация',
+          minutes: 25,
+          steps: [
+            {
+              id: 'qa-l113-s1',
+              title: 'Что искать на Code Review',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Senior QA ревьюит тесты не на стиль, а на логику. Плохой тест может быть зеленым, но бесполезным.',
+                },
+                {
+                  type: 'code',
+                  lang: 'python',
+                  caption: 'Антипаттерны в тестах',
+                  code: `# Плохо: всегда зеленый
+def test_create_user_bad():
+    create_user("test")
+    assert True  # Нет проверки!
+
+# Хорошо: Arrange, Act, Assert
+def test_create_user_good(db_session):
+    email = f"test_{uuid4()}@x.com"
+    user_id = create_user(email)
+    user = db_session.get(User, user_id)
+    assert user.email == email`,
+                },
+              ],
+            },
+            {
+              id: 'qa-l113-s2',
+              title: 'Проверь себя: Code Review',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Какой главный признак ПЛОХОГО автотеста?',
+                options: [
+                  { id: 'a', text: 'Написан на Python' },
+                  { id: 'b', text: 'Не падает, даже если удалить проверяемый код (нет Assert)' },
+                  { id: 'c', text: 'Использует переменные' },
+                  { id: 'd', text: 'Находится в отдельном файле' },
+                ],
+                correct: ['b'],
+                explanation: 'Тест должен защищать от регрессий. Если удалить логику, а тест зеленый — это ложное чувство безопасности.',
+              },
+            },
+            {
+              id: 'qa-l113-s3',
+              title: 'Документация: Time to First PR',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Главная метрика хорошей документации — **Time to First PR**. Сколько времени новый QA-инженер тратит, чтобы поднять окружение и сделать первый осмысленный Pull Request.',
+                },
+              ],
+            },
+            {
+              id: 'qa-l113-s4',
+              title: 'Проверь себя: онбординг',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Какой главный признак хорошей QA-документации?',
+                options: [
+                  { id: 'a', text: 'Она очень длинная' },
+                  { id: 'b', text: 'Новый человек может запустить тесты и сделать первый PR за 1 день' },
+                  { id: 'c', text: 'Она написана на английском' },
+                  { id: 'd', text: 'Она в Confluence' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'Критерий — «время до первого PR» (Time to first PR). Если новый QA неделю разбирается — документация плохая, даже если она красивая.',
+              },
+            },
+            {
+              id: 'qa-l113-s5',
+              title: 'Чек-лист ревью',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'list',
+                  items: [
+                    'Есть ли Assert?',
+                    'Изолирован ли тест (нет зависимости от других)?',
+                    'Понятное ли имя (test_login_wrong_password_returns_401)?',
+                    'Нет ли sleep() и хардкода?',
+                    'Используются ли фикстуры для данных?',
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: 'qa-l114',
+          title: 'Собеседования: поиск Senior',
+          minutes: 20,
+          steps: [
+            {
+              id: 'qa-l114-s1',
+              title: 'Кейсы вместо заучивания',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'На интервью Senior QA не спрашивают «Что такое регрессия?». Спрашивают про опыт принятия решений в условиях неопределенности.',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    '«Расскажите про самый сложный баг в карьере»',
+                    '«Как вы внедряли автотесты в команду, которая их не хотела?»',
+                    '«Релиз сегодня, а тесты падают. Ваши действия?»',
+                    '«Как вы измеряете качество своей работы?»',
+                  ],
+                },
+              ],
+            },
+            {
+              id: 'qa-l114-s2',
+              title: 'Проверь себя: интервью',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Какой вопрос лучше всего отличает Senior QA от Middle?',
+                options: [
+                  { id: 'a', text: 'Знаете ли вы, что такое POM?' },
+                  { id: 'b', text: 'Умеете ли вы писать SQL-запросы?' },
+                  { id: 'c', text: 'Как вы убедили Product Manager отложить релиз из-за риска?' },
+                  { id: 'd', text: 'Знаете ли вы, как работает Playwright?' },
+                ],
+                correct: ['c'],
+                explanation: 'Вопрос про коммуникацию с бизнесом и защиту качества показывает Senior-уровень.',
+              },
+            },
+            {
+              id: 'qa-l114-s3',
+              title: 'Оценка soft skills',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Senior QA должен уметь говорить «нет» с аргументацией. Если кандидат на вопрос «Релиз сегодня, тесты падают, что делать?» отвечает «пойду к менеджеру и скажу, что всё плохо» — это Junior. Senior предложит альтернативы: «отключим фичу флагом», «раскатим на 5%», «проверим только критичные пути».',
+                },
+              ],
+            },
+            {
+              id: 'qa-l114-s4',
+              title: 'Проверь себя: soft skills',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Что показывает зрелость Senior QA при обсуждении багов с Product Manager?',
+                options: [
+                  { id: 'a', text: 'Умение настоять на своем любой ценой' },
+                  { id: 'b', text: 'Умение объяснить бизнес-риски бага и предложить компромисс (например, Feature Flag)' },
+                  { id: 'c', text: 'Умение скрыть баг, чтобы релиз состоялся' },
+                  { id: 'd', text: 'Угрозы уволиться' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'Senior оперирует категориями бизнеса (деньги, репутация) и предлагает инженерные решения (флаги, canary), а не просто блокирует релиз.',
+              },
+            },
+            {
+              id: 'qa-l114-s5',
+              title: 'Домашнее задание',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'На собеседовании Senior QA часто дают домашнее задание (написать фреймворк или тесты). Оценивается не только то, что тесты зеленые, но и архитектура (слои, фикстуры, читаемость) и наличие README.',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+
+    // ─────────────────────────────────────────────
+    // m9 — Практикум (1 урок)
+    // ─────────────────────────────────────────────
+    {
+      id: 'qa-s-m9',
       title: 'Практикум',
       lessons: [
         {
-          id: 'qa-l78',
-          title: 'Практика: теория, автотесты, безопасность',
+          id: 'qa-l115',
+          title: 'Комплексный экзамен',
           minutes: 35,
           steps: [
             {
-              id: 'qa-l78-s1',
-              title: 'Принципы ISTQB',
+              id: 'qa-l115-s1',
+              title: 'Экономика качества (CoQ)',
               type: 'quiz',
               quiz: {
                 kind: 'single',
-                question: 'Какой принцип ISTQB гласит: «Тестирование показывает наличие дефектов, но не может доказать их отсутствие»?',
+                question: 'Компания тратит $10,000 в месяц на автоматизацию (Appraisal). Но в проде 2 инцидента в месяц по $50,000. Что нужно сделать Senior QA?',
                 options: [
-                  { id: 'a', text: 'Исчерпывающее тестирование невозможно' },
-                  { id: 'b', text: 'Тестирование демонстрирует наличие дефектов' },
-                  { id: 'c', text: 'Раннее тестирование' },
-                  { id: 'd', text: 'Кластеризация дефектов' },
+                  { id: 'a', text: 'Нанять больше тестировщиков' },
+                  { id: 'b', text: 'Увеличить инвестиции в Prevention (Code Review, Threat Modeling)' },
+                  { id: 'c', text: 'Отказаться от автотестов' },
+                  { id: 'd', text: 'Уволить разработчиков' },
                 ],
                 correct: ['b'],
-                explanation: 'Это первый принцип ISTQB. Даже если все тесты зелёные, в системе могут оставаться неизвестные баги.',
+                explanation: 'Внешние ошибки (Failure) стоят в 100 раз дороже Prevention. Если инциденты часты, проблемы в архитектуре или процессе.',
               },
             },
             {
-              id: 'qa-l78-s2',
-              title: 'Пирамида тестирования',
-              type: 'quiz',
-              quiz: {
-                kind: 'sorting',
-                question: 'Расставьте уровни тестирования от основания пирамиды (самые быстрые и многочисленные) к вершине',
-                items: ['Unit-тесты', 'Интеграционные тесты', 'E2E-тесты'],
-                correct: ['Unit-тесты', 'Интеграционные тесты', 'E2E-тесты'],
-                explanation: 'Unit — быстро, дешево, много. Integration — среднее. E2E — медленно, дорого, мало (только критичные пути).',
-              },
-            },
-            {
-              id: 'qa-l78-s3',
-              title: 'Структура AAA',
-              type: 'quiz',
-              quiz: {
-                kind: 'cloze',
-                question: 'Заполните пропуски в структуре автотеста (Arrange-Act-Assert):',
-                text: 'def test_login():\n    # ____\n    page = LoginPage(driver)\n    # ____\n    page.login("user", "pass")\n    # ____\n    assert page.is_logged_in()',
-                blanks: [
-                  { accepted: ['Arrange'], hint: 'Подготовка' },
-                  { accepted: ['Act'], hint: 'Действие' },
-                  { accepted: ['Assert'], hint: 'Проверка' },
-                ],
-                explanation: 'Arrange (подготовка) → Act (выполнение действия) → Assert (проверка результата).',
-              },
-            },
-            {
-              id: 'qa-l78-s4',
-              title: 'HTTP-статусы',
-              type: 'quiz',
-              quiz: {
-                kind: 'matching',
-                question: 'Сопоставьте код ответа и его значение',
-                pairs: [
-                  { left: '401', right: 'Не авторизован (нет токена)' },
-                  { left: '403', right: 'Доступ запрещён (нет прав)' },
-                  { left: '404', right: 'Не найдено' },
-                  { left: '500', right: 'Внутренняя ошибка сервера' },
-                ],
-                explanation: '401 — «кто ты?». 403 — «я знаю, кто ты, но тебе нельзя». 404 — нет ресурса. 500 — сервер сломался.',
-              },
-            },
-            {
-              id: 'qa-l78-s5',
-              title: 'Расчёт по закону Литтла',
+              id: 'qa-l115-s2',
+              title: 'Математика нагрузки',
               type: 'quiz',
               quiz: {
                 kind: 'number',
-                question: 'Система обрабатывает 200 RPS, среднее время ответа 0.5 сек. Сколько одновременных пользователей в системе? (L = λ × W)',
-                correct: 100,
-                explanation: 'L = 200 * 0.5 = 100. В системе одновременно находится 100 запросов (concurrent users).',
+                question: 'Если система держит 500 RPS, а среднее время ответа 0.4 сек, сколько concurrent users в системе?',
+                correct: 200,
+                explanation: 'L = λ * W = 500 * 0.4 = 200.',
               },
             },
             {
-              id: 'qa-l78-s6',
-              title: 'Что проверяет API-тестировщик',
-              type: 'quiz',
-              quiz: {
-                kind: 'multiple',
-                question: 'Что проверяет тестировщик при тестировании API?',
-                options: [
-                  { id: 'a', text: 'Коды ошибок (400, 401, 404)' },
-                  { id: 'b', text: 'Схему и типы данных в ответе' },
-                  { id: 'c', text: 'Цвет кнопки «Отправить»' },
-                  { id: 'd', text: 'Авторизацию (без токена, с чужим токеном)' },
-                ],
-                correct: ['a', 'b', 'd'],
-                explanation: 'Цвет кнопок — это UI-тестирование. API проверяет контракт, обработку ошибок и безопасность.',
-              },
-            },
-            {
-              id: 'qa-l78-s7',
-              title: 'Виды тестирования',
-              type: 'quiz',
-              quiz: {
-                kind: 'table',
-                question: 'Отметьте, для чего используется каждый вид тестирования',
-                columns: ['Smoke', 'Регрессия', 'Нагрузочное'],
-                rows: [
-                  { label: 'Проверка, что приложение вообще запускается', correct: ['Smoke'] },
-                  { label: 'Проверка, что новое изменение не сломало старое', correct: ['Регрессия'] },
-                  { label: 'Проверка поведения при 1000 RPS', correct: ['Нагрузочное'] },
-                ],
-                explanation: 'Smoke — базовое здоровье. Регрессия — не сломали ли старое. Нагрузка — выдержит ли трафик.',
-              },
-            },
-            {
-              id: 'qa-l78-s8',
-              title: 'Поиск дублей (SQL)',
-              type: 'quiz',
-              quiz: {
-                kind: 'code',
-                question: 'Напишите SQL-запрос, который найдёт email, встречающиеся в таблице users более одного раза.',
-                starterCode: 'SELECT email, COUNT(*)\nFROM users\n',
-                mustInclude: [
-                  { pattern: 'GROUP BY email', message: 'Нужна группировка по email' },
-                  { pattern: 'HAVING COUNT\\(\\*\\) > 1', message: 'Нужно условие HAVING COUNT(*) > 1' },
-                ],
-                explanation: 'SELECT email, COUNT(*) FROM users GROUP BY email HAVING COUNT(*) > 1;',
-              },
-            },
-            {
-              id: 'qa-l78-s9',
-              title: 'Уязвимости OWASP',
-              type: 'quiz',
-              quiz: {
-                kind: 'fill',
-                question: 'Какая категория OWASP Top 10 стоит на первом месте в 2021 году? (два слова)',
-                accepted: ['Broken Access Control', 'broken access control'],
-                placeholder: 'Название категории',
-                hint: 'Проблемы с правами доступа',
-                explanation: 'Broken Access Control (нарушение контроля доступа) — на первом месте. Пользователи получают доступ к тому, что им нельзя.',
-              },
-            },
-            {
-              id: 'qa-l78-s10',
-              title: 'Playwright локаторы',
+              id: 'qa-l115-s3',
+              title: 'Threat Modeling',
               type: 'quiz',
               quiz: {
                 kind: 'single',
-                question: 'Какой локатор в Playwright считается самым надежным (семантичным)?',
+                question: 'Какая угроза STRIDE описывает ситуацию: «Пользователь изменил price=100 на price=1 в запросе»?',
                 options: [
-                  { id: 'a', text: 'page.locator("div > button.submit")' },
-                  { id: 'b', text: 'page.get_by_role("button", name="Отправить")' },
-                  { id: 'c', text: 'page.locator("xpath=//button")' },
-                  { id: 'd', text: 'page.locator(".btn-primary")' },
+                  { id: 'a', text: 'Spoofing' },
+                  { id: 'b', text: 'Tampering' },
+                  { id: 'c', text: 'Repudiation' },
+                  { id: 'd', text: 'Information Disclosure' },
                 ],
                 correct: ['b'],
-                explanation: 'get_by_role ищет по ARIA-роли и доступному имени. Он не ломается при изменении CSS-классов или структуры DOM.',
+                explanation: 'Tampering — нарушение целостности данных. Подмена цены — классический пример.',
+              },
+            },
+            {
+              id: 'qa-l115-s4',
+              title: 'Test Data Management',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Для нагрузочного теста на 10 млн пользователей какой подход к данным правильный?',
+                options: [
+                  { id: 'a', text: 'Дамп реальной БД' },
+                  { id: 'b', text: 'Сгенерировать через Faker' },
+                  { id: 'c', text: 'Маскированные данные (Masked Data) с сохранением распределения' },
+                  { id: 'd', text: 'Умножить результат 100 пользователей' },
+                ],
+                correct: ['c'],
+                explanation: 'Для нагрузки нужны паттерны распределения. Faker даст плоское распределение. Masked Data сохраняет паттерны без утечки PII.',
+              },
+            },
+            {
+              id: 'qa-l115-s5',
+              title: 'Merge Queue и TIA',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Зачем нужна Merge Queue?',
+                options: [
+                  { id: 'a', text: 'Для Code Review' },
+                  { id: 'b', text: 'Для тестирования комбинации PR перед слиянием (защита от Semantic Conflicts)' },
+                  { id: 'c', text: 'Для мержа без тестов' },
+                  { id: 'd', text: 'Для ускорения Docker' },
+                ],
+                correct: ['b'],
+                explanation: 'Merge Queue решает проблему, когда PR по отдельности зеленые, но вместе ломают сборку.',
+              },
+            },
+            {
+              id: 'qa-l115-s6',
+              title: 'Флаки',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Вы видите, что тест падает в 10% запусков. Какие шаги НЕПРАВИЛЬНЫЕ?',
+                options: [
+                  { id: 'a', text: 'Обернуть в retry, чтобы CI был зеленым' },
+                  { id: 'b', text: 'Удалить тест навсегда' },
+                  { id: 'c', text: 'Посмотреть трейс и логи' },
+                  { id: 'd', text: 'Пометить как @flaky и вынести в карантин' },
+                ],
+                correct: ['a', 'b'],
+                explanation: 'Retry (a) маскирует баг, удаление (b) снижает покрытие. Правильно — дебажить (c) и изолировать (d).',
+              },
+            },
+            {
+              id: 'qa-l115-s7',
+              title: 'Sentry',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Какая метрика в Sentry важнее всего для приоритизации бага?',
+                options: [
+                  { id: 'a', text: 'Длина стектрейса' },
+                  { id: 'b', text: 'Количество затронутых пользователей (Users Affected)' },
+                  { id: 'c', text: 'Браузер' },
+                  { id: 'd', text: 'IP' },
+                ],
+                correct: ['b'],
+                explanation: 'Если ошибка у 10,000 пользователей — это Critical. Sentry помогает понять масштаб.',
+              },
+            },
+            {
+              id: 'qa-l115-s8',
+              title: 'Правило 1-10-100',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Сколько примерно стоит баг в проде, если на этапе требований он стоит 1 доллар?',
+                options: [
+                  { id: 'a', text: '10 долларов' },
+                  { id: 'b', text: '100 долларов' },
+                  { id: 'c', text: '1000 долларов' },
+                  { id: 'd', text: '5 долларов' },
+                ],
+                correct: ['b'],
+                explanation: 'Требования ($1) -> QA ($10) -> Продакшен ($100).',
+              },
+            },
+            {
+              id: 'qa-l115-s9',
+              title: 'Screenplay',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'В чем преимущество паттерна Screenplay над классическим Page Object?',
+                options: [
+                  { id: 'a', text: 'Он быстрее выполняется' },
+                  { id: 'b', text: 'Он моделирует бизнес-задачи (Task) и способности (Abilities)' },
+                  { id: 'c', text: 'Он работает только с Selenium' },
+                  { id: 'd', text: 'Он не требует написания локаторов' },
+                ],
+                correct: ['b'],
+                explanation: 'Screenplay позволяет писать `actor.attempts_to(Login(), Checkout())`. Это ближе к языку бизнеса.',
+              },
+            },
+            {
+              id: 'qa-l115-s10',
+              title: 'SAST vs DAST',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Вы хотите найти SQL-инъекцию в коде до деплоя. Какой инструмент выбрать?',
+                options: [
+                  { id: 'a', text: 'DAST (OWASP ZAP)' },
+                  { id: 'b', text: 'SAST (Semgrep)' },
+                  { id: 'c', text: 'SCA (Trivy)' },
+                  { id: 'd', text: 'Пентест' },
+                ],
+                correct: ['b'],
+                explanation: 'SAST ищет SQL-инъекции прямо в исходном коде (через Taint Analysis) до деплоя.',
               },
             },
           ],

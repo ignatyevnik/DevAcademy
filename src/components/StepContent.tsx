@@ -19,13 +19,22 @@ import { useExamMode } from '@/lib/exam-mode';
 
 type ResultType = 'ok' | 'partial' | 'fail';
 
-/** Оборачивает текст между `backticks` в <code> */
+/** Оборачивает `code` в <code>, а **текст** в <strong> */
 function InlineText({ text }: { text: string }) {
   if (!text) return null;
-  const parts = text.split(/(`[^`]+`)/g);
+  // Разбиваем строку по маркерам **жирного** или `кода`
+  const parts = text.split(/(\*\*.*?\*\*|`[^`]+`)/g);
+
   return (
     <>
       {parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return (
+            <strong key={i} className="font-bold">
+              {part.slice(2, -2)}
+            </strong>
+          );
+        }
         if (part.startsWith('`') && part.endsWith('`')) {
           return (
             <code

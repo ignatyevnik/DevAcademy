@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router';
-import { Plus, Trash2, Download, Save, ArrowLeft, RotateCcw, Clock, Eye, Edit } from 'lucide-react';
+import { Plus, Trash2, Download, Save, ArrowLeft, RotateCcw, Clock, Eye, Edit, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -174,6 +174,35 @@ export default function EditorPage() {
     URL.revokeObjectURL(url);
   };
 
+    const generateId = (prefix: string) => 
+    `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+
+  const duplicateLesson = (mIdx: number, lIdx: number) => {
+    const newModules = [...course.modules];
+    const original = newModules[mIdx].lessons[lIdx];
+    const clone = JSON.parse(JSON.stringify(original));
+    
+    // Генерируем новые ID для урока и всех его шагов
+    clone.id = generateId('les');
+    clone.title = `${original.title} (копия)`;
+    clone.steps = clone.steps.map((s: any) => ({ ...s, id: generateId('step') }));
+
+    newModules[mIdx].lessons.splice(lIdx + 1, 0, clone);
+    setCourse({ ...course, modules: newModules });
+  };
+
+  const duplicateStep = (mIdx: number, lIdx: number, sIdx: number) => {
+    const newModules = [...course.modules];
+    const original = newModules[mIdx].lessons[lIdx].steps[sIdx];
+    const clone = JSON.parse(JSON.stringify(original));
+    
+    clone.id = generateId('step');
+    clone.title = `${original.title} (копия)`;
+
+    newModules[mIdx].lessons[lIdx].steps.splice(sIdx + 1, 0, clone);
+    setCourse({ ...course, modules: newModules });
+  };
+
   return (
     <div className="min-h-dvh bg-background">
       <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
@@ -273,6 +302,10 @@ export default function EditorPage() {
                         <Input type="number" min={1} value={les.minutes} onChange={(e) => { const n = [...course.modules]; n[mIdx].lessons[lIdx].minutes = Number(e.target.value); setCourse({ ...course, modules: n }); }} className="w-32 pl-8 pr-12 text-sm" aria-label="Время прохождения в минутах" />
                         <span className="absolute right-2.5 text-xs font-medium text-muted-foreground pointer-events-none">мин</span>
                       </div>
+                      {/* НОВАЯ КНОПКА ДУБЛИРОВАНИЯ УРОКА */}
+                      <Button variant="ghost" size="sm" onClick={() => duplicateLesson(mIdx, lIdx)} title="Дублировать урок">
+                        <Copy className="h-4 w-4" />
+                      </Button>
                       <Button variant="ghost" size="sm" onClick={() => { if (confirm(`Удалить урок «${les.title}»?`)) { const n = [...course.modules]; n[mIdx].lessons.splice(lIdx, 1); setCourse({ ...course, modules: n }); } }}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -298,6 +331,10 @@ export default function EditorPage() {
                             {step.type === 'theory' ? 'Теория' : 'Тест'}
                           </span>
                           <Input value={step.title} onChange={(e) => { const n = [...course.modules]; n[mIdx].lessons[lIdx].steps[sIdx].title = e.target.value; setCourse({ ...course, modules: n }); }} className="flex-1 h-8 text-sm font-medium" />
+                          {/* НОВАЯ КНОПКА ДУБЛИРОВАНИЯ ШАГА */}
+                          <Button variant="ghost" size="sm" onClick={() => duplicateStep(mIdx, lIdx, sIdx)} title="Дублировать шаг">
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
                           <Button variant="ghost" size="sm" onClick={() => { if (confirm(`Удалить шаг «${step.title}»?`)) { const n = [...course.modules]; n[mIdx].lessons[lIdx].steps.splice(sIdx, 1); setCourse({ ...course, modules: n }); } }}>
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>

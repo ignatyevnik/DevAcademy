@@ -130,6 +130,41 @@ export const kafkaBasicsCourse: Course = {
                   'Kafka — «журнал событий»: события остаются до retention, offset независим для каждой consumer group. Replay и несколько consumer groups — то, что очередь не умеет.',
               },
             },
+            {
+  id: 'kf-l1-s4',
+  title: 'Проверь себя: Kafka vs RabbitMQ',
+  type: 'quiz',
+  quiz: {
+    kind: 'matching',
+    question: 'Сопоставьте сценарий и подходящий инструмент',
+    pairs: [
+      { left: 'Миллион событий/сек, replay истории, 5 consumer-групп', right: 'Kafka' },
+      { left: 'Простая очередь задач, RPC, гибкая маршрутизация', right: 'RabbitMQ' },
+      { left: 'Managed-очередь без эксплуатации, AWS', right: 'SQS' },
+      { left: 'Маленький поток (< 10k событий/сек), уже есть Postgres', right: 'Postgres (SKIP LOCKED)' },
+    ],
+    explanation:
+      'Правило: «если события — факты, и их читают несколько сервисов независимо — Kafka». «Если задача для одного исполнителя — очередь». Kafka не всегда лучший выбор.',
+  },
+},
+{
+  id: 'kf-l1-s5',
+  title: 'Проверь себя: retention',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'Почему в Kafka можно «перечитать» все события за неделю после исправления бага?',
+    options: [
+      { id: 'a', text: 'Kafka хранит события в оперативной памяти' },
+      { id: 'b', text: 'События не удаляются после прочтения, а живут до истечения retention (по умолчанию 7 дней)' },
+      { id: 'c', text: 'Потребитель автоматически перечитывает всё при каждом запуске' },
+      { id: 'd', text: 'Это невозможно, Kafka удаляет сразу после прочтения' },
+    ],
+    correct: ['b'],
+    explanation:
+      'Kafka — append-only лог. Событие живёт до истечения retention (7 дней по умолчанию), независимо от того, прочитали его или нет. Можно «перемотать» offset и перечитать историю — это и есть replay.',
+  },
+},
           ],
         },
         {
@@ -233,6 +268,24 @@ export const kafkaBasicsCourse: Course = {
                   'Каждая партиция читается одним consumer-ом в группе. 6 партиций → максимум 6 активных consumer-ов. Седьмой будет простаивать. Больше партиций = больше параллелизма, но и больше overhead на брокере.',
               },
             },
+            {
+  id: 'kf-l2-s5',
+  title: 'Проверь себя: retention-политики',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'В чём разница между `cleanup.policy=delete` и `cleanup.policy=compact`?',
+    options: [
+      { id: 'a', text: 'delete удаляет старые сегменты целиком, compact оставляет только последнее значение по каждому ключу' },
+      { id: 'b', text: 'delete — быстрее, compact — медленнее' },
+      { id: 'c', text: 'delete работает только в KRaft, compact — только в ZooKeeper' },
+      { id: 'd', text: 'Это синонимы' },
+    ],
+    correct: ['a'],
+    explanation:
+      'delete — старая стратегия: сегменты старше retention.ms удаляются. compact — «сжатие»: для каждого ключа остаётся только последнее значение. Для event-sourcing — delete, для «таблицы состояния» (последний статус заказа) — compact.',
+  },
+},
           ],
         },
         {
@@ -308,6 +361,42 @@ export const kafkaBasicsCourse: Course = {
                   'Каждая группа имеет свои offsets. Одно сообщение прочитается всеми группами (по разу каждой). Это стандарт: одна группа для бизнес-логики, другая — для аналитики, третья — для CDC в другую БД.',
               },
             },
+            {
+  id: 'kf-l3-s4',
+  title: 'Проверь себя: partition assignment',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'В группе 3 consumer-а, у топика 6 партиций. Как Kafka распределит партиции?',
+    options: [
+      { id: 'a', text: 'Все 6 — одному consumer-у' },
+      { id: 'b', text: 'По 2 партиции каждому' },
+      { id: 'c', text: 'Каждый consumer получит все 6 (дублирование)' },
+      { id: 'd', text: 'Kafka откажется: партиций больше, чем consumer-ов' },
+    ],
+    correct: ['b'],
+    explanation:
+      'Каждая партиция читается ровно одним consumer-ом в группе. 6 партиций / 3 consumer-а = по 2 каждому. Если consumer-ов больше, чем партиций — лишние простаивают.',
+  },
+},
+{
+  id: 'kf-l3-s5',
+  title: 'Проверь себя: partition assignment strategy',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'Какая стратегия распределения партиций рекомендуется в 2025?',
+    options: [
+      { id: 'a', text: 'Range' },
+      { id: 'b', text: 'RoundRobin' },
+      { id: 'c', text: 'CooperativeStickyAssignor' },
+      { id: 'd', text: 'Random' },
+    ],
+    correct: ['c'],
+    explanation:
+      'CooperativeStickyAssignor — «кооперативный липкий»: при rebalance отдаёт только «лишние» партиции, остальные продолжают читать. В отличие от Eager (Range/RoundRobin), который останавливает всю группу. С 2.4+ рекомендуется как стандарт.',
+  },
+},
           ],
         },
         {
@@ -364,6 +453,63 @@ export const kafkaBasicsCourse: Course = {
                   '`hash(key) % partitions` → все события с key=user:42 идут в одну партицию → consumer обрабатывает их последовательно. Без key — могут попасть в разные партиции и обработаться не по порядку.',
               },
             },
+            {
+  id: 'kf-l4-s3',
+  title: 'Практика: какой key выбрать',
+  type: 'theory',
+  blocks: [
+    { type: 'p', text: 'Порядок гарантирован только внутри партиции. Значит, key должен отражать «что должно обрабатываться последовательно».' },
+    {
+      type: 'table',
+      caption: 'Выбор key',
+      head: ['Сценарий', 'Key', 'Почему'],
+      rows: [
+        ['События заказа (created, paid, shipped)', 'order_id', 'Порядок по одному заказу гарантирован'],
+        ['Действия пользователя (логин, покупка)', 'user_id', 'Последовательность по пользователю'],
+        ['Платёжные транзакции', 'account_id', 'Баланс считается последовательно'],
+        ['Логи уровня приложения', 'без key (round-robin)', 'Порядок не важен — важна пропускная способность'],
+        ['IoT-метрики с устройства', 'device_id', 'Порядок показаний одного устройства'],
+      ],
+    },
+    { type: 'note', text: 'Правило: если между событиями есть «A должно быть до B» — это key. Если нет — не задавайте key (или задавайте равномерный hash), чтобы избежать перекосов.' },
+  ],
+},
+{
+  id: 'kf-l4-s4',
+  title: 'Проверь себя: где гарантирован порядок',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'Сколько сообщений с одинаковым key попадут в одну партицию?',
+    options: [
+      { id: 'a', text: 'Все — гарантированно в одну (hash(key) % num_partitions)' },
+      { id: 'b', text: 'Только первое' },
+      { id: 'c', text: 'Случайно в разные' },
+      { id: 'd', text: 'Kafka не даёт такой гарантии' },
+    ],
+    correct: ['a'],
+    explanation:
+      'Producer вычисляет hash(key) % num_partitions и шлёт в конкретную партицию. Все сообщения с key=user:42 попадут в одну партицию → consumer обработает их последовательно. Без key — не гарантируется.',
+  },
+},
+{
+  id: 'kf-l4-s5',
+  title: 'Проверь себя: hot key',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'Что произойдёт, если 90% событий имеют один и тот же key (например, key="global")?',
+    options: [
+      { id: 'a', text: 'Kafka перераспределит их по партициям автоматически' },
+      { id: 'b', text: 'Все 90% попадут в одну партицию → перекос (hot partition), остальные простаивают' },
+      { id: 'c', text: 'Kafka выдаст ошибку' },
+      { id: 'd', text: 'Consumer обработает их параллельно' },
+    ],
+    correct: ['b'],
+    explanation:
+      'Hash от одного key всегда даёт одну партицию. Остальные партиции простаивают — вы теряете параллелизм и упираетесь в один consumer. Классическая проблема «горячего ключа»: пересмотрите key или добавьте случайный суффикс.',
+  },
+},
           ],
         },
       ],
@@ -461,6 +607,42 @@ export const kafkaBasicsCourse: Course = {
                   'Осталась 1 реплика в ISR (нужно 2). Producer с acks=all получит `NOT_ENOUGH_REPLICAS` и остановится. Это выбор в пользу консистентности: лучше остановить запись, чем потерять данные. Такая ситуация — «страховка», а не баг.',
               },
             },
+            {
+  id: 'kf-l5-s4',
+  title: 'Проверь себя: RF=3, один упал',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'replication.factor=3, один брокер упал. Что с producer с acks=all?',
+    options: [
+      { id: 'a', text: 'Получит ошибку — реплик меньше 3' },
+      { id: 'b', text: 'Продолжит писать: осталось 2 реплики (>= min.insync.replicas=2)' },
+      { id: 'c', text: 'Автоматически снизит acks до 1' },
+      { id: 'd', text: 'Топик удалится' },
+    ],
+    correct: ['b'],
+    explanation:
+      'Пока в ISR >= min.insync.replicas (обычно 2), producer с acks=all пишет нормально. Осталось 2 живых реплики — это минимум. Если упадёт второй брокер (1 < 2) — producer получит NOT_ENOUGH_REPLICAS.',
+  },
+},
+{
+  id: 'kf-l5-s5',
+  title: 'Проверь себя: RF=1',
+  type: 'quiz',
+  quiz: {
+    kind: 'multiple',
+    question: 'Какие настройки репликации НЕ подходят для прода?',
+    options: [
+      { id: 'a', text: 'replication.factor=3, min.insync.replicas=2, acks=all' },
+      { id: 'b', text: 'replication.factor=1, min.insync.replicas=1, acks=1' },
+      { id: 'c', text: 'replication.factor=3, min.insync.replicas=2, acks=0' },
+      { id: 'd', text: 'replication.factor=3, min.insync.replicas=2, acks=all с idempotence' },
+    ],
+    correct: ['b', 'c'],
+    explanation:
+      'RF=1 — нет реплик, потеря брокера = потеря данных. acks=0 — fire-and-forget, потеря при любом сбое. Оба варианта не для прода. Стандарт: RF=3, min.insync=2, acks=all.',
+  },
+},
           ],
         },
         {
@@ -526,6 +708,69 @@ export const kafkaBasicsCourse: Course = {
                   'KRaft (Kafka Raft) — встроенный механизм консенсуса для метаданных. Заменяет внешний ZooKeeper. С Kafka 4.0 ZooKeeper полностью удалён. Проще деплой, быстрее failover, миллионы партиций.',
               },
             },
+            {
+  id: 'kf-l6-s3',
+  title: 'Как работает controller quorum в KRaft',
+  type: 'theory',
+  blocks: [
+    { type: 'p', text: 'В KRaft брокеры бывают двух ролей (могут совмещаться): broker (хранит данные) и controller (хранит метаданные). Controller-ы образуют quorum через Raft-консенсус: лидер принимает изменения, фолловеры реплицируют.' },
+    {
+      type: 'mermaid',
+      caption: 'Controller quorum в KRaft (3 controller-а)',
+      code: `graph TD
+        L["Controller-лидер<br/>(принимает метаданные)"] -->|"replicate"| F1["Controller-фолловер"]
+        L -->|"replicate"| F2["Controller-фолловер"]
+        B1["Broker 1"] -->|"fetch metadata"| L
+        B2["Broker 2"] -->|"fetch metadata"| L`,
+    },
+    {
+      type: 'list',
+      items: [
+        'Controller quorum — нечётное число (3 или 5) для кворума',
+        'Leader election — стандартный Raft: лидер упал, фолловеры выбирают нового',
+        'Метаданные: топики, партиции, лидеры, ACL, конфиги',
+        'Брокеры могут совмещать роли broker+controller (в dev) или быть раздельно (в prod)',
+        'Kafka 3.3+ — KRaft production-ready; 4.0 — ZooKeeper удалён',
+      ],
+    },
+  ],
+},
+{
+  id: 'kf-l6-s4',
+  title: 'Проверь себя: KRaft',
+  type: 'quiz',
+  quiz: {
+    kind: 'multiple',
+    question: 'Что нужно для KRaft-кластера (без ZooKeeper)?',
+    options: [
+      { id: 'a', text: 'Настроить controller_quorum (список controller-ов)' },
+      { id: 'b', text: 'Нечётное число controller-ов (3 или 5)' },
+      { id: 'c', text: 'Обязательно отдельные серверы для broker и controller' },
+      { id: 'd', text: 'Форматирование storage (kafka-storage format) перед первым стартом' },
+    ],
+    correct: ['a', 'b', 'd'],
+    explanation:
+      'KRaft: controller_quorum (a), нечётное число (b), storage format (d). Брокеры МОГУТ совмещать роли broker+controller (c — не обязателен), поэтому вариант c неверен.',
+  },
+},
+{
+  id: 'kf-l6-s5',
+  title: 'Проверь себя: почему ZooKeeper убрали',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'Почему с Kafka 4.0 ZooKeeper полностью удалён?',
+    options: [
+      { id: 'a', text: 'Он был медленнее, чем KRaft' },
+      { id: 'b', text: 'KRaft проще: один компонент вместо двух, быстрее failover, поддерживает миллионы партиций' },
+      { id: 'c', text: 'ZooKeeper перестал быть open-source' },
+      { id: 'd', text: 'Это маркетинговое решение' },
+    ],
+    correct: ['b'],
+    explanation:
+      'KRaft проще в эксплуатации (один компонент, а не Kafka+ZooKeeper), быстрее выборы лидера, масштабируется до миллионов партиций. ZooKeeper держал метаданные в памяти, KRaft — через Raft-консенсус.',
+  },
+},
           ],
         },
         {
@@ -612,6 +857,36 @@ export const kafkaBasicsCourse: Course = {
                   'Compaction — «последнее значение по ключу». Подходит для «таблиц состояния» (последний профиль, последний статус). Для event-sourcing (все факты) — `delete`. Для обоих — `compact,delete`.',
               },
             },
+            {
+  id: 'kf-l7-s4',
+  title: 'Проверь себя: delete vs compact',
+  type: 'quiz',
+  quiz: {
+    kind: 'multiple',
+    question: 'В каких случаях нужен `cleanup.policy=compact` (или `compact,delete`)?',
+    options: [
+      { id: 'a', text: 'Хранить «последний профиль» пользователя' },
+      { id: 'b', text: 'Хранить все события заказов за неделю' },
+      { id: 'c', text: 'KTable в Kafka Streams (таблица состояния)' },
+      { id: 'd', text: 'Материализованные представления для быстрого чтения' },
+    ],
+    correct: ['a', 'c', 'd'],
+    explanation:
+      'compact оставляет только последнее значение по ключу — для «таблиц состояния» (профили, KTable, materialized views). Для «всех событий» (история заказов) — delete. compact,delete — если нужны и «последнее», и «за период».',
+  },
+},
+{
+  id: 'kf-l7-s5',
+  title: 'Проверь себя: реальные цифры',
+  type: 'quiz',
+  quiz: {
+    kind: 'number',
+    question: 'Сколько дней по умолчанию Kafka хранит сообщения (retention.ms)?',
+    correct: 7,
+    explanation:
+      'По умолчанию retention.ms = 604800000 = 7 дней. Настраивается per-topic. Для аналитики можно 30–90 дней, для event sourcing — 365+ или compact. Для прода — зависит от SLA и объёма.',
+  },
+},
           ],
         },
       ],
@@ -731,6 +1006,50 @@ export const kafkaBasicsCourse: Course = {
                   'Идемпотентность = дедупликация по (PID, epoch, sequence) на брокере. Требует `acks=all`, `retries>0`. Работает в рамках одной сессии — при рестарте новый PID. Для exactly-once между рестартами — транзакции.',
               },
             },
+            {
+  id: 'kf-l8-s5',
+  title: 'Retries, max.in.flight и порядок',
+  type: 'theory',
+  blocks: [
+    { type: 'p', text: 'С acks=all и retries>0 есть тонкость: если producer отправляет несколько батчей параллельно (max.in.flight > 1), а один упал и повторяется — порядок может нарушиться. Первый батч ретраится, второй уже ушёл.' },
+    {
+      type: 'code',
+      lang: 'properties',
+      caption: 'Безопасная комбинация',
+      code: `enable.idempotence=true
+acks=all
+retries=Integer.MAX_VALUE
+max.in.flight.requests.per.connection=5   # ≤5 — идемпотентность сохраняет порядок`,
+    },
+    {
+      type: 'list',
+      items: [
+        'max.in.flight ≤ 5 + idempotence=true — порядок сохраняется',
+        'max.in.flight > 5 + idempotence — порядок может нарушиться при ретраях',
+        'Отключить idempotence — единственный способ потерять порядок при retries',
+        'При acks=0/1 retries не помогает — сообщение уже «потеряно»',
+      ],
+    },
+  ],
+},
+{
+  id: 'kf-l8-s6',
+  title: 'Проверь себя: acks=all + idempotence + retries',
+  type: 'quiz',
+  quiz: {
+    kind: 'multiple',
+    question: 'Вы включили `enable.idempotence=true`, `acks=all`, `retries=MAX`. Что вы получили?',
+    options: [
+      { id: 'a', text: 'Producer не создаёт дубликаты при ретраях' },
+      { id: 'b', text: 'Producer переживает временные сбои лидера партиции' },
+      { id: 'c', text: 'Exactly-once между рестартами producer-а' },
+      { id: 'd', text: 'Порядок сообщений с одинаковым key сохраняется' },
+    ],
+    correct: ['a', 'b', 'd'],
+    explanation:
+      'a — идемпотентность дедуплицирует по (PID, seq). b — acks=all + retries = переживаем сбой лидера. d — при max.in.flight ≤ 5 порядок сохраняется. c — exactly-once между рестартами требует транзакций (следующий урок).',
+  },
+},
           ],
         },
         {
@@ -829,6 +1148,42 @@ export const kafkaBasicsCourse: Course = {
                   'EOS = идемпотентный producer + транзакции + read_committed consumer. `acks=0` — наоборот, потеря данных. EOS работает только между Kafka-топиками; при записи в Postgres — нужны другие паттерны (outbox).',
               },
             },
+            {
+  id: 'kf-l9-s4',
+  title: 'Проверь себя: где EOS не работает',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'Consumer читает Kafka и пишет в Postgres. Гарантирует ли Kafka exactly-once в этом сценарии?',
+    options: [
+      { id: 'a', text: 'Да, транзакции Kafka всё гарантируют' },
+      { id: 'b', text: 'Нет — Postgres не участвует в транзакции Kafka, нужен outbox-pattern или идемпотентная запись' },
+      { id: 'c', text: 'Да, если acks=all' },
+      { id: 'd', text: 'Да, если enable.idempotence=true' },
+    ],
+    correct: ['b'],
+    explanation:
+      'EOS в Kafka работает только между Kafka-топиками. Как только вы пишете в Postgres — это уже не транзакция Kafka. Решения: outbox-pattern (писать в БД и в Kafka атомарно через outbox), идемпотентные записи по key, two-phase commit (редко).',
+  },
+},
+{
+  id: 'kf-l9-s5',
+  title: 'Проверь себя: isolation.level',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'Что должен указать consumer, чтобы видеть только закоммиченные сообщения (не прерванные)?',
+    options: [
+      { id: 'a', text: 'isolation.level=read_uncommitted (по умолчанию)' },
+      { id: 'b', text: 'isolation.level=read_committed' },
+      { id: 'c', text: 'transactional.id=consumer-1' },
+      { id: 'd', text: 'enable.auto.commit=true' },
+    ],
+    correct: ['b'],
+    explanation:
+      'read_committed — видеть только сообщения из закоммиченных транзакций, пропускать прерванные. read_uncommitted (дефолт) — видеть всё, включая прерванные. Для EOS consumer-а — обязателен read_committed.',
+  },
+},
           ],
         },
         {
@@ -886,6 +1241,63 @@ export const kafkaBasicsCourse: Course = {
                   '`linger.ms` — сколько ждать перед отправкой. Больше — лучше batch, выше throughput, но выше latency. `0` — «отправляй сразу». `10–100` — баланс для throughput. `compression.type=zstd` + `linger.ms=10` — стандарт для high-throughput.',
               },
             },
+            {
+  id: 'kf-l10-s3',
+  title: 'compression.type: что выбрать',
+  type: 'theory',
+  blocks: [
+    { type: 'p', text: 'Сжатие применяется к батчу целиком, а не к каждому сообщению. Меньше данных — быстрее сеть и диск. Но: сильнее сжатие — больше CPU на producer и consumer.' },
+    {
+      type: 'table',
+      caption: 'Алгоритмы сжатия',
+      head: ['Алгоритм', 'Степень сжатия', 'CPU', 'Когда'],
+      rows: [
+        ['none', '0%', '0', 'Не сжимать (редко)'],
+        ['gzip', 'Высокая', 'Высокий', 'Мало данных, важна экономия'],
+        ['snappy', 'Средняя', 'Низкий', 'Баланс, стандарт'],
+        ['lz4', 'Средняя', 'Низкий', 'Быстрее snappy, часто лучше'],
+        ['zstd', 'Высокая', 'Средний', 'Лучший баланс в 2025, рекомендуется'],
+      ],
+    },
+    { type: 'note', text: 'В 2025 zstd — стандарт для high-throughput. Даёт сжатие как gzip при CPU как lz4. Для больших сообщений (JSON) — экономия в 5–10 раз. Для маленьких (числа) — почти не помогает.' },
+  ],
+},
+{
+  id: 'kf-l10-s4',
+  title: 'Проверь себя: compression не поможет',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'В каком случае compression.type=zstd НЕ даст заметного выигрыша?',
+    options: [
+      { id: 'a', text: 'Большие JSON-сообщения по 10 КБ' },
+      { id: 'b', text: 'Маленькие сообщения по 50 байт (числа)' },
+      { id: 'c', text: 'Логи с повторяющимися полями' },
+      { id: 'd', text: 'Текстовые события с частыми словами' },
+    ],
+    correct: ['b'],
+    explanation:
+      'Сжатие работает на «избыточности». В 50-байтном сообщении сжимать нечего — overhead заголовков больше выигрыша. Для маленьких сообщений лучше «набить батч» (linger.ms) и сжимать батч, а не отдельные сообщения.',
+  },
+},
+{
+  id: 'kf-l10-s5',
+  title: 'Проверь себя: throughput vs latency',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'Вам нужна минимальная latency (real-time). Какой `linger.ms` выбрать?',
+    options: [
+      { id: 'a', text: '0 (отправлять сразу)' },
+      { id: 'b', text: '100 (накопить побольше)' },
+      { id: 'c', text: '1000 (ждать секунду)' },
+      { id: 'd', text: 'Не имеет значения' },
+    ],
+    correct: ['a'],
+    explanation:
+      'linger.ms=0 — «отправляй сразу, не жди». Latency минимальная, throughput ниже (меньше батч). linger.ms=10–100 — баланс для high-throughput. Если latency критична (real-time) — 0, если throughput — 10–100 + zstd.',
+  },
+},
           ],
         },
         {
@@ -973,6 +1385,42 @@ export const kafkaBasicsCourse: Course = {
                   '`max.poll.interval.ms` — «сколько consumer может не звать poll()». Если обработка дольше — Kafka считает consumer мёртвым и запускает rebalance. Классика: тяжёлая обработка 10 мин при лимите 5 → бесконечные rebalance. Решение: `max.poll.records` меньше или `max.poll.interval.ms` больше.',
               },
             },
+            {
+  id: 'kf-l11-s4',
+  title: 'Проверь себя: static membership',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'Что даёт `group.instance.id` (static membership)?',
+    options: [
+      { id: 'a', text: 'Позволяет consumer-у не выпадать из группы при рестарте в пределах session.timeout.ms' },
+      { id: 'b', text: 'Ускоряет обработку сообщений' },
+      { id: 'c', text: 'Заменяет group.id' },
+      { id: 'd', text: 'Отключает heartbeat' },
+    ],
+    correct: ['a'],
+    explanation:
+      'Static membership: consumer с group.instance.id при рестарте (например, перезапуск pod в K8s) не выпадает из группы в пределах session.timeout.ms. Нет rebalance — нет простоя. Must-have для Kubernetes.',
+  },
+},
+{
+  id: 'kf-l11-s5',
+  title: 'Проверь себя: добавление consumer',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'Что произойдёт при добавлении нового consumer-а в группу?',
+    options: [
+      { id: 'a', text: 'Ничего, новый consumer будет простаивать' },
+      { id: 'b', text: 'Запустится rebalance: партиции перераспределятся между всеми' },
+      { id: 'c', text: 'Все существующие consumer-ы упадут' },
+      { id: 'd', text: 'Топик пересоздастся' },
+    ],
+    correct: ['b'],
+    explanation:
+      'При добавлении consumer-а группа запускает rebalance. С CooperativeSticky — только «лишние» партиции переедут, остальные продолжат читать. С Eager (старое) — вся группа остановится и перераспределится.',
+  },
+},
           ],
         },
       ],
@@ -1059,6 +1507,62 @@ export const kafkaBasicsCourse: Course = {
                   'Debezium — CDC: читает WAL Postgres / binlog MySQL и публикует каждое изменение в Kafka. Не нагрузка на БД (читает журнал), не требует триггеров, ловит все изменения — включая удаления.',
               },
             },
+            {
+  id: 'kf-l12-s3',
+  title: 'Source vs Sink, distributed mode',
+  type: 'theory',
+  blocks: [
+    { type: 'p', text: 'Два типа коннекторов и два режима работы Connect. Понимание разницы — половина успеха при выборе.' },
+    {
+      type: 'table',
+      caption: 'Типы коннекторов и режимы',
+      head: ['Понятие', 'Что значит'],
+      rows: [
+        ['Source connector', 'Внешняя система → Kafka (CDC, файлы, API)'],
+        ['Sink connector', 'Kafka → внешняя система (S3, ES, Snowflake)'],
+        ['Standalone mode', 'Один процесс Connect — для dev/тестов'],
+        ['Distributed mode', 'Несколько worker-ов, коннекторы распределяются — для прода'],
+      ],
+    },
+    { type: 'note', text: 'Distributed mode — стандарт прода: несколько worker-ов, при падении одного коннекторы переезжают на живой. Конфиг хранится в Kafka-топиках (connect-configs, connect-offsets, connect-status).' },
+  ],
+},
+{
+  id: 'kf-l12-s4',
+  title: 'Проверь себя: Connect vs свой код',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'Когда стоит использовать Kafka Connect, а не писать свой producer/consumer?',
+    options: [
+      { id: 'a', text: 'Всегда — Connect быстрее' },
+      { id: 'b', text: 'Когда нужна стандартная «перекачка» (БД ↔ Kafka, S3 → Kafka), а не кастомная логика' },
+      { id: 'c', text: 'Только для S3' },
+      { id: 'd', text: 'Только если у вас Java' },
+    ],
+    correct: ['b'],
+    explanation:
+      'Connect — для «трубы» (источник → Kafka → приёмник). Если логика кастомная (трансформация, обогащение, вызовы API) — свой код. Готовые коннекторы: Debezium, S3, Elasticsearch, JDBC, Snowflake.',
+  },
+},
+{
+  id: 'kf-l12-s5',
+  title: 'Проверь себя: Debezium',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'Как Debezium читает изменения из PostgreSQL, не создавая нагрузку на прод-БД?',
+    options: [
+      { id: 'a', text: 'Триггерами на каждой таблице' },
+      { id: 'b', text: 'Читает WAL (write-ahead log) — журнал транзакций Postgres' },
+      { id: 'c', text: 'Периодическим SELECT * FROM table' },
+      { id: 'd', text: 'Через pg_dump каждые 5 минут' },
+    ],
+    correct: ['b'],
+    explanation:
+      'Debezium читает WAL — журнал, куда Postgres пишет все изменения. Это не нагрузка на таблицы (только чтение журнала), не требует триггеров, ловит все изменения включая DELETE. Стандарт CDC.',
+  },
+},
           ],
         },
         {
@@ -1157,6 +1661,42 @@ export const kafkaBasicsCourse: Course = {
                   'Schema Registry хранит версии схем (Avro/Protobuf/JSON Schema) и проверяет совместимость. Producer не сможет зарегистрировать несовместимое изменение. Без него любое изменение формата — потенциальный инцидент в проде.',
               },
             },
+            {
+  id: 'kf-l13-s4',
+  title: 'Проверь себя: без Schema Registry',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'Что произойдёт, если producer отправит `{"total": "1000"}` (строка), а consumer ждёт `{"total": 1000}` (число)?',
+    options: [
+      { id: 'a', text: 'Kafka автоматически приведёт типы' },
+      { id: 'b', text: 'Consumer упадёт при десериализации (или получит неверное значение) — баг в проде' },
+      { id: 'c', text: 'Kafka отклонит сообщение' },
+      { id: 'd', text: 'Schema Registry решит проблему' },
+    ],
+    correct: ['b'],
+    explanation:
+      'Kafka не проверяет схемы. С Schema Registry producer не смог бы зарегистрировать несовместимую схему — ошибка на этапе публикации. Без SR — баг в проде: consumer падает или получает «строку вместо числа».',
+  },
+},
+{
+  id: 'kf-l13-s5',
+  title: 'Проверь себя: Avro vs JSON Schema',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'Когда выбрать Avro, а когда JSON Schema для Schema Registry?',
+    options: [
+      { id: 'a', text: 'Avro — компактный бинарный, стандарт для Kafka; JSON Schema — читаемый, но больше и медленнее' },
+      { id: 'b', text: 'Avro — только для C++, JSON Schema — для всего' },
+      { id: 'c', text: 'Это одно и то же' },
+      { id: 'd', text: 'JSON Schema всегда лучше' },
+    ],
+    correct: ['a'],
+    explanation:
+      'Avro — компактный бинарный формат, стандарт де-факто в Kafka. Protobuf — если уже есть gRPC. JSON Schema — «человекочитаемо», но больше размер и медленнее парсинг. Для нового проекта — Avro или Protobuf.',
+  },
+},
           ],
         },
         {
@@ -1220,6 +1760,71 @@ export const kafkaBasicsCourse: Course = {
                   'ksqlDB — SQL-интерфейс (для простых агрегатов и фильтров). Kafka Streams — библиотека (Java/Scala) для сложной логики. ksqlDB внутри использует Streams. Для «топ-10 за час» — ksqlDB, для «кастомного state store» — Streams.',
               },
             },
+            {
+  id: 'kf-l14-s3',
+  title: 'KStream vs KTable',
+  type: 'theory',
+  blocks: [
+    { type: 'p', text: 'В Kafka Streams и ksqlDB есть две абстракции для потоков. Понимание разницы — ключ к правильным запросам.' },
+    {
+      type: 'table',
+      caption: 'KStream vs KTable',
+      head: ['Абстракция', 'Что это', 'Аналог'],
+      rows: [
+        ['KStream', 'Поток событий — каждое новое сообщение = новый факт', 'append-only log'],
+        ['KTable', 'Таблица состояния — последнее значение по ключу', 'compacted topic / materialized view'],
+      ],
+    },
+    {
+      type: 'code',
+      lang: 'sql',
+      caption: 'Пример',
+      code: `-- KStream: все заказы (append-only)
+CREATE STREAM orders (id INT, user_id INT, total DOUBLE) WITH (KAFKA_TOPIC='orders', VALUE_FORMAT='AVRO');
+
+-- KTable: последний профиль пользователя (compacted)
+CREATE TABLE users (id INT, name STRING, tier STRING) WITH (KAFKA_TOPIC='users', VALUE_FORMAT='AVRO');
+
+-- JOIN: обогатить заказ данными пользователя
+SELECT o.id, o.total, u.name FROM orders o JOIN users u ON o.user_id = u.id EMIT CHANGES;`,
+    },
+  ],
+},
+{
+  id: 'kf-l14-s4',
+  title: 'Проверь себя: Streams vs ksqlDB vs Flink',
+  type: 'quiz',
+  quiz: {
+    kind: 'matching',
+    question: 'Сопоставьте инструмент и его сильную сторону',
+    pairs: [
+      { left: 'ksqlDB', right: 'Быстрые агрегаты и фильтры SQL-запросом' },
+      { left: 'Kafka Streams', right: 'Сложная логика на Java/Scala, кастомные state stores' },
+      { left: 'Flink', right: 'Exactly-once, batch+stream, сложный state, ML' },
+      { left: 'Spark Structured Streaming', right: 'Batch + stream, ML, экосистема Spark' },
+    ],
+    explanation:
+      'ksqlDB — SQL для простого. Streams — Java-библиотека для сложного. Flink — самый мощный (exactly-once, state, ML). Spark — если уже используете Spark для batch/ML.',
+  },
+},
+{
+  id: 'kf-l14-s5',
+  title: 'Проверь себя: state stores',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'Что такое state store в Kafka Streams?',
+    options: [
+      { id: 'a', text: 'Отдельная БД для стримов' },
+      { id: 'b', text: 'Локальное хранилище состояния (RocksDB) + changelog-топик в Kafka для восстановления' },
+      { id: 'c', text: 'Кэш в Redis' },
+      { id: 'd', text: 'Файл на диске без репликации' },
+    ],
+    correct: ['b'],
+    explanation:
+      'Kafka Streams хранит состояние локально (RocksDB по умолчанию) и реплицирует изменения в changelog-топик. При падении инстанса состояние восстанавливается из changelog. Это и есть «state store».',
+  },
+},
           ],
         },
       ],
@@ -1289,6 +1894,62 @@ export const kafkaBasicsCourse: Course = {
                   '`UnderReplicatedPartitions > 0` — реплики не успевают за лидером (ISR неполный). Данные в опасности. Главная метрика здоровья кластера. ConsumerLag — про consumer-ов, BytesInPerSec — throughput, ActiveControllerCount — про controller.',
               },
             },
+            {
+  id: 'kf-l15-s3',
+  title: 'Пороги алертов',
+  type: 'theory',
+  blocks: [
+    { type: 'p', text: 'Каждая метрика должна иметь порог, при котором будить инженера ночью. Без порогов дашборд — «красивая картинка», а не инструмент.' },
+    {
+      type: 'table',
+      caption: 'Метрика → порог → действие',
+      head: ['Метрика', 'Порог', 'Действие'],
+      rows: [
+        ['UnderReplicatedPartitions', '> 0 дольше 5 мин', 'Проверить брокеры, сеть, диск'],
+        ['OfflinePartitionsCount', '> 0', 'Критично: партиция без лидера, смотреть controller'],
+        ['ConsumerLag', 'Растёт > 5 мин', 'Consumer не успевает или упал'],
+        ['RequestHandlerAvgIdlePercent', '< 30%', 'Брокер перегружен, добавить CPU или брокер'],
+        ['ActiveControllerCount', '≠ 1', 'Split-brain: два controller-а или ни одного'],
+      ],
+    },
+    { type: 'note', text: 'Пороги — стартовые. Дальше калибруются по вашей нагрузке: возможно, у вас ConsumerLag до 10k — норма. Главное — не «алертить на всё», а «алертить на то, что требует действий».' },
+  ],
+},
+{
+  id: 'kf-l15-s4',
+  title: 'Проверь себя: ConsumerLag растёт',
+  type: 'quiz',
+  quiz: {
+    kind: 'multiple',
+    question: 'ConsumerLag растёт 15 минут. Какие причины проверить в первую очередь?',
+    options: [
+      { id: 'a', text: 'Consumer упал или перезапускается' },
+      { id: 'b', text: 'Обработка сообщений стала медленнее (тяжёлый SQL, внешний API)' },
+      { id: 'c', text: 'Партиций меньше, чем consumer-ов' },
+      { id: 'd', text: 'Producer начал слать больше сообщений (нагрузка выросла)' },
+    ],
+    correct: ['a', 'b', 'd'],
+    explanation:
+      'Lag растёт, когда consumer не успевает: упал (a), медленно обрабатывает (b), нагрузка выросла (d). «Партиций меньше, чем consumer-ов» (c) — наоборот, лишние consumer-ы простаивают, но lag не растёт.',
+  },
+},
+{
+  id: 'kf-l15-s5',
+  title: 'Проверь себя: инструменты',
+  type: 'quiz',
+  quiz: {
+    kind: 'matching',
+    question: 'Сопоставьте инструмент и его роль',
+    pairs: [
+      { left: 'JMX Exporter', right: 'Метрики брокера → Prometheus' },
+      { left: 'kafka-lag-exporter', right: 'Consumer lag → Prometheus' },
+      { left: 'Grafana', right: 'Визуализация дашбордов' },
+      { left: 'AKHQ / Kafka UI', right: 'Визуальный браузер топиков и групп' },
+    ],
+    explanation:
+      'JMX Exporter — метрики брокера. kafka-lag-exporter — lag consumer-ов. Grafana — визуализация. AKHQ — UI для «посмотреть глазами» (топики, сообщения, группы).',
+  },
+},
           ],
         },
         {
@@ -1352,6 +2013,69 @@ export const kafkaBasicsCourse: Course = {
                   'TLS + SASL + ACL — три уровня. `SASL/PLAIN` без TLS — пароль в открытом виде, не использовать. Стандарт: TLS + SASL/SCRAM + ACL. Zero-trust: даже внутри K8s — аутентификация и авторизация.',
               },
             },
+            {
+  id: 'kf-l16-s3',
+  title: 'TLS-конфиг брокера (упрощённо)',
+  type: 'theory',
+  blocks: [
+    { type: 'p', text: 'Типичный прод-брокер: TLS для трафика клиентов + TLS для inter-broker + SASL/SCRAM для аутентификации + ACL для авторизации. Всё включается в server.properties.' },
+    {
+      type: 'code',
+      lang: 'properties',
+      caption: 'server.properties (фрагмент)',
+      code: `listeners=INTERNAL://:9092,EXTERNAL://:9093
+advertised.listeners=INTERNAL://broker1:9092,EXTERNAL://kafka.example.com:9093
+listener.security.protocol.map=INTERNAL:SASL_SSL,EXTERNAL:SASL_SSL
+inter.broker.listener.name=INTERNAL
+
+# SASL/SCRAM
+sasl.enabled.mechanisms=SCRAM-SHA-512
+listener.name.internal.sasl.enabled.mechanisms=SCRAM-SHA-512
+
+# TLS
+ssl.keystore.location=/etc/kafka/ssl/broker.keystore.jks
+ssl.keystore.password=***
+ssl.truststore.location=/etc/kafka/ssl/broker.truststore.jks`,
+    },
+    { type: 'note', text: 'INTERNAL — для брокеров между собой (в приватной сети), EXTERNAL — для клиентов снаружи. SASL_SSL = SASL (аутентификация) + SSL (шифрование). Для клиентов — свой SSL-сертификат и SCRAM-логин.' },
+  ],
+},
+{
+  id: 'kf-l16-s4',
+  title: 'Проверь себя: SASL/PLAIN без TLS',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'Почему SASL/PLAIN без TLS — плохая идея?',
+    options: [
+      { id: 'a', text: 'PLAIN работает медленно' },
+      { id: 'b', text: 'Пароль передаётся в открытом виде по сети — утечка при перехвате трафика' },
+      { id: 'c', text: 'PLAIN не поддерживается в Kafka' },
+      { id: 'd', text: 'Это требует root' },
+    ],
+    correct: ['b'],
+    explanation:
+      'SASL/PLAIN шлёт логин и пароль в base64 (не шифрование!) — любой, кто перехватит трафик, увидит пароль. Только поверх TLS. Для прода — SASL/SCRAM (пароль хэшируется на брокере) или GSSAPI/OAUTHBEARER.',
+  },
+},
+{
+  id: 'kf-l16-s5',
+  title: 'Проверь себя: ACL',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'Что делает `kafka-acls.sh --add --allow-principal User:orders --operation Read --topic orders.created --group orders-service`?',
+    options: [
+      { id: 'a', text: 'Создаёт топик orders.created' },
+      { id: 'b', text: 'Разрешает пользователю orders читать топик orders.created в рамках группы orders-service' },
+      { id: 'c', text: 'Запрещает пользователю orders читать топик' },
+      { id: 'd', text: 'Удаляет группу orders-service' },
+    ],
+    correct: ['b'],
+    explanation:
+      'ACL разрешает (--allow-principal) пользователю orders операцию Read на топике orders.created с consumer-group orders-service. Без этой ACL — доступ запрещён (после включения authorizer).',
+  },
+},
           ],
         },
         {
@@ -1428,6 +2152,36 @@ export const kafkaBasicsCourse: Course = {
                   'Strimzi — оператор: вы создаёте `Kafka` CRD, а оператор поднимает StatefulSet, PVC, Service, TLS, ACL, управляет rolling upgrade. «Kafka в K8s декларативно». Стандарт для Kafka в K8s.',
               },
             },
+            {
+  id: 'kf-l17-s4',
+  title: 'Проверь себя: hardware',
+  type: 'quiz',
+  quiz: {
+    kind: 'multiple',
+    question: 'Что критично для продакшн-брокера Kafka?',
+    options: [
+      { id: 'a', text: 'Быстрые локальные SSD/NVMe (высокий IOPS)' },
+      { id: 'b', text: 'Много RAM для page cache (не heap)' },
+      { id: 'c', text: 'Один огромный сервер вместо трёх' },
+      { id: 'd', text: 'Сеть 10 Gbps минимум' },
+    ],
+    correct: ['a', 'b', 'd'],
+    explanation:
+      'Kafka упирается в IOPS диска (a) и page cache (b). Сеть важна для репликации (d). Один огромный сервер (c) — антипаттерн: нет отказоустойчивости, репликация на том же железе не спасает.',
+  },
+},
+{
+  id: 'kf-l17-s5',
+  title: 'Проверь себя: heap',
+  type: 'quiz',
+  quiz: {
+    kind: 'number',
+    question: 'Какой максимальный heap (в GB) рекомендуется для брокера Kafka, чтобы оставить память page cache?',
+    correct: 6,
+    explanation:
+      'Kafka любит page cache ОС: на 64 GB RAM — heap 6 GB, остальное — page cache. Больше heap — меньше cache, медленнее чтение. На 128 GB RAM — heap всё равно 6–8 GB, остальное — cache.',
+  },
+},
           ],
         },
       ],
@@ -1537,6 +2291,24 @@ export const kafkaBasicsCourse: Course = {
                   '`acks=all` — надёжность. `idempotence=true` — без дублей. `linger.ms` — batch. `compression` — сжатие. Это четыре главных параметра producer для прода.',
               },
             },
+            {
+  id: 'kf-l18-s6',
+  title: 'Проверь себя: end-to-end идемпотентность',
+  type: 'quiz',
+  quiz: {
+    kind: 'single',
+    question: 'Producer с `enable.idempotence=true` шлёт в Kafka. Consumer читает и делает `INSERT` в Postgres. При рестарте consumer-а — что нужно для end-to-end идемпотентности?',
+    options: [
+      { id: 'a', text: 'Ничего, Kafka гарантирует' },
+      { id: 'b', text: 'Idempotency key (например, `event_id`) + `INSERT ... ON CONFLICT DO NOTHING` в Postgres' },
+      { id: 'c', text: 'acks=0' },
+      { id: 'd', text: 'Отключить enable.auto.commit' },
+    ],
+    correct: ['b'],
+    explanation:
+      'Kafka гарантирует «at least once» между топиками. Для записи в Postgres нужна идемпотентность на стороне потребителя: уникальный `event_id` + `ON CONFLICT DO NOTHING` (или уникальный индекс). Иначе при рестарте consumer-а — дубликаты в БД.',
+  },
+},
           ],
         },
       ],
