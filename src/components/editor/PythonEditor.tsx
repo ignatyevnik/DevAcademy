@@ -38,7 +38,7 @@ export function PythonEditor({ python, onChange }: Props) {
           rows={4}
           spellCheck={false}
           placeholder="# ваш код"
-          className="w-full resize-y rounded border border-input bg-[#17211c] p-2 font-mono text-xs text-[#d9e7de]"
+          className="w-full min-h-[100px] rounded-md border border-input bg-background p-2 text-sm font-mono text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
       </div>
 
@@ -61,7 +61,7 @@ export function PythonEditor({ python, onChange }: Props) {
           rows={4}
           spellCheck={false}
           placeholder="print('Hello')"
-          className="w-full resize-y rounded border border-input bg-background p-2 font-mono text-xs"
+          className="w-full resize-y rounded border border-input bg-background p-2 font-mono text-xs text-foreground"
         />
       </div>
 
@@ -73,7 +73,7 @@ export function PythonEditor({ python, onChange }: Props) {
           rows={4}
           spellCheck={false}
           placeholder={'{ "type": "stdout", "value": "Hello" }'}
-          className="w-full resize-y rounded border border-input bg-background p-2 font-mono text-xs"
+          className="w-full resize-y rounded border border-input bg-background p-2 font-mono text-xs text-foreground"
         />
         {expectedError ? (
           <p className="mt-1 text-xs text-destructive">{expectedError}</p>

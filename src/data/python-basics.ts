@@ -100,6 +100,23 @@ export const pythonBasicsCourse: Course = {
                   '`//` и `*` — равный приоритет, вычисление слева направо. Сначала `7 // 2 = 3`, затем `3 * 2 = 6`. Не наоборот: `7 // 4` было бы неверно.',
               },
             },
+            {
+              id: 'py-l9-s4',
+              title: 'Практика: приоритет операторов',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode: '# Вычислите 7 // 2 * 2\n',
+                    task: 'Вычислите `7 // 2 * 2` и напечатайте результат. Обратите внимание: это не 7.',
+                    solution: 'print(7 // 2 * 2)',
+                    expected: { type: 'stdout', value: '6' },
+                    hint: '// и * — равный приоритет, вычисление слева направо',
+                  },
+                },
+              ],
+            },
           ],
         },
         {
@@ -167,6 +184,23 @@ export const pythonBasicsCourse: Course = {
                 explanation:
                   'Эти четыре метода закрывают 80% работы со строками. strip — очистка ввода, split/join — обработка текста, replace — замена фрагментов.',
               },
+            },
+            {
+              id: 'py-l10-s4',
+              title: 'Практика: срез строки',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode: '# Разверните строку "Python"\n',
+                    task: 'Разверните строку `"Python"` через срез и напечатайте результат.',
+                    solution: 'print("Python"[::-1])',
+                    expected: { type: 'stdout', value: 'nohtyP' },
+                    hint: 'срез [::-1] разворачивает строку',
+                  },
+                },
+              ],
             },
           ],
         },
@@ -242,6 +276,23 @@ export const pythonBasicsCourse: Course = {
                   'input() всегда возвращает строку. Для получения числа нужно явное int(input(...)) или float(input(...)). Это самая частая ошибка новичков.',
               },
             },
+            {
+              id: 'py-l11-s4',
+              title: 'Практика: print с разделителем',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode: '# Напечатайте a, b, c через дефис\n',
+                    task: 'Напечатайте `a`, `b`, `c` через `print` с разделителем `-`. Должно получиться `a-b-c`.',
+                    solution: 'print("a", "b", "c", sep="-")',
+                    expected: { type: 'stdout', value: 'a-b-c' },
+                    hint: 'print(..., sep="-")',
+                  },
+                },
+              ],
+            },
           ],
         },
         {
@@ -302,6 +353,24 @@ export const pythonBasicsCourse: Course = {
                 explanation:
                   'enumerate(lst) возвращает пары (индекс, значение). Это идиоматичнее, чем `range(len(lst))` — код короче и читается лучше.',
               },
+            },
+            {
+              id: 'py-l12-s4',
+              title: 'Практика: enumerate',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode: 'fruits = ["apple", "banana", "cherry"]\n',
+                    task: 'Для списка `fruits` напечатайте строки вида `0: apple`, `1: banana`, `2: cherry` через `enumerate`.',
+                    solution:
+                      'fruits = ["apple", "banana", "cherry"]\nfor i, fruit in enumerate(fruits):\n    print(f"{i}: {fruit}")',
+                    expected: { type: 'stdout', value: '0: apple\n1: banana\n2: cherry' },
+                    hint: 'for i, x in enumerate(lst): print(f"{i}: {x}")',
+                  },
+                },
+              ],
             },
           ],
         },
@@ -880,6 +949,23 @@ export const pythonBasicsCourse: Course = {
                   'При запуске файла напрямую __name__ == "__main__". При импорте __name__ равен имени модуля. Это позволяет отделить «что делать при запуске» от «что определять».',
               },
             },
+            {
+              id: 'py-l7-s3',
+              title: 'Практика: импорт модуля',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode: 'import math\n\n# Напечатайте math.sqrt(16)\n',
+                    task: 'Импортируйте `math` и напечатайте `math.sqrt(16)`.',
+                    solution: 'import math\nprint(math.sqrt(16))',
+                    expected: { type: 'stdout', value: '4.0' },
+                    hint: 'import math в начале, потом print(math.sqrt(16))',
+                  },
+                },
+              ],
+            },
           ],
         },
         {
@@ -948,6 +1034,23 @@ export const pythonBasicsCourse: Course = {
                 explanation:
                   'finally выполняется всегда, даже если try выбросил исключение, которое не поймали, или внутри try / except был return. Идеальное место для освобождения ресурсов.',
               },
+            },
+            {
+              id: 'py-l8-s4',
+              title: 'Практика: try / except',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode: '# Поймайте ValueError от int("abc")\n',
+                    task: 'Напишите `try / except ValueError`, который пытается `int("abc")` и в случае ошибки печатает `"не число"`.',
+                    solution: 'try:\n    int("abc")\nexcept ValueError:\n    print("не число")',
+                    expected: { type: 'stdout', value: 'не число' },
+                    hint: 'try: int("abc") except ValueError: print(...)',
+                  },
+                },
+              ],
             },
           ],
         },

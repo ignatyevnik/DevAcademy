@@ -231,7 +231,7 @@ export function QuizEditor({ quiz, onChange }: Props) {
           <textarea
             value={quiz.starterCode || ''}
             onChange={(e) => onChange({ ...quiz, starterCode: e.target.value })}
-            className="w-full rounded border border-input bg-[#17211c] p-2 text-sm font-mono text-[#d9e7de]"
+            className="w-full rounded border border-input bg-background p-2 text-sm font-mono text-foreground"
             rows={4}
           />
           <p className="text-xs text-muted-foreground">Правила проверки (regex → сообщение):</p>

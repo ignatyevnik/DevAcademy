@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { ProgressState } from './progress';
+import { getCourse } from '@/data';
 
 const APP_ID = 'dev-academy';
 const FORMAT_VERSION = 1;
@@ -110,4 +111,120 @@ export function formatExportedAt(iso: string): string {
   } catch {
     return iso;
   }
+}
+
+export interface NotesExportResult {
+  markdown: string;
+  count: number;
+}
+
+/** Собирает все заметки в Markdown, сгруппированные по курсам. */
+export function exportNotesMarkdown(state: ProgressState): NotesExportResult {
+  interface NoteEntry {
+    courseTitle: string;
+    lessonTitle: string;
+    stepTitle: string;
+    note: string;
+    sortKey: string;
+  }
+
+  const entries: NoteEntry[] = [];
+
+  for (const [key, text] of Object.entries(state.notes)) {
+    const trimmed = text.trim();
+    if (!trimmed) continue;
+    const sep = key.indexOf(':');
+    if (sep === -1) continue;
+    const slug = key.slice(0, sep);
+    const stepId = key.slice(sep + 1);
+    const course = getCourse(slug);
+    if (!course) continue;
+
+    let lessonTitle = '';
+    let stepTitle = '';
+    for (const m of course.modules) {
+      for (const l of m.lessons) {
+        const s = l.steps.find((st) => st.id === stepId);
+        if (s) {
+          lessonTitle = l.title;
+          stepTitle = s.title;
+          break;
+        }
+      }
+      if (lessonTitle) break;
+    }
+    if (!lessonTitle) continue;
+
+    entries.push({
+      courseTitle: course.title,
+      lessonTitle,
+      stepTitle,
+      note: trimmed,
+      sortKey: `${course.title}|${lessonTitle}|${stepTitle}`,
+    });
+  }
+
+  entries.sort((a, b) => a.sortKey.localeCompare(b.sortKey, 'ru'));
+
+  if (entries.length === 0) {
+    return { markdown: '', count: 0 };
+  }
+
+  const now = new Date();
+  const lines: string[] = [];
+  lines.push('# Заметки DevAcademy');
+  lines.push('');
+  lines.push(`Экспортировано: ${now.toLocaleString('ru-RU')}`);
+  lines.push(`Всего заметок: ${entries.length}`);
+  lines.push('');
+  lines.push('---');
+  lines.push('');
+
+  let lastCourse = '';
+  let lastLesson = '';
+  for (const e of entries) {
+    if (e.courseTitle !== lastCourse) {
+      lines.push(`## ${e.courseTitle}`);
+      lines.push('');
+      lastCourse = e.courseTitle;
+      lastLesson = '';
+    }
+    if (e.lessonTitle !== lastLesson) {
+      lines.push(`### ${e.lessonTitle}`);
+      lines.push('');
+      lastLesson = e.lessonTitle;
+    }
+    lines.push(`**${e.stepTitle}**`);
+    lines.push('');
+    lines.push(e.note);
+    lines.push('');
+    lines.push('---');
+    lines.push('');
+  }
+
+  return { markdown: lines.join('\n'), count: entries.length };
+}
+
+/** Имя файла заметок: dev-academy-notes-2025-11-04_14-30-45.md */
+export function notesFilename(date: Date = new Date()): string {
+  const y = date.getFullYear();
+  const m = pad2(date.getMonth() + 1);
+  const d = pad2(date.getDate());
+  const hh = pad2(date.getHours());
+  const mm = pad2(date.getMinutes());
+  const ss = pad2(date.getSeconds());
+  return `dev-academy-notes-${y}-${m}-${d}_${hh}-${mm}-${ss}.md`;
+}
+
+/** Скачать произвольный текст как файл. */
+export function downloadText(content: string, filename: string, mime = 'text/plain;charset=utf-8'): void {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }

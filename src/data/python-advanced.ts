@@ -220,6 +220,25 @@ export const pythonAdvancedCourse: Course = {
                   'super().__init__() вызывает конструктор родителя. В Python 3 он автоматически определяет MRO (порядок обхода родителей). Без этого вызова self.driver и другие атрибуты не установятся.',
               },
             },
+            {
+              id: 'py-l16-s4',
+              title: 'Практика: наследование',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode:
+                      'class Animal:\n    def speak(self):\n        return "..."\n\nclass Dog(Animal):\n    # переопределите speak\n    pass\n',
+                    task: 'Класс `Animal` уже есть. Переопределите `Dog.speak()` так, чтобы он возвращал `"Woof"`. Напечатайте `Dog().speak()`.',
+                    solution:
+                      'class Animal:\n    def speak(self):\n        return "..."\n\nclass Dog(Animal):\n    def speak(self):\n        return "Woof"\n\nprint(Dog().speak())',
+                    expected: { type: 'stdout', value: 'Woof' },
+                    hint: 'class Dog(Animal): def speak(self): return "Woof"',
+                  },
+                },
+              ],
+            },
           ],
         },
         {
@@ -406,6 +425,25 @@ export const pythonAdvancedCourse: Course = {
                   'Page Object — про поддерживаемость и переиспользование, не про скорость. Тесты не ускоряются (DOM-операции те же), но правки в одном месте, читаемость выше, сценарии переиспользуются.',
               },
             },
+            {
+              id: 'py-l18-s4',
+              title: 'Практика: dataclass',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode:
+                      'from dataclasses import dataclass\n\n# Создайте @dataclass Credentials с email и password\n',
+                    task: 'Создайте `@dataclass Credentials` с полями `email: str` и `password: str`. Создайте `c = Credentials("a@x.com", "secret")` и напечатайте `c.email`.',
+                    solution:
+                      'from dataclasses import dataclass\n\n@dataclass\nclass Credentials:\n    email: str\n    password: str\n\nc = Credentials("a@x.com", "secret")\nprint(c.email)',
+                    expected: { type: 'stdout', value: 'a@x.com' },
+                    hint: '@dataclass над классом + поля с аннотациями типов',
+                  },
+                },
+              ],
+            },
           ],
         },
       ],
@@ -461,6 +499,25 @@ export const pythonAdvancedCourse: Course = {
                 explanation:
                   'inner в примере выше помнит greeting. Это и есть замыкание. Декораторы работают именно на этом: обёртка «помнит» декорируемую функцию.',
               },
+            },
+            {
+              id: 'py-l19-s3',
+              title: 'Практика: замыкание',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode:
+                      'def make_greeter(greeting):\n    def inner(name):\n        # верните f"{greeting}, {name}"\n        pass\n    return inner\n',
+                    task: 'Допишите `inner` так, чтобы он возвращал `f"{greeting}, {name}"`. Создайте `greet = make_greeter("Hi")` и напечатайте `greet("Anna")`.',
+                    solution:
+                      'def make_greeter(greeting):\n    def inner(name):\n        return f"{greeting}, {name}"\n    return inner\n\ngreet = make_greeter("Hi")\nprint(greet("Anna"))',
+                    expected: { type: 'stdout', value: 'Hi, Anna' },
+                    hint: 'inner замыкает greeting из внешней функции',
+                  },
+                },
+              ],
             },
           ],
         },
@@ -789,6 +846,25 @@ export const pythonAdvancedCourse: Course = {
                   'await не блокирует — он «уступает» управление, пока ждёт результата. Event loop может запустить другую корутину. Именно поэтому 100 HTTP-запросов через await идут параллельно в одном потоке.',
               },
             },
+            {
+              id: 'py-l22-s4',
+              title: 'Практика: async / await',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode:
+                      'import asyncio\n\nasync def main():\n    # напечатайте start, подождите 0.1, напечатайте end\n    pass\n\n# asyncio.run(main())\n',
+                    task: 'Напишите `async def main()`, которая печатает `start`, ждёт `await asyncio.sleep(0.1)`, печатает `end`. Запустите через `asyncio.run(main())`.',
+                    solution:
+                      'import asyncio\n\nasync def main():\n    print("start")\n    await asyncio.sleep(0.1)\n    print("end")\n\nasyncio.run(main())',
+                    expected: { type: 'stdout', value: 'start\nend' },
+                    hint: 'import asyncio, await asyncio.sleep(0.1), asyncio.run(main())',
+                  },
+                },
+              ],
+            },
           ],
         },
         {
@@ -872,6 +948,25 @@ export const pythonAdvancedCourse: Course = {
                 explanation:
                   'gather запускает все три задачи одновременно, все три «ждут» в event loop. Через 1 секунду все три завершатся. Если бы был await в цикле — 3 секунды. Именно поэтому async ускоряет I/O в разы.',
               },
+            },
+            {
+              id: 'py-l23-s4',
+              title: 'Практика: asyncio.gather',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode:
+                      'import asyncio\n\nasync def fetch_a():\n    return "a"\n\nasync def fetch_b():\n    return "b"\n\nasync def main():\n    # получите обе через asyncio.gather и напечатайте\n    pass\n\nasyncio.run(main())\n',
+                    task: 'Через `asyncio.gather` получите результаты `fetch_a()` и `fetch_b()` и напечатайте список.',
+                    solution:
+                      'import asyncio\n\nasync def fetch_a():\n    return "a"\n\nasync def fetch_b():\n    return "b"\n\nasync def main():\n    results = await asyncio.gather(fetch_a(), fetch_b())\n    print(results)\n\nasyncio.run(main())',
+                    expected: { type: 'stdout', value: "['a', 'b']" },
+                    hint: 'await asyncio.gather(coro1, coro2)',
+                  },
+                },
+              ],
             },
           ],
         },
@@ -1137,6 +1232,25 @@ export const pythonAdvancedCourse: Course = {
                 explanation:
                   'mypy и pyright — проверяют типы. flake8 — стиль и ошибки (не типы). black — форматирование. isort — сортировка импортов. Для проверки типов — только mypy/pyright.',
               },
+            },
+            {
+              id: 'py-l26-s4',
+              title: 'Практика: type hints',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'python',
+                  python: {
+                    starterCode:
+                      '# Напишите функцию greet(name: str) -> str\n',
+                    task: 'Напишите функцию `greet(name: str) -> str`, возвращающую `f"Hi, {name}"`. Вызовите с `"Anna"` и напечатайте результат.',
+                    solution:
+                      'def greet(name: str) -> str:\n    return f"Hi, {name}"\n\nprint(greet("Anna"))',
+                    expected: { type: 'stdout', value: 'Hi, Anna' },
+                    hint: 'def greet(name: str) -> str: return f"Hi, {name}"',
+                  },
+                },
+              ],
             },
           ],
         },

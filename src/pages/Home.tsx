@@ -1,6 +1,6 @@
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router';
-import { Bookmark, BookOpenCheck, WifiOff, ChevronDown } from 'lucide-react';
+import { Bookmark, BookOpenCheck, WifiOff, ChevronDown, CheckCircle2 } from 'lucide-react';
 import { courses, courseStats, getCourse, findLesson } from '@/data';
 import { useProgress } from '@/lib/progress';
 import { Header } from '@/components/Header';
@@ -47,10 +47,19 @@ export default function Home() {
   }, [query]);
 
   const stats = useMemo(() => totalStats(), [totalStats]);
-  const startedCourses = useMemo(
-    () => courses.filter((c) => courseProgress(c.slug).done > 0),
-    [courseProgress]
-  );
+const inProgressCourses = useMemo(
+  () =>
+    courses.filter((c) => {
+      const p = courseProgress(c.slug);
+      return p.done > 0 && p.pct < 100;
+    }),
+  [courseProgress]
+);
+
+const completedCourses = useMemo(
+  () => courses.filter((c) => courseProgress(c.slug).pct === 100),
+  [courseProgress]
+);
   const { state } = useProgress();
 
     const bookmarkedItems = useMemo(() => {
@@ -148,17 +157,31 @@ const toggleAll = () => {
           </div>
         </section>
 
-        {startedCourses.length > 0 && (
-          <section id="my-courses" className="scroll-mt-20">
-            <div className="flex items-center gap-2.5">
-              <BookOpenCheck className="h-5 w-5 text-primary" aria-hidden="true" />
-              <h2 className="text-xl font-bold tracking-tight">Моё обучение</h2>
-            </div>
-            <div className="mt-4 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {startedCourses.map((c) => <CourseCard key={c.slug} course={c} />)}
-            </div>
-          </section>
-        )}
+          {inProgressCourses.length > 0 && (
+            <section id="my-courses" className="scroll-mt-20">
+              <div className="flex items-center gap-2.5">
+                <BookOpenCheck className="h-5 w-5 text-primary" aria-hidden="true" />
+                <h2 className="text-xl font-bold tracking-tight">Продолжить обучение</h2>
+              </div>
+              <div className="mt-4 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {inProgressCourses.map((c) => <CourseCard key={c.slug} course={c} />)}
+              </div>
+            </section>
+          )}
+
+          {completedCourses.length > 0 && (
+            <section id="completed-courses" className="mt-10 scroll-mt-20">
+              <div className="flex items-center gap-2.5">
+                <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden="true" />
+                <h2 className="text-xl font-bold tracking-tight">
+                  Завершено <span className="text-muted-foreground font-normal">· {completedCourses.length}</span>
+                </h2>
+              </div>
+              <div className="mt-4 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {completedCourses.map((c) => <CourseCard key={c.slug} course={c} />)}
+              </div>
+            </section>
+          )}
 
         {dueCount > 0 && (
           <section className="mb-8 rounded-xl border border-primary/30 bg-accent/20 p-5 sm:flex sm:items-center sm:justify-between">

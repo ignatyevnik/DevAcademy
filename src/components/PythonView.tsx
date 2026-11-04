@@ -118,7 +118,7 @@ async function handleCheck() {
           rows={6}
           spellCheck={false}
           placeholder="print('Hello')"
-          className="w-full resize-y rounded-lg border border-input bg-[#17211c] p-3 font-mono text-sm text-[#d9e7de] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="w-full resize-y rounded-lg border border-input bg-background p-3 font-mono text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
 
         <div className="flex flex-wrap gap-2">

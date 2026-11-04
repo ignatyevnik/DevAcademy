@@ -1,5 +1,5 @@
 import { Link, useParams, Navigate } from 'react-router';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   ArrowLeft,
   CheckCircle2,
@@ -8,7 +8,9 @@ import {
   PlayCircle,
   RotateCcw,
   Target,
-  ListChecks, Bookmark, 
+  ListChecks, 
+  Bookmark, 
+  Trophy 
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getCourse, courseStats, allLessons, findLesson } from '@/data';
@@ -32,6 +34,15 @@ export default function CoursePage() {
   const { lessons, steps } = courseStats(course);
   const { pct, done } = courseProgress(course.slug);
   const minutes = allLessons(course).reduce((a, l) => a + l.minutes, 0);
+
+  const quizCount = useMemo(() => {
+  let n = 0;
+  for (const m of course.modules)
+    for (const l of m.lessons)
+      for (const s of l.steps)
+        if (s.type === 'quiz') n++;
+  return n;
+}, [course]);
 
   // Валидируем lastVisited: урок мог быть удалён/переименован
   const last = state.lastVisited[course.slug];
@@ -119,6 +130,14 @@ export default function CoursePage() {
                 {done > 0 ? 'Продолжить' : 'Начать обучение'}
               </Link>
             </Button>
+            {quizCount >= 5 && (
+              <Button asChild variant="outline" className="mt-2 min-h-[44px] w-full">
+                <Link to={`/course/${course.slug}/exam`}>
+                  <Trophy className="h-4 w-4" aria-hidden="true" />
+                  Пройти экзамен
+                </Link>
+              </Button>
+            )}
             {showReset && (
               <div className="mt-2">
                 {!confirmReset ? (

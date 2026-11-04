@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Download, Upload, AlertTriangle } from 'lucide-react';
+import { Download, Upload, AlertTriangle, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { useProgress } from '@/lib/progress';
 import {
@@ -8,6 +8,9 @@ import {
   formatExportedAt,
   downloadJson,
   progressFilename,
+  exportNotesMarkdown,
+  notesFilename,
+  downloadText,
 } from '@/lib/progress-io';
 import { Button } from '@/components/ui/button';
 
@@ -18,7 +21,10 @@ export function ProgressExport() {
 
   const totalDone = Object.keys(state.done).length;
   const totalQuizzes = Object.keys(state.quizResults).length;
-  const isEmpty = totalDone === 0 && totalQuizzes === 0 && Object.keys(state.lastVisited).length === 0;
+  const isEmpty =
+    totalDone === 0 &&
+    totalQuizzes === 0 &&
+    Object.keys(state.lastVisited).length === 0;
 
   const onExport = () => {
     try {
@@ -29,6 +35,16 @@ export function ProgressExport() {
     } catch {
       toast.error('Не удалось сохранить прогресс');
     }
+  };
+
+  const onExportNotes = () => {
+    const { markdown, count } = exportNotesMarkdown(state);
+    if (count === 0) {
+      toast.message('Заметок пока нет — нечего экспортировать');
+      return;
+    }
+    downloadText(markdown, notesFilename(), 'text/markdown;charset=utf-8');
+    toast.success(`Экспортировано заметок: ${count}`);
   };
 
   const onImportClick = () => {
@@ -95,6 +111,7 @@ export function ProgressExport() {
             <Download className="h-4 w-4" aria-hidden="true" />
             Скачать
           </Button>
+          
           <Button
             type="button"
             onClick={onImportClick}
@@ -106,6 +123,7 @@ export function ProgressExport() {
             <Upload className="h-4 w-4" aria-hidden="true" />
             Загрузить
           </Button>
+          
           <input
             ref={fileRef}
             type="file"
@@ -115,6 +133,17 @@ export function ProgressExport() {
             aria-hidden="true"
             tabIndex={-1}
           />
+          
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onExportNotes}
+            className="min-h-[44px]"
+            aria-label="Скачать заметки в Markdown"
+          >
+            <FileText className="h-4 w-4" aria-hidden="true" />
+            Заметки (.md)
+          </Button>
         </div>
 
         {isEmpty && (

@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { useTheme } from '@/lib/theme';
 import { SandboxView } from '@/components/SandboxView';
 import { PythonView } from '@/components/PythonView';
+import { useExamMode } from '@/lib/exam-mode';
 
 type ResultType = 'ok' | 'partial' | 'fail';
 
@@ -231,19 +232,24 @@ export function QuizView({ slug, step, onResult }: QuizViewProps) {
 }
 
 function useQuizState(slug: string, stepId: string, onResult?: (result: ResultType) => void) {
+  const examMode = useExamMode();
   const { quizResult, setQuizResult, completeStep, recordSrsAnswer } = useProgress();
-  const prev = quizResult(slug, stepId);
+  const prev = examMode ? undefined : quizResult(slug, stepId);
+
   const finish = (result: ResultType) => {
-    setQuizResult(slug, stepId, result);
-    recordSrsAnswer(slug, stepId, result === 'ok');
-    if (result === 'ok') {
-      completeStep(slug, stepId);
-      toast.success('Верно! Шаг засчитан');
-    } else if (result === 'partial') {
-      toast.message('Частично верно — попробуйте ещё раз для полного зачёта');
+    if (!examMode) {
+      setQuizResult(slug, stepId, result);
+      recordSrsAnswer(slug, stepId, result === 'ok');
+      if (result === 'ok') {
+        completeStep(slug, stepId);
+        toast.success('Верно! Шаг засчитан');
+      } else if (result === 'partial') {
+        toast.message('Частично верно — попробуйте ещё раз для полного зачёта');
+      }
     }
     onResult?.(result);
   };
+
   return { prev, finish };
 }
 
@@ -857,7 +863,7 @@ function CodeStep({ slug, stepId, quiz, onResult }: { slug: string; stepId: stri
         value={code}
         onChange={e => { setCode(e.target.value); setChecked(false); setOk(false); }}
         placeholder={quiz.placeholder ?? 'Напишите код…'}
-        className="w-full min-h-[180px] rounded-lg border border-input bg-[#17211c] p-4 font-mono text-sm text-[#d9e7de] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="w-full min-h-[180px] rounded-lg border border-input bg-background p-4 font-mono text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         spellCheck={false}
       />
 

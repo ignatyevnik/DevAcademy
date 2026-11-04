@@ -94,7 +94,7 @@ export function BlockEditor({ block, onChange, onDelete }: Props) {
             value={block.code}
             onChange={(e) => field('code', e.target.value)}
             placeholder="Код"
-            className="w-full min-h-[100px] rounded-md border border-input bg-[#17211c] p-2 text-sm font-mono text-[#d9e7de] placeholder:text-[#8fae9c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="w-full min-h-[100px] rounded-md border border-input bg-background p-2 text-sm font-mono text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             spellCheck={false}
           />
         </>
@@ -153,7 +153,7 @@ export function BlockEditor({ block, onChange, onDelete }: Props) {
   />
         )}
 
-        {block.type === "python" && (
+        {block.type === 'python' && (
   <PythonEditor
     python={block.python}
     onChange={(next) => field("python", next)}
