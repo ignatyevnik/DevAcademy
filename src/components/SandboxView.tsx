@@ -11,6 +11,8 @@ import {
   type RunResult,
 } from '@/lib/sql-sandbox';
 import { Button } from '@/components/ui/button';
+import { LazyCodeMirror } from '@/components/LazyCodeMirror';
+import { useTheme } from '@/lib/theme';
 
 const DANGEROUS =
   /\b(DROP|DELETE|UPDATE|INSERT|ALTER|ATTACH|DETACH|PRAGMA|VACUUM|REINDEX|CREATE)\b/i;
@@ -31,6 +33,7 @@ export function SandboxView({ sandbox, onResult }: Props) {
   const [check, setCheck] = useState<'ok' | 'fail' | null>(null);
   const [showSolution, setShowSolution] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
+  const { theme } = useTheme();
 
   useEffect(() => {
     let cancelled = false;
@@ -71,7 +74,7 @@ export function SandboxView({ sandbox, onResult }: Props) {
   function handleRun() {
     setRunError(null);
     setCheck(null);
-    if (!dbRef.current) return;
+    if (!dbRef.current || !sql.trim()) return;
     try {
       assertSafe(sql);
       const results = runQuery(dbRef.current, sql);
@@ -83,7 +86,7 @@ export function SandboxView({ sandbox, onResult }: Props) {
   }
 
   async function handleCheck() {
-    if (!dbRef.current) return;
+    if (!dbRef.current || !sql.trim()) return;
     setRunError(null);
     try {
       assertSafe(sql);
@@ -154,20 +157,14 @@ export function SandboxView({ sandbox, onResult }: Props) {
       </div>
 
       <div className="space-y-3 p-5">
-          <textarea
-            value={sql}
-            onChange={(e) => setSql(e.target.value)}
-            onKeyDown={(e) => {
-              if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && sql.trim()) {
-                e.preventDefault();
-                handleCheck();
-              }
-            }}
-            spellCheck={false}
-            placeholder="SELECT ..."
-            rows={5}
-            className="w-full resize-y rounded-lg border border-input bg-background p-3 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
+        <LazyCodeMirror
+          value={sql}
+          onChange={setSql}
+          language="sql"
+          theme={theme}
+          minHeight="140px"
+          onSubmit={handleCheck}
+        />
 
         <div className="flex flex-wrap gap-2">
           <Button onClick={handleRun} variant="outline" disabled={!sql.trim()}>

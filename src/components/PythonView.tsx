@@ -11,6 +11,8 @@ import {
   type PythonRunResult,
 } from '@/lib/pyodide-sandbox';
 import { Button } from '@/components/ui/button';
+import { LazyCodeMirror } from '@/components/LazyCodeMirror';
+import { useTheme } from '@/lib/theme';
 
 interface Props {
   python: PythonBlock;
@@ -26,6 +28,7 @@ export function PythonView({ python, onResult }: Props) {
   const [check, setCheck] = useState<'ok' | 'fail' | null>(null);
   const [failed, setFailed] = useState(0);
   const [showSolution, setShowSolution] = useState(false);
+  const { theme } = useTheme();
 
   useEffect(() => {
     let cancelled = false;
@@ -41,38 +44,44 @@ export function PythonView({ python, onResult }: Props) {
         setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-async function handleRun() {
-  if (!pyRef.current) return;
-  setCheck(null);
-  const r = await runPython(pyRef.current, code);
-  r.namespace?.destroy();
-  setResult({ ...r, namespace: null });
-}
-
-async function handleCheck() {
-  if (!pyRef.current) return;
-
-  const forbiddenError = checkForbidden(code, python.forbidden);
-  if (forbiddenError) {
-    setResult({ stdout: '', stderr: '', error: forbiddenError, namespace: null });
-    setCheck('fail');
-    setFailed((n) => n + 1);
-    onResult?.('fail');
-    return;
+  async function handleRun() {
+    if (!pyRef.current || !code.trim()) return;
+    setCheck(null);
+    const r = await runPython(pyRef.current, code);
+    r.namespace?.destroy();
+    setResult({ ...r, namespace: null });
   }
 
-  const r = await runPython(pyRef.current, code);
-  setResult({ ...r, namespace: null });
-  const ok = checkPythonResult(r, python.expected);
-  r.namespace?.destroy();
+  async function handleCheck() {
+    if (!pyRef.current || !code.trim()) return;
 
-  setCheck(ok ? 'ok' : 'fail');
-  if (ok) onResult?.('ok');
-  else { setFailed((n) => n + 1); onResult?.('fail'); }
-}
+    const forbiddenError = checkForbidden(code, python.forbidden);
+    if (forbiddenError) {
+      setResult({ stdout: '', stderr: '', error: forbiddenError, namespace: null });
+      setCheck('fail');
+      setFailed((n) => n + 1);
+      onResult?.('fail');
+      return;
+    }
+
+    const r = await runPython(pyRef.current, code);
+    setResult({ ...r, namespace: null });
+    const ok = checkPythonResult(r, python.expected);
+    r.namespace?.destroy();
+
+    setCheck(ok ? 'ok' : 'fail');
+    if (ok) onResult?.('ok');
+    else {
+      setFailed((n) => n + 1);
+      onResult?.('fail');
+    }
+  }
+
   if (loading) {
     return (
       <div className="my-6 flex items-center gap-3 rounded-xl border border-border bg-card p-5">
@@ -106,26 +115,20 @@ async function handleCheck() {
       </div>
 
       <div className="space-y-3 p-5">
-        <textarea
+        <LazyCodeMirror
           value={code}
-          onChange={(e) => setCode(e.target.value)}
-          onKeyDown={(e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && code.trim()) {
-              e.preventDefault();
-              handleCheck();
-            }
-          }}
-          rows={6}
-          spellCheck={false}
-          placeholder="print('Hello')"
-          className="w-full resize-y rounded-lg border border-input bg-background p-3 font-mono text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          onChange={setCode}
+          language="python"
+          theme={theme}
+          minHeight="200px"
+          onSubmit={handleCheck}
         />
 
         <div className="flex flex-wrap gap-2">
-          <Button onClick={handleRun} variant="outline">
+          <Button onClick={handleRun} variant="outline" disabled={!code.trim()}>
             <Play className="h-4 w-4" /> Выполнить
           </Button>
-          <Button onClick={handleCheck}>
+          <Button onClick={handleCheck} disabled={!code.trim()}>
             <CheckCircle2 className="h-4 w-4" /> Проверить
           </Button>
           {failed >= 2 && !showSolution && (
