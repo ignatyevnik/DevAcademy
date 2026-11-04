@@ -35,12 +35,28 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,wasm}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
         maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
+        runtimeCaching: [
+          {
+            urlPattern: /\/assets\/pyodide\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "pyodide-cache",
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 дней
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+        ],
       },
       devOptions: {
         enabled: false,

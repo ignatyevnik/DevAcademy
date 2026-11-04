@@ -38,7 +38,7 @@ export function PythonEditor({ python, onChange }: Props) {
           rows={4}
           spellCheck={false}
           placeholder="# ваш код"
-          className="w-full min-h-[100px] rounded-md border border-input bg-background p-2 text-sm font-mono text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="w-full min-h-[180px] rounded-lg border border-input bg-card p-4 font-mono text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
       </div>
 

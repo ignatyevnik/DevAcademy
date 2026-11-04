@@ -1,7 +1,7 @@
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router';
-import { Bookmark, BookOpenCheck, WifiOff, ChevronDown, CheckCircle2 } from 'lucide-react';
-import { courses, courseStats, getCourse, findLesson } from '@/data';
+import { BookOpenCheck, WifiOff, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { courses, courseStats } from '@/data';
 import { useProgress } from '@/lib/progress';
 import { Header } from '@/components/Header';
 import { CourseCard } from '@/components/CourseCard';
@@ -48,35 +48,20 @@ export default function Home() {
   }, [query]);
 
   const stats = useMemo(() => totalStats(), [totalStats]);
-const inProgressCourses = useMemo(
-  () =>
-    courses.filter((c) => {
-      const p = courseProgress(c.slug);
-      return p.done > 0 && p.pct < 100;
-    }),
-  [courseProgress]
-);
 
-const completedCourses = useMemo(
-  () => courses.filter((c) => courseProgress(c.slug).pct === 100),
-  [courseProgress]
-);
-  const { state } = useProgress();
+  const inProgressCourses = useMemo(
+    () =>
+      courses.filter((c) => {
+        const p = courseProgress(c.slug);
+        return p.done > 0 && p.pct < 100;
+      }),
+    [courseProgress]
+  );
 
-    const bookmarkedItems = useMemo(() => {
-    const items = [];
-    for (const key of Object.keys(state.bookmarks)) {
-      if (!state.bookmarks[key]) continue;
-      const [slug, lessonId] = key.split(':');
-      const course = getCourse(slug);
-      if (!course) continue;
-      const found = findLesson(course, lessonId);
-      if (found) {
-        items.push({ course, lesson: found.lesson });
-      }
-    }
-    return items;
-  }, [state.bookmarks]);
+  const completedCourses = useMemo(
+    () => courses.filter((c) => courseProgress(c.slug).pct === 100),
+    [courseProgress]
+  );
 
   const filtered = useMemo(() => {
     const q = deferredQuery.trim().toLowerCase();
@@ -88,41 +73,39 @@ const completedCourses = useMemo(
     });
   }, [deferredQuery, tag]);
 
-const [openCats, setOpenCats] = useState<Record<string, boolean>>({});
-const isFiltering = query.trim().length > 0 || tag !== 'Все';
+  const [openCats, setOpenCats] = useState<Record<string, boolean>>({});
+  const isFiltering = query.trim().length > 0 || tag !== 'Все';
 
-const grouped = useMemo(() => {
-  const map = new Map<string, typeof filtered>();
-  for (const c of filtered) {
-    const cat = courseCategory[c.slug] ?? 'other';
-    if (!map.has(cat)) map.set(cat, []);
-    map.get(cat)!.push(c);
-  }
-  return map;
-}, [filtered]);
+  const grouped = useMemo(() => {
+    const map = new Map<string, typeof filtered>();
+    for (const c of filtered) {
+      const cat = courseCategory[c.slug] ?? 'other';
+      if (!map.has(cat)) map.set(cat, []);
+      map.get(cat)!.push(c);
+    }
+    return map;
+  }, [filtered]);
 
-const allExpanded = useMemo(
-  () => categories.every((c) => openCats[c.id]),
-  [openCats],
-);
+  const allExpanded = useMemo(
+    () => categories.every((c) => openCats[c.id]),
+    [openCats],
+  );
 
-const toggleCat = (id: string) => {
-  setOpenCats((s) => ({ ...s, [id]: !s[id] }));
-};
+  const toggleCat = (id: string) => {
+    setOpenCats((s) => ({ ...s, [id]: !s[id] }));
+  };
 
-const toggleAll = () => {
-  if (allExpanded) {
-    setOpenCats({});
-  } else {
-    const next: Record<string, boolean> = {};
-    for (const c of categories) next[c.id] = true;
-    setOpenCats(next);
-  }
-};
+  const toggleAll = () => {
+    if (allExpanded) {
+      setOpenCats({});
+    } else {
+      const next: Record<string, boolean> = {};
+      for (const c of categories) next[c.id] = true;
+      setOpenCats(next);
+    }
+  };
 
   const totalSteps = useMemo(() => courses.reduce((a, c) => a + courseStats(c).steps, 0), []);
-
-  
 
   return (
     <div className="min-h-dvh">
@@ -136,6 +119,7 @@ const toggleAll = () => {
               Работает полностью офлайн
             </p>
           </div>
+          
           <h1 className="mt-4 max-w-2xl text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
             Инженерная база знаний: тестирование, Python, Docker, Kubernetes и ИИ-агенты
           </h1>
@@ -165,34 +149,34 @@ const toggleAll = () => {
           </div>
         </section>
 
-          {inProgressCourses.length > 0 && (
-            <section id="my-courses" className="scroll-mt-20">
-              <div className="flex items-center gap-2.5">
-                <BookOpenCheck className="h-5 w-5 text-primary" aria-hidden="true" />
-                <h2 className="text-xl font-bold tracking-tight">Продолжить обучение</h2>
-              </div>
-              <div className="mt-4 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {inProgressCourses.map((c) => <CourseCard key={c.slug} course={c} />)}
-              </div>
-            </section>
-          )}
+        {inProgressCourses.length > 0 && (
+          <section id="my-courses" className="scroll-mt-20">
+            <div className="flex items-center gap-2.5">
+              <BookOpenCheck className="h-5 w-5 text-primary" aria-hidden="true" />
+              <h2 className="text-xl font-bold tracking-tight">Продолжить обучение</h2>
+            </div>
+            <div className="mt-4 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {inProgressCourses.map((c) => <CourseCard key={c.slug} course={c} />)}
+            </div>
+          </section>
+        )}
 
-          {completedCourses.length > 0 && (
-            <section id="completed-courses" className="mt-10 scroll-mt-20">
-              <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden="true" />
-                <h2 className="text-xl font-bold tracking-tight">
-                  Завершено <span className="text-muted-foreground font-normal">· {completedCourses.length}</span>
-                </h2>
-              </div>
-              <div className="mt-4 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {completedCourses.map((c) => <CourseCard key={c.slug} course={c} />)}
-              </div>
-            </section>
-          )}
+        {completedCourses.length > 0 && (
+          <section id="completed-courses" className="mt-10 scroll-mt-20">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden="true" />
+              <h2 className="text-xl font-bold tracking-tight">
+                Завершено <span className="text-muted-foreground font-normal">· {completedCourses.length}</span>
+              </h2>
+            </div>
+            <div className="mt-4 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {completedCourses.map((c) => <CourseCard key={c.slug} course={c} />)}
+            </div>
+          </section>
+        )}
 
         {dueCount > 0 && (
-          <section className="mb-8 rounded-xl border border-primary/30 bg-accent/20 p-5 sm:flex sm:items-center sm:justify-between">
+          <section className="mt-10 mb-8 rounded-xl border border-primary/30 bg-accent/20 p-5 sm:flex sm:items-center sm:justify-between">
             <div>
               <h2 className="text-lg font-bold text-primary">Пора повторить!</h2>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -202,29 +186,6 @@ const toggleAll = () => {
             <Button asChild className="mt-4 sm:mt-0">
               <Link to="/review">Начать повторение</Link>
             </Button>
-          </section>
-        )}
-
-                {/* Закладки */}
-        {bookmarkedItems.length > 0 && (
-          <section id="bookmarks" className="mt-12 scroll-mt-20">
-            <div className="flex items-center gap-2.5">
-              <Bookmark className="h-5 w-5 text-primary" aria-hidden="true" />
-              <h2 className="text-xl font-bold tracking-tight">Закладки</h2>
-            </div>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {bookmarkedItems.map(({ course, lesson }) => (
-                <Link
-                  key={`${course.slug}-${lesson.id}`}
-                  to={`/course/${course.slug}/lesson/${lesson.id}`}
-                  className="flex flex-col rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40"
-                >
-                  <span className="text-xs text-muted-foreground">{course.title}</span>
-                  <span className="mt-1 font-bold">{lesson.title}</span>
-                  <span className="mt-auto pt-3 text-xs text-muted-foreground">{lesson.minutes} мин</span>
-                </Link>
-              ))}
-            </div>
           </section>
         )}
 
@@ -244,133 +205,133 @@ const toggleAll = () => {
         </section>
 
         {/* Каталог */}
-<section id="catalog" className="mt-12 w-full scroll-mt-20">
-  <div className="flex flex-wrap items-center justify-between gap-3">
-    <h2 className="text-xl font-bold tracking-tight">Каталог курсов</h2>
-    <div className="flex flex-wrap gap-2" role="group" aria-label="Фильтр по темам">
-      {ALL_TAGS.map((t) => (
-        <button
-          key={t}
-          type="button"
-          onClick={() => setTag(t)}
-          aria-pressed={tag === t}
-          className={`min-h-[36px] rounded-full border px-3.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-            tag === t
-              ? 'border-primary bg-primary text-primary-foreground'
-              : 'border-border bg-card text-foreground/70 hover:border-primary/40 hover:text-foreground'
-          }`}
-        >
-          {t}
-        </button>
-      ))}
-    </div>
-  </div>
-
-  <div aria-live="polite" aria-atomic="true" className="sr-only">
-    Найдено {filtered.length} {coursesWord(filtered.length)}
-  </div>
-
-  {isLoading ? (
-    <div className="mt-5 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {[1, 2, 3, 4, 5, 6].map((i) => (
-        <div key={i} className="flex flex-col rounded-xl border border-border bg-card p-5 space-y-4">
-          <div className="flex justify-between">
-            <Skeleton className="h-12 w-12 rounded-xl" />
-            <Skeleton className="h-5 w-16 rounded-full" />
+        <section id="catalog" className="mt-12 w-full scroll-mt-20">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-xl font-bold tracking-tight">Каталог курсов</h2>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Фильтр по темам">
+              {ALL_TAGS.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setTag(t)}
+                  aria-pressed={tag === t}
+                  className={`min-h-[36px] rounded-full border px-3.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    tag === t
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border bg-card text-foreground/70 hover:border-primary/40 hover:text-foreground'
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="space-y-2">
-            <Skeleton className="h-5 w-3/4" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-2/3" />
-          </div>
-          <div className="mt-auto pt-4 space-y-2">
-            <Skeleton className="h-3 w-1/2" />
-            <Skeleton className="h-1.5 w-full rounded-full" />
-          </div>
-        </div>
-      ))}
-    </div>
-  ) : filtered.length === 0 ? (
-    <div className="mt-8 rounded-xl border border-dashed border-border bg-card p-10 text-center">
-      <p className="font-semibold">Ничего не найдено</p>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Попробуйте другой запрос или сбросьте фильтр по теме.
-      </p>
-    </div>
-  ) : (
-    <>
-      {!isFiltering && (
-        <div className="mt-4 flex justify-end">
-          <button
-            type="button"
-            onClick={toggleAll}
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1"
-          >
-            {allExpanded ? 'Свернуть все' : 'Развернуть все'}
-          </button>
-        </div>
-      )}
 
-      <div className="mt-3 space-y-3">
-        {categories.map((cat) => {
-          const list = grouped.get(cat.id);
-          if (!list || list.length === 0) return null;
-          const isOpen = isFiltering ? true : (openCats[cat.id] ?? false);
-          return (
-            <div
-              key={cat.id}
-              className="overflow-hidden rounded-xl border border-border bg-card"
-            >
-              <button
-                type="button"
-                onClick={() => toggleCat(cat.id)}
-                aria-expanded={isOpen}
-                className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-              >
-                <span className="flex-1">
-                  <span className="block font-bold tracking-tight">{cat.title}</span>
-                  <span className="mt-0.5 block text-xs text-muted-foreground">
-                    {cat.description}
-                  </span>
-                </span>
-                <span className="shrink-0 text-xs text-muted-foreground">
-                  {list.length} {coursesWord(list.length)}
-                </span>
-                <ChevronDown
-                  className={cn(
-                    'h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200',
-                    !isOpen && '-rotate-90',
-                  )}
-                  aria-hidden="true"
-                />
-              </button>
-              {isOpen && (
-                <div className="grid w-full grid-cols-1 gap-4 border-t border-border p-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {list.map((c) => <CourseCard key={c.slug} course={c} />)}
+          <div aria-live="polite" aria-atomic="true" className="sr-only">
+            Найдено {filtered.length} {coursesWord(filtered.length)}
+          </div>
+
+          {isLoading ? (
+            <div className="mt-5 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="flex flex-col rounded-xl border border-border bg-card p-5 space-y-4">
+                  <div className="flex justify-between">
+                    <Skeleton className="h-12 w-12 rounded-xl" />
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                  </div>
+                  <div className="mt-auto pt-4 space-y-2">
+                    <Skeleton className="h-3 w-1/2" />
+                    <Skeleton className="h-1.5 w-full rounded-full" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="mt-8 rounded-xl border border-dashed border-border bg-card p-10 text-center">
+              <p className="font-semibold">Ничего не найдено</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Попробуйте другой запрос или сбросьте фильтр по теме.
+              </p>
+            </div>
+          ) : (
+            <>
+              {!isFiltering && (
+                <div className="mt-4 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={toggleAll}
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1"
+                  >
+                    {allExpanded ? 'Свернуть все' : 'Развернуть все'}
+                  </button>
                 </div>
               )}
-            </div>
-          );
-        })}
-      </div>
 
-      {/* Кастомные курсы — вне категорий, всегда видны, если есть */}
-      {grouped.get('other') && (
-        <div className="mt-6">
-          <div className="mb-3">
-            <h3 className="text-lg font-bold tracking-tight">Мои курсы</h3>
-            <p className="text-sm text-muted-foreground">Созданные вами</p>
-          </div>
-          <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {grouped.get('other')!.map((c) => (
-              <CourseCard key={c.slug} course={c} />
-            ))}
-          </div>
-        </div>
-      )}
-    </>
-  )}
-</section>
+              <div className="mt-3 space-y-3">
+                {categories.map((cat) => {
+                  const list = grouped.get(cat.id);
+                  if (!list || list.length === 0) return null;
+                  const isOpen = isFiltering ? true : (openCats[cat.id] ?? false);
+                  return (
+                    <div
+                      key={cat.id}
+                      className="overflow-hidden rounded-xl border border-border bg-card"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => toggleCat(cat.id)}
+                        aria-expanded={isOpen}
+                        className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                      >
+                        <span className="flex-1">
+                          <span className="block font-bold tracking-tight">{cat.title}</span>
+                          <span className="mt-0.5 block text-xs text-muted-foreground">
+                            {cat.description}
+                          </span>
+                        </span>
+                        <span className="shrink-0 text-xs text-muted-foreground">
+                          {list.length} {coursesWord(list.length)}
+                        </span>
+                        <ChevronDown
+                          className={cn(
+                            'h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200',
+                            !isOpen && '-rotate-90',
+                          )}
+                          aria-hidden="true"
+                        />
+                      </button>
+                      {isOpen && (
+                        <div className="grid w-full grid-cols-1 gap-4 border-t border-border p-4 sm:grid-cols-2 lg:grid-cols-3">
+                          {list.map((c) => <CourseCard key={c.slug} course={c} />)}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Кастомные курсы — вне категорий, всегда видны, если есть */}
+              {grouped.get('other') && (
+                <div className="mt-6">
+                  <div className="mb-3">
+                    <h3 className="text-lg font-bold tracking-tight">Мои курсы</h3>
+                    <p className="text-sm text-muted-foreground">Созданные вами</p>
+                  </div>
+                  <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {grouped.get('other')!.map((c) => (
+                      <CourseCard key={c.slug} course={c} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </section>
         <ProgressExport />
       </main>
 

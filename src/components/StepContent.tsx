@@ -864,7 +864,7 @@ function CodeStep({ slug, stepId, quiz, onResult }: { slug: string; stepId: stri
         value={code}
         onChange={e => { setCode(e.target.value); setChecked(false); setOk(false); }}
         placeholder={quiz.placeholder ?? 'Напишите код…'}
-        className="w-full min-h-[180px] rounded-lg border border-input bg-background p-4 font-mono text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="w-full min-h-[180px] rounded-lg border border-input bg-card p-4 font-mono text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         spellCheck={false}
       />
 

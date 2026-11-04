@@ -15,7 +15,7 @@ import { LazyCodeMirror } from '@/components/LazyCodeMirror';
 import { useTheme } from '@/lib/theme';
 
 const DANGEROUS =
-  /\b(DROP|DELETE|UPDATE|INSERT|ALTER|ATTACH|DETACH|PRAGMA|VACUUM|REINDEX|CREATE)\b/i;
+  /\b(DROP|DELETE|UPDATE|INSERT|ALTER|ATTACH|DETACH|PRAGMA|VACUUM|REINDEX)\b/i;
 
 interface Props {
   sandbox: SandboxBlock;
@@ -64,6 +64,13 @@ export function SandboxView({ sandbox, onResult }: Props) {
     if (DANGEROUS.test(text)) {
       throw new Error('В песочнице разрешены только SELECT-запросы (без DDL/DML).');
     }
+
+        // Запрещаем CREATE TABLE, но разрешаем CREATE TEMP TABLE
+    const createTableRegex = /\bCREATE\s+(?!TEMP(ORARY)?\s+TABLE)\w+/i;
+    if (createTableRegex.test(text)) {
+      throw new Error('Создание постоянных таблиц запрещено. Используйте CREATE TEMP TABLE.');
+    }
+
     for (const pattern of sandbox.forbidden ?? []) {
       if (new RegExp(pattern, 'i').test(text)) {
         throw new Error('Запрос содержит запрещённую конструкцию.');

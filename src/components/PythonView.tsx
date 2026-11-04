@@ -53,8 +53,11 @@ export function PythonView({ python, onResult }: Props) {
     if (!pyRef.current || !code.trim()) return;
     setCheck(null);
     const r = await runPython(pyRef.current, code);
-    r.namespace?.destroy();
-    setResult({ ...r, namespace: null });
+    try {
+      setResult({ ...r, namespace: null });
+    } finally {
+      r.namespace?.destroy(); // <-- Гарантированно уничтожаем
+    }
   }
 
   async function handleCheck() {
@@ -70,15 +73,17 @@ export function PythonView({ python, onResult }: Props) {
     }
 
     const r = await runPython(pyRef.current, code);
-    setResult({ ...r, namespace: null });
-    const ok = checkPythonResult(r, python.expected);
-    r.namespace?.destroy();
-
-    setCheck(ok ? 'ok' : 'fail');
-    if (ok) onResult?.('ok');
-    else {
-      setFailed((n) => n + 1);
-      onResult?.('fail');
+    try {
+      setResult({ ...r, namespace: null });
+      const ok = checkPythonResult(r, python.expected);
+      setCheck(ok ? 'ok' : 'fail');
+      if (ok) onResult?.('ok');
+      else {
+        setFailed((n) => n + 1);
+        onResult?.('fail');
+      }
+    } finally {
+      r.namespace?.destroy(); // <-- Гарантированно уничтожаем
     }
   }
 
