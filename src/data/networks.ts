@@ -26,45 +26,18 @@ export const networksCourse: Course = {
         {
           id: 'nw-l1',
           title: 'OSI и TCP/IP: как устроен интернет',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'nw-l1-s1',
               title: 'Две модели: OSI и TCP/IP',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: `Любая сетевая передача — это слои. Каждый слой делает одно и передаёт данные следующему. Модель OSI (7 слоёв) — теоретическая, для обучения. Модель TCP/IP (4 слоя) — практическая, по ней реально работает интернет.`,
-                },
+                { type: 'p', text: 'Любая сетевая передача — это слои. Каждый слой делает одно и передаёт данные следующему. Модель OSI (7 слоёв) — теоретическая, для обучения. Модель TCP/IP (4 слоя) — практическая, по ней реально работает интернет.' },
                 {
                   type: 'mermaid',
                   caption: 'Соответствие слоёв OSI и TCP/IP',
-                  code: `graph TD
-                    subgraph OSI["OSI — 7 уровней"]
-                        direction TB
-                        O7["7. Application<br/>HTTP, DNS, SSH"]
-                        O6["6. Presentation<br/>TLS, gzip"]
-                        O5["5. Session"]
-                        O4["4. Transport<br/>TCP, UDP"]
-                        O3["3. Network<br/>IP, ICMP"]
-                        O2["2. Data Link<br/>Ethernet"]
-                        O1["1. Physical<br/>кабели"]
-                    end
-                    subgraph TCPIP["TCP/IP — 4 уровня"]
-                        direction TB
-                        T4["Application"]
-                        T3["Transport"]
-                        T2["Internet"]
-                        T1["Link"]
-                    end
-                    O7 --> T4
-                    O6 --> T4
-                    O5 --> T4
-                    O4 --> T3
-                    O3 --> T2
-                    O2 --> T1
-                    O1 --> T1`
+                  code: 'graph TD\n    subgraph OSI["OSI — 7 уровней"]\n        direction TB\n        O7["7. Application<br/>HTTP, DNS, SSH"]\n        O6["6. Presentation<br/>TLS, gzip"]\n        O5["5. Session"]\n        O4["4. Transport<br/>TCP, UDP"]\n        O3["3. Network<br/>IP, ICMP"]\n        O2["2. Data Link<br/>Ethernet"]\n        O1["1. Physical<br/>кабели"]\n    end\n    subgraph TCPIP["TCP/IP — 4 уровня"]\n        direction TB\n        T4["Application"]\n        T3["Transport"]\n        T2["Internet"]\n        T1["Link"]\n    end\n    O7 --> T4\n    O6 --> T4\n    O5 --> T4\n    O4 --> T3\n    O3 --> T2\n    O2 --> T1\n    O1 --> T1',
                 },
                 {
                   type: 'table',
@@ -80,10 +53,7 @@ export const networksCourse: Course = {
                     ['1. Physical', 'Link', 'кабели, радиоволны', 'Биты по проводу'],
                   ],
                 },
-                {
-                  type: 'note',
-                  text: `Зачем это знать: на собеседовании QA/DevOps часто просят «объяснить, что происходит, когда вы вводите google.com в браузере». Правильный ответ — пройти по слоям: DNS → TCP → TLS → HTTP → рендер. Если не знаете слоёв — не сможете структурировать ответ.`,
-                },
+                { type: 'note', text: 'Зачем это знать: на собеседовании QA/DevOps часто просят «объяснить, что происходит, когда вы вводите google.com в браузере». Правильный ответ — пройти по слоям: DNS → TCP → TLS → HTTP → рендер. Если не знаете слоёв — не сможете структурировать ответ.' },
               ],
             },
             {
@@ -95,42 +65,38 @@ export const networksCourse: Course = {
                   type: 'code',
                   lang: 'text',
                   caption: 'Что происходит, когда вы вводите google.com',
-                  code: `1. DNS-резолвинг (Application)
-   google.com → 142.250.185.78
-
-2. TCP-соединение (Transport)
-   3-way handshake: SYN → SYN-ACK → ACK
-   (если HTTPS — то на порт 443)
-
-3. TLS-рукопожатие (Application, поверх TCP)
-   ClientHello → ServerHello + сертификат → обмен ключами
-   → зашифрованное соединение
-
-4. HTTP-запрос (Application)
-   GET / HTTP/2
-   Host: google.com
-   User-Agent: Chrome/...
-
-5. HTTP-ответ (Application)
-   200 OK
-   Content-Type: text/html
-   <html>...
-
-6. Рендер в браузере
-   HTML → DOM → CSSOM → JS → отрисовка
-
-Итого: DNS → TCP → TLS → HTTP → рендер.
-Каждый слой можно диагностировать отдельно.`,
+                  code: '1. DNS-резолвинг (Application)\n   google.com → 142.250.185.78\n\n2. TCP-соединение (Transport)\n   3-way handshake: SYN → SYN-ACK → ACK\n   (если HTTPS — то на порт 443)\n\n3. TLS-рукопожатие (Application, поверх TCP)\n   ClientHello → ServerHello + сертификат → обмен ключами\n   → зашифрованное соединение\n\n4. HTTP-запрос (Application)\n   GET / HTTP/2\n   Host: google.com\n   User-Agent: Chrome/...\n\n5. HTTP-ответ (Application)\n   200 OK\n   Content-Type: text/html\n   <html>...\n\n6. Рендер в браузере\n   HTML → DOM → CSSOM → JS → отрисовка\n\nИтого: DNS → TCP → TLS → HTTP → рендер.\nКаждый слой можно диагностировать отдельно.',
                 },
-                {
-                  type: 'note',
-                  text: `Если «сайт не открывается» — почти всегда можно понять, где сломалось: dig google.com (DNS), ping google.com (ICMP), curl -v https://google.com (TCP+TLS+HTTP). Три команды — три слоя — 90% диагностики.`,
-                },
+                { type: 'note', text: 'Если «сайт не открывается» — почти всегда можно понять, где сломалось: dig google.com (DNS), ping google.com (ICMP), curl -v https://google.com (TCP+TLS+HTTP). Три команды — три слоя — 90% диагностики.' },
               ],
             },
             {
               id: 'nw-l1-s3',
-              title: 'Проверь себя',
+              title: 'Инкапсуляция: как данные спускаются по слоям',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Когда вы отправляете HTTP-запрос, он не «летит» в сеть целиком. Каждый слой заворачивает данные предыдущего в свой заголовок — это инкапсуляция. На приёмной стороне — обратный процесс: каждый слой снимает свой заголовок.' },
+                {
+                  type: 'mermaid',
+                  caption: 'Инкапсуляция: каждый слой добавляет заголовок',
+                  code: 'graph LR\n    App["HTTP-запрос<br/>GET / (данные)"]\n    TCP["TCP<br/>[TCP-заголовок | данные]"]\n    IP["IP<br/>[IP-заголовок | TCP | данные]"]\n    Eth["Ethernet<br/>[Ethernet | IP | TCP | данные]"]\n    Wire["Провод<br/>биты"]\n    App --> TCP --> IP --> Eth --> Wire',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Application: HTTP-запрос — просто текст',
+                    'Transport: TCP добавляет порты (src, dst) и sequence numbers',
+                    'Network: IP добавляет src IP, dst IP',
+                    'Data Link: Ethernet добавляет MAC-адреса',
+                    'Каждый заголовок — «конверт» для предыдущего слоя',
+                  ],
+                },
+                { type: 'note', text: 'На собеседовании junior сети: «что такое инкапсуляция?» — «каждый слой заворачивает данные предыдущего в свой заголовок; на приёме — распаковывает». Это объясняет, почему «не работает сайт» может быть из-за любого слоя: Ethernet, IP, TCP, TLS или HTTP.' },
+              ],
+            },
+            {
+              id: 'nw-l1-s4',
+              title: 'Проверь себя: порядок',
               type: 'quiz',
               quiz: {
                 kind: 'single',
@@ -144,6 +110,23 @@ export const networksCourse: Course = {
                 correct: ['b'],
                 explanation:
                   'Сначала DNS (имя → IP), потом TCP-соединение (3-way handshake), потом TLS-рукопожатие (шифрование), и только потом HTTP-запрос. Каждый следующий слой «оборачивает» предыдущий. Если что-то сломалось — можно проверить каждый шаг отдельно: dig, telnet, openssl s_client, curl.',
+              },
+            },
+            {
+              id: 'nw-l1-s5',
+              title: 'Проверь себя: слои',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте протокол и слой TCP/IP',
+                pairs: [
+                  { left: 'HTTP', right: 'Application' },
+                  { left: 'TCP / UDP', right: 'Transport' },
+                  { left: 'IP / ICMP', right: 'Internet' },
+                  { left: 'Ethernet / Wi-Fi', right: 'Link' },
+                ],
+                explanation:
+                  'HTTP — Application (7 по OSI). TCP/UDP — Transport (4). IP/ICMP — Internet (3). Ethernet/Wi-Fi — Link (2+1). Понимание, на каком слое что работает, помогает диагностировать: «не пингуется» — Internet/Link, «порт закрыт» — Transport, «ошибка 500» — Application.',
               },
             },
           ],
@@ -320,57 +303,24 @@ curl https://server.com:8443/api
         {
           id: 'nw-l3',
           title: 'DNS: как имя превращается в адрес',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
               id: 'nw-l3-s1',
               title: 'Иерархия DNS',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: `DNS — «телефонная книга интернета». Превращает google.com в IP. Иерархия: корневые серверы (13 кластеров), TLD (com, org, ru), авторитетные серверы домена.`,
-                },
+                { type: 'p', text: 'DNS — «телефонная книга интернета». Превращает google.com в IP. Иерархия: корневые серверы (13 кластеров), TLD (com, org, ru), авторитетные серверы домена.' },
                 {
                   type: 'mermaid',
                   caption: 'Путь DNS-запроса от клиента до авторитетного сервера',
-                  code: `sequenceDiagram
-                    participant C as Клиент
-                    participant R as Рекурсивный<br/>резолвер
-                    participant Root as Корневой<br/>(.)
-                    participant TLD as TLD-сервер<br/>(.com)
-                    participant Auth as Авторитетный<br/>(example.com)
-
-                    C->>R: IP для example.com?
-                    Note over R: кэш пуст
-                    R->>Root: кто отвечает за .com?
-                    Root-->>R: a.gtld-servers.net
-                    R->>TLD: кто отвечает за example.com?
-                    TLD-->>R: ns1.example.com
-                    R->>Auth: какой IP у example.com?
-                    Auth-->>R: 93.184.216.34
-                    R-->>C: 93.184.216.34
-                    Note over R: кэширует на TTL секунд`
+                  code: 'sequenceDiagram\n    participant C as Клиент\n    participant R as Рекурсивный<br/>резолвер\n    participant Root as Корневой<br/>(.)\n    participant TLD as TLD-сервер<br/>(.com)\n    participant Auth as Авторитетный<br/>(example.com)\n\n    C->>R: IP для example.com?\n    Note over R: кэш пуст\n    R->>Root: кто отвечает за .com?\n    Root-->>R: a.gtld-servers.net\n    R->>TLD: кто отвечает за example.com?\n    TLD-->>R: ns1.example.com\n    R->>Auth: какой IP у example.com?\n    Auth-->>R: 93.184.216.34\n    R-->>C: 93.184.216.34\n    Note over R: кэширует на TTL секунд',
                 },
                 {
                   type: 'code',
                   lang: 'text',
                   caption: 'Путь резолвинга',
-                  code: `Хотим узнать IP для example.com
-
-1. Браузер → кэш браузера → кэш ОС → hosts → DNS-сервер провайдера (обычно 8.8.8.8 или 1.1.1.1)
-
-2. Если в кэше нет — рекурсивный резолвер спрашивает:
-   → корневой сервер (.) : «кто отвечает за .com?»
-   ← «a.gtld-servers.net»
-   → TLD-сервер (.com) : «кто отвечает за example.com?»
-   ← «ns1.example.com»
-   → авторитетный сервер example.com : «какой IP у example.com?»
-   ← «93.184.216.34»
-
-3. Ответ кэшируется на TTL секунд (у example.com — обычно 3600)
-
-Итого: 3 запроса, но кэш экономит 99% времени.`,
+                  code: 'Хотим узнать IP для example.com\n\n1. Браузер → кэш браузера → кэш ОС → hosts → DNS-сервер провайдера (обычно 8.8.8.8 или 1.1.1.1)\n\n2. Если в кэше нет — рекурсивный резолвер спрашивает:\n   → корневой сервер (.) : «кто отвечает за .com?»\n   ← «a.gtld-servers.net»\n   → TLD-сервер (.com) : «кто отвечает за example.com?»\n   ← «ns1.example.com»\n   → авторитетный сервер example.com : «какой IP у example.com?»\n   ← «93.184.216.34»\n\n3. Ответ кэшируется на TTL секунд (у example.com — обычно 3600)\n\nИтого: 3 запроса, но кэш экономит 99% времени.',
                 },
               ],
             },
@@ -399,33 +349,38 @@ curl https://server.com:8443/api
                   type: 'code',
                   lang: 'bash',
                   caption: 'dig — главный инструмент',
-                  code: `# Базовый запрос (A по умолчанию)
-dig example.com
-dig +short example.com             # только ответ
-
-# Конкретный тип записи
-dig example.com MX
-dig example.com TXT
-dig example.com AAAA
-
-# Через конкретный DNS-сервер (проверить, что отдают разные DNS)
-dig @8.8.8.8 example.com
-dig @1.1.1.1 example.com
-
-# Проследить путь резолвинга
-dig +trace example.com
-
-# Обратный резолвинг (IP → имя)
-dig -x 8.8.8.8`,
+                  code: '# Базовый запрос (A по умолчанию)\ndig example.com\ndig +short example.com             # только ответ\n\n# Конкретный тип записи\ndig example.com MX\ndig example.com TXT\ndig example.com AAAA\n\n# Через конкретный DNS-сервер (проверить, что отдают разные DNS)\ndig @8.8.8.8 example.com\ndig @1.1.1.1 example.com\n\n# Проследить путь резолвинга\ndig +trace example.com\n\n# Обратный резолвинг (IP → имя)\ndig -x 8.8.8.8',
                 },
-                {
-                  type: 'note',
-                  text: `TTL (Time To Live) — сколько секунд DNS-ответ кэшируется. Низкий TTL (60–300) — быстрые изменения, но больше нагрузки на DNS. Высокий (3600–86400) — быстрее для клиентов, но изменения «доходят» медленно. При переезде сайта TTL снижают за день до переезда, чтобы старый IP «отпустил» быстрее.`,
-                },
+                { type: 'note', text: 'TTL (Time To Live) — сколько секунд DNS-ответ кэшируется. Низкий TTL (60–300) — быстрые изменения, но больше нагрузки на DNS. Высокий (3600–86400) — быстрее для клиентов, но изменения «доходят» медленно. При переезде сайта TTL снижают за день до переезда, чтобы старый IP «отпустил» быстрее.' },
               ],
             },
             {
               id: 'nw-l3-s3',
+              title: 'CNAME vs A: когда что',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'CNAME — псевдоним, A — конкретный IP. Разница важна: CNAME нельзя ставить на apex-домен (example.com), только на поддомены. Это ограничение стандарта DNS: apex уже имеет обязательные NS и SOA записи, а CNAME не может сосуществовать с другими записями.' },
+                {
+                  type: 'code',
+                  lang: 'text',
+                  caption: 'CNAME vs A',
+                  code: 'A-запись (конкретный IP):\n  example.com        → 93.184.216.34\n  www.example.com    → 93.184.216.34\n\nCNAME (псевдоним):\n  www.example.com    → CNAME → example.com\n  (при запросе www.example.com DNS идёт по цепочке: www → example.com → IP)\n\nПроблема CNAME на apex:\n  example.com не может быть CNAME, потому что у него уже есть:\n    example.com NS   ns1.example.com\n    example.com SOA  ...\n  DNS-стандарт: CNAME не сосуществует с другими записями.\n\nРешение для apex (ALIAS / ANAME):\n  Некоторые провайдеры (Cloudflare, Route53) поддерживают\n  ALIAS — «CNAME на apex», работающий на уровне DNS-провайдера.',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'A — конкретный IP, можно на apex',
+                    'CNAME — псевдоним, только на поддомены',
+                    'CNAME на apex ломает NS/SOA — стандарт запрещает',
+                    'ALIAS/ANAME — «CNAME на apex» от провайдера (Cloudflare, Route53)',
+                    'При смене IP: A — править везде, CNAME — в одном месте (родительский домен)',
+                  ],
+                },
+                { type: 'note', text: 'На собеседовании junior DevOps: «почему CNAME нельзя на apex?» — «потому что apex уже имеет NS и SOA, а стандарт запрещает CNAME с другими записями». «Как обойти?» — «ALIAS/ANAME у провайдера». Частый вопрос.' },
+              ],
+            },
+            {
+              id: 'nw-l3-s4',
               title: 'Проверь себя',
               type: 'quiz',
               quiz: {
@@ -442,6 +397,23 @@ dig -x 8.8.8.8`,
                   'CNAME — «каноническое имя», псевдоним. www.example.com → CNAME → example.com. A-запись — конкретный IP, MX — почта, TXT — текст (SPF/DKIM). CNAME нельзя ставить на apex-домен (example.com), только на поддомены.',
               },
             },
+            {
+              id: 'nw-l3-s5',
+              title: 'Проверь себя: записи',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте DNS-запись и её назначение',
+                pairs: [
+                  { left: 'A', right: 'IPv4-адрес (example.com → 1.2.3.4)' },
+                  { left: 'MX', right: 'Почтовый сервер домена' },
+                  { left: 'TXT', right: 'SPF / DKIM / верификация' },
+                  { left: 'CAA', right: 'Какие CA могут выдавать сертификаты' },
+                ],
+                explanation:
+                  'A — IPv4. MX — почта. TXT — текст (SPF, DKIM, verification). CAA — какие Certificate Authority имеют право выдавать сертификат. Ещё важны: AAAA (IPv6), CNAME (псевдоним), NS (DNS-сервер домена), SOA (метаданные зоны).',
+              },
+            },
           ],
         },
       ],
@@ -453,7 +425,7 @@ dig -x 8.8.8.8`,
         {
           id: 'nw-l4',
           title: 'TCP и UDP',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'nw-l4-s1',
@@ -475,42 +447,15 @@ dig -x 8.8.8.8`,
                 {
                   type: 'mermaid',
                   caption: 'Установка TCP-соединения (3-way handshake)',
-                  code: `sequenceDiagram
-                    participant C as Клиент
-                    participant S as Сервер
-                    
-                    C->>S: SYN (я хочу соединиться)
-                    S->>C: SYN-ACK (согласен)
-                    C->>S: ACK (подтверждаю)
-                    
-                    Note over C,S: Соединение установлено
-                    C->>S: Данные
-                    S->>C: Данные`
+                  code: 'sequenceDiagram\n    participant C as Клиент\n    participant S as Сервер\n\n    C->>S: SYN (я хочу соединиться)\n    S->>C: SYN-ACK (согласен)\n    C->>S: ACK (подтверждаю)\n\n    Note over C,S: Соединение установлено\n    C->>S: Данные\n    S->>C: Данные',
                 },
                 {
                   type: 'code',
                   lang: 'text',
                   caption: '3-way handshake (TCP)',
-                  code: `Клиент                          Сервер
-   │                              │
-   │──── SYN (seq=100) ──────────▶│
-   │                              │
-   │◀─── SYN-ACK (seq=300, ack=101)│
-   │                              │
-   │──── ACK (ack=301) ──────────▶│
-   │                              │
-   │◀══════ данные ══════════════▶│
-   │                              │
-
-Зачем: убедиться, что обе стороны могут отправлять и принимать.
-Одна «полуоткрытая» отправка — не гарантирует, что сервер ответит.
-
-При закрытии — 4-way: FIN → ACK → FIN → ACK (FIN, ACK, FIN, ACK).`,
+                  code: 'Клиент                          Сервер\n   │                              │\n   │──── SYN (seq=100) ──────────▶│\n   │                              │\n   │◀─── SYN-ACK (seq=300, ack=101)│\n   │                              │\n   │──── ACK (ack=301) ──────────▶│\n   │                              │\n   │◀══════ данные ══════════════▶│\n   │                              │\n\nЗачем: убедиться, что обе стороны могут отправлять и принимать.\nОдна «полуоткрытая» отправка — не гарантирует, что сервер ответит.\n\nПри закрытии — 4-way: FIN → ACK → FIN → ACK.',
                 },
-                {
-                  type: 'note',
-                  text: `HTTP/3 использует QUIC — это UDP + собственная реализация надёжности в userspace. Плюс: не блокируется при потере пакета (в TCP все следующие пакеты ждут потерянный — «head-of-line blocking»). На собеседовании «почему HTTP/3 на UDP» — ответ QUIC.`,
-                },
+                { type: 'note', text: 'HTTP/3 использует QUIC — это UDP + собственная реализация надёжности в userspace. Плюс: не блокируется при потере пакета (в TCP все следующие пакеты ждут потерянный — «head-of-line blocking»). На собеседовании «почему HTTP/3 на UDP» — ответ QUIC.' },
               ],
             },
             {
@@ -524,9 +469,89 @@ dig -x 8.8.8.8`,
                   { left: 'HTTP/1.1, HTTP/2', right: 'TCP' },
                   { left: 'HTTP/3', right: 'QUIC (поверх UDP)' },
                   { left: 'DNS (обычный)', right: 'UDP' },
+                  { left: 'SSH', right: 'TCP' },
                 ],
                 explanation:
-                  'HTTP/1.1 и 2 — TCP (надёжность важнее). HTTP/3 — QUIC поверх UDP (независимые потоки, быстрее на плохих сетях). DNS — обычно UDP (короткий запрос, повтор при потере). SSH тоже TCP, но он вынесен из вопроса, чтобы не было двух одинаковых ответов.',
+                  'HTTP/1.1, 2 и SSH — TCP (надёжность важнее). HTTP/3 — QUIC поверх UDP (независимые потоки, быстрее на плохих сетях). DNS — обычно UDP (короткий запрос, повтор при потере). На собеседовании «почему HTTP/3 на UDP» — ответ QUIC.',
+              },
+            },
+            {
+              id: 'nw-l4-s3',
+              title: 'Когда TCP, а когда UDP',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Выбор между TCP и UDP — не «что лучше», а «что важнее в задаче». Надёжность и порядок (TCP) или скорость и низкая задержка (UDP).' },
+                {
+                  type: 'table',
+                  caption: 'Когда что',
+                  head: ['Сценарий', 'Транспорт', 'Почему'],
+                  rows: [
+                    ['HTTP API, сайты, БД', 'TCP', 'Потеря пакета — ошибка, порядок критичен'],
+                    ['SSH, Git по SSH', 'TCP', 'Интерактивность, надёжность'],
+                    ['Видеозвонки, стриминг', 'UDP', 'Потеря кадра — не критично, задержка критична'],
+                    ['Онлайн-игры', 'UDP', 'Задержка важнее, потеря пакета — не страшна'],
+                    ['DNS', 'UDP (обычно)', 'Короткий запрос, повтор при потере дешевле'],
+                    ['VPN (WireGuard)', 'UDP', 'Скорость, туннелирование'],
+                  ],
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'TCP: гарантированная доставка, порядок, контроль потока',
+                    'UDP: скорость, низкая задержка, приложение само решает, что делать с потерями',
+                    'TCP не «лучше» — для real-time UDP выигрывает',
+                    'HTTP/3 — попытка взять лучшее из обоих: UDP + надёжность в QUIC',
+                  ],
+                },
+                { type: 'note', text: 'Правило: если «потеря одного пакета = катастрофа» — TCP. Если «потеря = лёгкое ухудшение, но задержка критична» — UDP. Для real-time (звонки, игры) TCP создаёт «заторы»: пакет потерян, TCP ждёт его переотправки, всё останавливается. UDP — просто пропускает и идёт дальше.' },
+              ],
+            },
+            {
+              id: 'nw-l4-s4',
+              title: 'Порты: как один IP обслуживает много сервисов',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'IP-адрес идентифицирует хост, порт — сервис на нём. Один сервер с одним IP может держать nginx на 80/443, SSH на 22, PostgreSQL на 5432 — и всё это одновременно. Порты — часть Transport-слоя (TCP/UDP).' },
+                {
+                  type: 'table',
+                  caption: 'Известные порты',
+                  head: ['Порт', 'Протокол', 'Сервис'],
+                  rows: [
+                    ['22', 'TCP', 'SSH'],
+                    ['53', 'TCP/UDP', 'DNS'],
+                    ['80', 'TCP', 'HTTP'],
+                    ['443', 'TCP', 'HTTPS'],
+                    ['3306', 'TCP', 'MySQL / MariaDB'],
+                    ['5432', 'TCP', 'PostgreSQL'],
+                    ['6379', 'TCP', 'Redis'],
+                    ['27017', 'TCP', 'MongoDB'],
+                  ],
+                },
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'Проверка портов',
+                  code: '# Какой процесс слушает порт 80?\nsudo ss -tlnp | grep :80\n\n# Открыт ли порт на удалённом сервере?\nnc -zv server.com 443\ntelnet server.com 443     # старый способ\n\n# Соединение с сервером: IP:порт\ncurl https://server.com:8443/api',
+                },
+                { type: 'note', text: 'Порты 0–1023 — привилегированные (нужен root). Поэтому nginx на 80 запускается от root (или через capabilities/systemd), потом сбрасывает привилегии. Порты 1024–65535 — обычные. На собеседовании junior DevOps: «где живёт порт — на каком слое?» — «Transport (4 по OSI)».' },
+              ],
+            },
+            {
+              id: 'nw-l4-s5',
+              title: 'Проверь себя: когда UDP',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Почему видеозвонки (Zoom, Google Meet) используют UDP, а не TCP?',
+                options: [
+                  { id: 'a', text: 'UDP безопаснее' },
+                  { id: 'b', text: 'Потеря пакета — не критична, а задержка критична; TCP создаёт «заторы» при потерях' },
+                  { id: 'c', text: 'TCP не поддерживает видео' },
+                  { id: 'd', text: 'UDP быстрее на всех задачах' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'В реальном времени важнее задержка. Если TCP теряет пакет, он останавливает все следующие, пока не переспросит — звонок «зависает». UDP просто пропускает потерянный кадр (лёгкое ухудшение качества), но не останавливает поток. Для real-time UDP выигрывает.',
               },
             },
           ],
@@ -715,17 +740,14 @@ Set-Cookie: session=def456; HttpOnly
         {
           id: 'nw-l6',
           title: 'HTTP/2 и HTTP/3',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'nw-l6-s1',
               title: 'Проблема HTTP/1.1',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: `HTTP/1.1 — один запрос за раз на соединение. Браузер открывает 6 соединений на домен — параллелизм ограничен. Каждый запрос тащит заголовки (500+ байт). На мобильных и медленных сетях — медленно.`,
-                },
+                { type: 'p', text: 'HTTP/1.1 — один запрос за раз на соединение. Браузер открывает 6 соединений на домен — параллелизм ограничен. Каждый запрос тащит заголовки (500+ байт). На мобильных и медленных сетях — медленно.' },
                 {
                   type: 'table',
                   caption: 'Эволюция HTTP',
@@ -737,10 +759,7 @@ Set-Cookie: session=def456; HttpOnly
                     ['HTTP/3', 'UDP (QUIC)', 'Мультиплексирование без head-of-line', 'QPACK'],
                   ],
                 },
-                {
-                  type: 'note',
-                  text: `HTTP/2 мультиплексирует — в одном TCP-соединении идут параллельные запросы. Но: если один пакет потерян, TCP останавливает ВСЁ (head-of-line blocking). HTTP/3 на QUIC решает это: потоки независимы.`,
-                },
+                { type: 'note', text: 'HTTP/2 мультиплексирует — в одном TCP-соединении идут параллельные запросы. Но: если один пакет потерян, TCP останавливает ВСЁ (head-of-line blocking). HTTP/3 на QUIC решает это: потоки независимы.' },
               ],
             },
             {
@@ -762,36 +781,14 @@ Set-Cookie: session=def456; HttpOnly
                   type: 'code',
                   lang: 'bash',
                   caption: 'Как проверить версию',
-                  code: `curl -I --http2 https://example.com
-# HTTP/2 200
-
-curl -I --http3 https://cloudflare.com
-# HTTP/3 200 (нужен curl с поддержкой HTTP/3)
-
-# В браузере: DevTools → Network → колонка Protocol
-# h2 = HTTP/2, h3 = HTTP/3, http/1.1
-
-# Через nghttp (если установлен)
-nghttp -v https://example.com`,
+                  code: `# Через curl\ncurl -I --http2 https://example.com\n# HTTP/2 200\n\ncurl -I --http3 https://cloudflare.com\n# HTTP/3 200 (нужен curl с поддержкой HTTP/3)\n\n# В браузере: DevTools → Network → колонка Protocol\n# h2 = HTTP/2, h3 = HTTP/3, http/1.1\n\n# Через nghttp (если установлен)\nnghttp -v https://example.com`,
                 },
-                {
-                  type: 'list',
-                  items: [
-                    'HTTP/2 мультиплексирует потоки в одном TCP-соединении',
-                    'HTTP/3 использует QUIC (UDP) — потоки независимы, нет head-of-line blocking',
-                    'QUIC поддерживает 0-RTT (как TLS 1.3), но с оговоркой про replay-атаки',
-                    'HTTP/3 требует HTTPS (TLS 1.3), без шифрования не работает',
-                  ],
-                },
-                {
-                  type: 'note',
-                  text: 'HTTP/2 обязателен по факту: почти все сайты с HTTPS работают на нём. HTTP/3 растёт: Cloudflare, Google, Facebook отдают h3. 0-RTT в QUIC ускоряет повторные подключения, но уязвим к replay — не для неидемпотентных запросов (POST, платежи).',
-                },
+                { type: 'note', text: 'HTTP/2 обязателен по факту: почти все сайты с HTTPS работают на нём. Если ваш сайт на HTTP/1.1 — вы теряете скорость на каждом запросе. Включение HTTP/2 в nginx — одна строка в конфиге (listen 443 ssl http2).' },
               ],
             },
             {
               id: 'nw-l6-s3',
-              title: 'Проверь себя',
+              title: 'Проверь себя: HTTP/2 vs HTTP/3',
               type: 'quiz',
               quiz: {
                 kind: 'single',
@@ -807,12 +804,54 @@ nghttp -v https://example.com`,
                   'QUIC — транспорт поверх UDP: сам управляет доставкой, порядком, шифрованием. Потоки в QUIC независимы: потеря в одном не блокирует другие. Это решает head-of-line blocking HTTP/2 (на TCP). На собеседовании «почему HTTP/3 на UDP» — ответ QUIC.',
               },
             },
+            {
+              id: 'nw-l6-s4',
+              title: 'Head-of-line blocking: главная проблема',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Head-of-line blocking (HOL) — «блокировка головой очереди». В TCP пакеты должны прийти по порядку: если пакет №5 потерян, пакеты №6, 7, 8 ждут, пока №5 не будет переотправлен. Для HTTP/2 это катастрофа: один потерянный пакет останавливает все параллельные потоки в соединении.' },
+                {
+                  type: 'mermaid',
+                  caption: 'HOL blocking в TCP: один потерянный пакет блокирует всё',
+                  code: 'graph LR\n    P1["Пакет 1<br/>✅"] --> P2["Пакет 2<br/>✅"]\n    P2 --> P3["Пакет 3<br/>❌ потерян"]\n    P3 -.->|"все ждут"| P4["Пакет 4<br/>⏸ ждёт"]\n    P3 -.->|"все ждут"| P5["Пакет 5<br/>⏸ ждёт"]\n    P3 -.->|"переотправка"| P3b["Пакет 3<br/>✅ (retry)"]\n    P3b --> P4b["Пакет 4<br/>✅"]',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'HTTP/2 на TCP: один потерянный пакет = все потоки стоят',
+                    'Особенно больно на мобильных (потери 1–5%)',
+                    'QUIC (HTTP/3) решает: каждый поток независим',
+                    'Потеря в потоке A не блокирует поток B',
+                    'Отсюда HTTP/3 быстрее на плохих сетях в 2–3 раза',
+                  ],
+                },
+                { type: 'note', text: 'На собеседовании senior: «почему HTTP/3 быстрее HTTP/2?» — ответ «решает head-of-line blocking TCP, потоки независимы». На хорошем Wi-Fi разница незаметна, на мобильной сети с потерями — в разы. Именно поэтому Google, Cloudflare, Facebook отдают h3.' },
+              ],
+            },
+            {
+              id: 'nw-l6-s5',
+              title: 'Проверь себя: HOL blocking',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Какую проблему HTTP/2 решает HTTP/3?',
+                options: [
+                  { id: 'a', text: 'Сжатие заголовков' },
+                  { id: 'b', text: 'Head-of-line blocking: потеря одного пакета не блокирует остальные потоки' },
+                  { id: 'c', text: 'TLS-шифрование' },
+                  { id: 'd', text: 'Поддержку cookies' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'HTTP/2 мультиплексирует потоки в одном TCP-соединении, но HOL blocking TCP блокирует все потоки при потере пакета. HTTP/3 (QUIC) даёт независимые потоки: потеря в одном не тормозит остальные. Сжатие (HPACK/QPACK) и TLS есть в обоих, cookies — это Application-уровень, не Transport.',
+              },
+            },
           ],
         },
         {
           id: 'nw-l7',
           title: 'HTTPS и TLS',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
               id: 'nw-l7-s1',
@@ -827,39 +866,14 @@ nghttp -v https://example.com`,
                     'Целостность — данные не подменены по пути (MAC)',
                   ],
                 },
-                {
-                  type: 'p',
-                  text: `HTTPS = HTTP + TLS. Порт 443. Раньше был SSL (устарел), сейчас TLS 1.2 / TLS 1.3. Браузер и сервер договариваются через TLS-рукопожатие.`,
-                },
+                { type: 'p', text: 'HTTPS = HTTP + TLS. Порт 443. Раньше был SSL (устарел), сейчас TLS 1.2 / TLS 1.3. Браузер и сервер договариваются через TLS-рукопожатие.' },
                 {
                   type: 'code',
                   lang: 'text',
                   caption: 'TLS 1.3 handshake (упрощённо)',
-                  code: `Клиент                                Сервер
-   │                                    │
-   │──── ClientHello ──────────────────▶│
-   │     (версии TLS, шифры, SNI=домен) │
-   │                                    │
-   │◀─── ServerHello ──────────────────│
-   │     (выбранный шифр, сертификат)   │
-   │                                    │
-   │  [проверка сертификата]            │
-   │  [обмен ключами через ECDHE]       │
-   │                                    │
-   │◀══════ шифрованный HTTP ═════════▶│
-   │                                    │
-
-TLS 1.2 — 2 RTT, TLS 1.3 — 1 RTT (быстрее).
-0-RTT (resumption) — ещё быстрее при повторном подключении.`,
+                  code: `Клиент                                Сервер\n   │                                    │\n   │──── ClientHello ──────────────────▶│\n   │     (версии TLS, шифры, SNI=домен) │\n   │                                    │\n   │◀─── ServerHello ──────────────────│\n   │     (выбранный шифр, сертификат)   │\n   │                                    │\n   │  [проверка сертификата]            │\n   │  [обмен ключами через ECDHE]       │\n   │                                    │\n   │◀══════ шифрованный HTTP ═════════▶│\n   │                                    │\n\nTLS 1.2 — 2 RTT, TLS 1.3 — 1 RTT (быстрее).\n0-RTT (resumption) — ещё быстрее при повторном подключении.`,
                 },
-                {
-                  type: 'note',
-                  text: `SNI (Server Name Indication) — в ClientHello клиент передаёт домен, чтобы сервер знал, какой сертификат отдать. Без SNI на одном IP нельзя было бы держать 100 HTTPS-сайтов. С SNI — можно (и это стандарт).`,
-                },
-                {
-                  type: 'note',
-                  text: 'TLS 1.3 поддерживает 0-RTT (zero round-trip time) при повторном подключении — клиент отправляет данные сразу, не дожидаясь handshake. Это ускоряет, но есть риск: 0-RTT-данные уязвимы к replay-атакам (злоумышленник может повторить перехваченный запрос). Поэтому 0-RTT не используют для неидемпотентных операций (POST, платежи) — только для GET и статики. В HTTP/3 (QUIC) 0-RTT есть, но с теми же ограничениями.',
-                },
+                { type: 'note', text: 'SNI (Server Name Indication) — в ClientHello клиент передаёт домен, чтобы сервер знал, какой сертификат отдать. Без SNI на одном IP нельзя было бы держать 100 HTTPS-сайтов. С SNI — можно (и это стандарт).' },
               ],
             },
             {
@@ -867,45 +881,20 @@ TLS 1.2 — 2 RTT, TLS 1.3 — 1 RTT (быстрее).
               title: 'Сертификаты и цепочка доверия',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: `Сертификат — это «паспорт» сервера, подписанный удостоверяющим центром (CA — Certificate Authority). Браузеры доверяют ~150 корневым CA (Let's Encrypt, DigiCert, GlobalSign). CA подписывает сертификат сервера своим ключом — цепочка доверия.`,
-                },
+                { type: 'p', text: 'Сертификат — это «паспорт» сервера, подписанный удостоверяющим центром (CA — Certificate Authority). Браузеры доверяют ~150 корневым CA (Let\'s Encrypt, DigiCert, GlobalSign). CA подписывает сертификат сервера своим ключом — цепочка доверия.' },
                 {
                   type: 'code',
                   lang: 'text',
                   caption: 'Цепочка доверия',
-                  code: `Корневой сертификат (встроен в ОС/браузер)
-  └── Intermediate CA (подписан корневым)
-        └── Сертификат сервера example.com
-              (подписан Intermediate)
-
-Браузер проверяет: сервер → Intermediate → Корневой (в trust store)
-Если цепочка сходится и сертификат не истёк и домен совпадает — ОК`,
+                  code: `Корневой сертификат (встроен в ОС/браузер)\n  └── Intermediate CA (подписан корневым)\n        └── Сертификат сервера example.com\n              (подписан Intermediate)\n\nБраузер проверяет: сервер → Intermediate → Корневой (в trust store)\nЕсли цепочка сходится и сертификат не истёк и домен совпадает — ОК`,
                 },
                 {
                   type: 'code',
                   lang: 'bash',
                   caption: 'Проверка сертификата',
-                  code: `# Показать сертификат сервера
-echo | openssl s_client -connect example.com:443 -servername example.com 2>/dev/null | openssl x509 -noout -text
-
-# Только даты и CN
-openssl s_client -connect example.com:443 -servername example.com < /dev/null 2>/dev/null | openssl x509 -noout -dates -subject
-
-# Что отдаёт цепочку
-openssl s_client -connect example.com:443 -showcerts
-
-# curl с проверкой
-curl -vI https://example.com 2>&1 | grep -i "SSL certificate"
-
-# Проверить срок через curl
-curl -vI https://example.com 2>&1 | grep expire`,
+                  code: `# Показать сертификат сервера\necho | openssl s_client -connect example.com:443 -servername example.com 2>/dev/null | openssl x509 -noout -text\n\n# Только даты и CN\nopenssl s_client -connect example.com:443 -servername example.com < /dev/null 2>/dev/null | openssl x509 -noout -dates -subject\n\n# Что отдаёт цепочку\nopenssl s_client -connect example.com:443 -showcerts\n\n# curl с проверкой\ncurl -vI https://example.com 2>&1 | grep -i "SSL certificate"\n\n# Проверить срок через curl\ncurl -vI https://example.com 2>&1 | grep expire`,
                 },
-                {
-                  type: 'note',
-                  text: `«Сертификат истёк» — самая частая проблема. Let's Encrypt — 90 дней, автопродление через certbot/acme.sh. Просрочка = браузер показывает предупреждение, API-клиенты отказываются. В CI — проверка «сертификат истекает в ближайшие 30 дней» — стандартная практика.`,
-                },
+                { type: 'note', text: '«Сертификат истёк» — самая частая проблема. Let\'s Encrypt — 90 дней, автопродление через certbot/acme.sh. Просрочка = браузер показывает предупреждение, API-клиенты отказываются. В CI — проверка «сертификат истекает в ближайшие 30 дней» — стандартная практика.' },
               ],
             },
             {
@@ -924,10 +913,7 @@ curl -vI https://example.com 2>&1 | grep expire`,
                     'OCSP Stapling — быстрая проверка «сертификат не отозван»',
                   ],
                 },
-                {
-                  type: 'note',
-                  text: `TLS не «шифрует всё подряд»: после рукопожатия HTTP-данные шифруются, но IP-адреса и порты — видны. DPI (глубокий анализ трафика) может видеть SNI (домен). ECH (Encrypted Client Hello) — новая технология, скрывает и SNI.`,
-                },
+                { type: 'note', text: 'TLS не «шифрует всё подряд»: после рукопожатия HTTP-данные шифруются, но IP-адреса и порты — видны. DPI (глубокий анализ трафика) может видеть SNI (домен). ECH (Encrypted Client Hello) — новая технология, скрывает и SNI.' },
               ],
             },
             {
@@ -948,6 +934,23 @@ curl -vI https://example.com 2>&1 | grep expire`,
                   'Браузер проверяет 4 вещи: (1) срок действия, (2) домен в сертификате = домен запроса (CN/SAN), (3) цепочка до доверенного корневого CA, (4) сертификат не отозван (OCSP/CRL). Если хоть одно не сходится — предупреждение или отказ.',
               },
             },
+            {
+              id: 'nw-l7-s5',
+              title: 'Проверь себя: 0-RTT и SNI',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте термин и его назначение',
+                pairs: [
+                  { left: 'SNI', right: 'Несколько доменов на одном IP (передаётся в ClientHello)' },
+                  { left: '0-RTT', right: 'Быстрое повторное подключение без полного handshake' },
+                  { left: 'HSTS', right: 'Всегда HTTPS для домена, даже при http://' },
+                  { left: 'OCSP Stapling', right: 'Сервер сам прикладывает «сертификат не отозван»' },
+                ],
+                explanation:
+                  'SNI — «какой домен просит клиент». 0-RTT — «повторное подключение без ожидания». HSTS — «принудительный HTTPS». OCSP Stapling — «быстрая проверка отзыва». 0-RTT уязвим к replay: не использовать для POST/платежей. На собеседовании senior DevOps это любят.',
+              },
+            },
           ],
         },
       ],
@@ -959,7 +962,7 @@ curl -vI https://example.com 2>&1 | grep expire`,
         {
           id: 'nw-l8',
           title: 'Прокси, CDN, балансировщики',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
               id: 'nw-l8-s1',
@@ -969,16 +972,7 @@ curl -vI https://example.com 2>&1 | grep expire`,
                 {
                   type: 'mermaid',
                   caption: 'Forward proxy скрывает клиента, reverse — бэкенд',
-                  code: `graph LR
-                    subgraph Forward["Forward proxy<br/>(скрывает клиента)"]
-                        C1["Клиент"] -->|"настраивает<br/>клиент"| FP["VPN,<br/>корпоративный прокси"]
-                        FP --> Internet["Интернет"]
-                    end
-                    subgraph Reverse["Reverse proxy<br/>(скрывает бэкенд)"]
-                        Internet2["Интернет"] --> RP["Nginx, HAProxy,<br/>ALB"]
-                        RP --> B1["Backend 1"]
-                        RP --> B2["Backend 2"]
-                    end`
+                  code: 'graph LR\n    subgraph Forward["Forward proxy<br/>(скрывает клиента)"]\n        C1["Клиент"] -->|"настраивает<br/>клиент"| FP["VPN,<br/>корпоративный прокси"]\n        FP --> Internet["Интернет"]\n    end\n    subgraph Reverse["Reverse proxy<br/>(скрывает бэкенд)"]\n        Internet2["Интернет"] --> RP["Nginx, HAProxy,<br/>ALB"]\n        RP --> B1["Backend 1"]\n        RP --> B2["Backend 2"]\n    end',
                 },
                 {
                   type: 'table',
@@ -993,31 +987,9 @@ curl -vI https://example.com 2>&1 | grep expire`,
                   type: 'code',
                   lang: 'text',
                   caption: 'Reverse proxy: зачем',
-                  code: `Интернет
-   │
-   ▼
-[ Nginx — 1 публичный IP :443 ]
-   │  TLS-терминация здесь
-   │  маршрутизация по пути/домену
-   │  rate limiting
-   │  кэширование статики
-   │
-   ├── /api/*     → backend:8000
-   ├── /static/*  → файлы на диске
-   └── /          → frontend:3000
-
-Зачем:
-  • Один IP/порт для всех сервисов
-  • TLS в одном месте (certbot обновляет сертификаты здесь)
-  • Кэширование, сжатие, HTTP/2
-  • Rate limiting, защита от DDoS
-  • Балансировка между репликами backend
-  • Голубой/зелёный деплой (переключение upstream)`,
+                  code: `Интернет\n   │\n   ▼\n[ Nginx — 1 публичный IP :443 ]\n   │  TLS-терминация здесь\n   │  маршрутизация по пути/домену\n   │  rate limiting\n   │  кэширование статики\n   │\n   ├── /api/*     → backend:8000\n   ├── /static/*  → файлы на диске\n   └── /          → frontend:3000\n\nЗачем:\n  • Один IP/порт для всех сервисов\n  • TLS в одном месте (certbot обновляет сертификаты здесь)\n  • Кэширование, сжатие, HTTP/2\n  • Rate limiting, защита от DDoS\n  • Балансировка между репликами backend\n  • Голубой/зелёный деплой (переключение upstream)`,
                 },
-                {
-                  type: 'note',
-                  text: `nginx — самый популярный reverse proxy. В K8s ту же роль выполняет Ingress (обычно nginx-ingress-controller). В облаках — AWS ALB, GCP LB. Всё это — reverse proxy с разной степенью «умности».`,
-                },
+                { type: 'note', text: 'nginx — самый популярный reverse proxy. В K8s ту же роль выполняет Ingress (обычно nginx-ingress-controller). В облаках — AWS ALB, GCP LB. Всё это — reverse proxy с разной степенью «умности».' },
               ],
             },
             {
@@ -1025,31 +997,12 @@ curl -vI https://example.com 2>&1 | grep expire`,
               title: 'CDN и балансировка',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: `CDN (Content Delivery Network) — сеть серверов по миру, которые кэшируют ваш контент ближе к пользователю. Cloudflare, Akamai, AWS CloudFront, Fastly. Пользователь из Москвы получает файл с сервера в Москве, а не из США.`,
-                },
+                { type: 'p', text: 'CDN (Content Delivery Network) — сеть серверов по миру, которые кэшируют ваш контент ближе к пользователю. Cloudflare, Akamai, AWS CloudFront, Fastly. Пользователь из Москвы получает файл с сервера в Москве, а не из США.' },
                 {
                   type: 'code',
                   lang: 'text',
                   caption: 'Как работает CDN',
-                  code: `Пользователь в Москве → ближайший edge-сервер CDN (Москва)
-   │
-   │ Если в кэше есть → отдаёт сразу (10 мс)
-   │
-   └ Если нет → идёт к origin (сервер в США)
-                  ↓
-               кэширует у себя
-                  ↓
-               отдаёт пользователю (500 мс в первый раз, 10 мс потом)
-
-Кэширование:
-  Cache-Control: max-age=3600 — кэшировать 1 час
-  ETag — проверка «изменилось ли»
-  Vary: Accept-Encoding — разные версии для gzip/br
-
-Что кэшируют: статику (js, css, картинки), иногда HTML/API
-Что НЕ кэшируют: персональные данные, авторизованные запросы`,
+                  code: `Пользователь в Москве → ближайший edge-сервер CDN (Москва)\n   │\n   │ Если в кэше есть → отдаёт сразу (10 мс)\n   │\n   └ Если нет → идёт к origin (сервер в США)\n                  ↓\n               кэширует у себя\n                  ↓\n               отдаёт пользователю (500 мс в первый раз, 10 мс потом)\n\nКэширование:\n  Cache-Control: max-age=3600 — кэшировать 1 час\n  ETag — проверка «изменилось ли»\n  Vary: Accept-Encoding — разные версии для gzip/br\n\nЧто кэшируют: статику (js, css, картинки), иногда HTML/API\nЧто НЕ кэшируют: персональные данные, авторизованные запросы`,
                 },
                 {
                   type: 'table',
@@ -1063,15 +1016,12 @@ curl -vI https://example.com 2>&1 | grep expire`,
                     ['Random', 'Случайно', 'Просто'],
                   ],
                 },
-                {
-                  type: 'note',
-                  text: `CDN — не только про статику. Cloudflare, Fastly умеют кэшировать API (с Vary), делать WAF, защиту от DDoS, edge-compute. «Положили за Cloudflare» — стандарт для публичных сайтов.`,
-                },
+                { type: 'note', text: 'CDN — не только про статику. Cloudflare, Fastly умеют кэшировать API (с Vary), делать WAF, защиту от DDoS, edge-compute. «Положили за Cloudflare» — стандарт для публичных сайтов.' },
               ],
             },
             {
               id: 'nw-l8-s3',
-              title: 'Проверь себя',
+              title: 'Проверь себя: reverse proxy',
               type: 'quiz',
               quiz: {
                 kind: 'single',
@@ -1087,22 +1037,64 @@ curl -vI https://example.com 2>&1 | grep expire`,
                   'Forward proxy: клиент говорит «сходи в интернет за меня», прокси скрывает клиента (VPN, корпоративный прокси). Reverse proxy: интернет приходит на прокси, он раздаёт запросы бэкенду, скрывает серверы (nginx, ALB). На собеседовании DevOps это база.',
               },
             },
+            {
+              id: 'nw-l8-s4',
+              title: 'Load balancing: L4 vs L7',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Балансировщики работают на разных уровнях OSI. L4 (TCP/UDP) — быстрее, но «глупее». L7 (HTTP) — умнее, но медленнее. Выбор зависит от задачи.' },
+                {
+                  type: 'table',
+                  caption: 'L4 vs L7',
+                  head: ['Уровень', 'Что видит', 'Плюсы', 'Минусы'],
+                  rows: [
+                    ['L4 (TCP/UDP)', 'IP и порт', 'Быстро, любой протокол', 'Не видит HTTP, не умеет маршрутизировать по пути'],
+                    ['L7 (HTTP)', 'HTTP-заголовки, URL, cookies', 'Маршрутизация по пути/хосту, sticky по cookie, WAF', 'Медленнее, только HTTP/HTTPS'],
+                  ],
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'L4: AWS NLB, HAProxy в TCP-режиме, IPVS в K8s',
+                    'L7: AWS ALB, nginx, Envoy, Traefik, Ingress в K8s',
+                    'L4 — для TCP-балансировки (БД, gRPC, WebSocket)',
+                    'L7 — для HTTP-маршрутизации (по path, host, headers)',
+                    'В K8s Service типа LoadBalancer — обычно L4, Ingress — L7',
+                  ],
+                },
+                { type: 'note', text: 'На собеседовании senior DevOps: «чем L4 отличается от L7 балансировщика?» — «L4 видит только IP/порт, L7 — HTTP-запросы и может маршрутизировать по path/host». AWS ALB — L7, NLB — L4. nginx может работать в обоих режимах (stream {} — L4, http {} — L7).' },
+              ],
+            },
+            {
+              id: 'nw-l8-s5',
+              title: 'Проверь себя: балансировка',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте алгоритм и его поведение',
+                pairs: [
+                  { left: 'Round Robin', right: 'По кругу: 1 → 2 → 3 → 1' },
+                  { left: 'Least Connections', right: 'На сервер с минимумом активных соединений' },
+                  { left: 'IP Hash', right: 'Один клиент всегда на один сервер (sticky)' },
+                  { left: 'Weighted', right: 'Сервер с весом 2 получает 2× запросов' },
+                ],
+                explanation:
+                  'Round Robin — по очереди. Least Connections — на самый свободный. IP Hash — sticky sessions. Weighted — разная мощность серверов. На собеседовании спросят «какой алгоритм выбрать для sticky?» — IP Hash или cookie-based affinity (L7).',
+              },
+            },
           ],
         },
         {
           id: 'nw-l9',
           title: 'WebSocket и realtime',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'nw-l9-s1',
               title: 'Проблема realtime по HTTP',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: `HTTP — «запрос-ответ». Сервер не может «прислать» данные клиенту по своей инициативе. Для чата, нотификаций, биржевых котировок нужен push. Исторически — polling (клиент спрашивает каждую секунду), SSE (Server-Sent Events), WebSocket (двусторонний канал).`,
-                },
+                { type: 'p', text: 'HTTP — «запрос-ответ». Сервер не может «прислать» данные клиенту по своей инициативе. Для чата, нотификаций, биржевых котировок нужен push. Исторически — polling (клиент спрашивает каждую секунду), SSE (Server-Sent Events), WebSocket (двусторонний канал).' },
                 {
                   type: 'table',
                   caption: 'Способы realtime',
@@ -1114,10 +1106,7 @@ curl -vI https://example.com 2>&1 | grep expire`,
                     ['WebSocket', 'Двусторонний, постоянно открыт', 'Чат, игры, совместное редактирование'],
                   ],
                 },
-                {
-                  type: 'note',
-                  text: `SSE — недооценённый. Работает по обычному HTTP, проходит через прокси, поддерживается браузерами (EventSource). Для «обновлений в одну сторону» — SSE проще WebSocket. WebSocket — когда нужен realtime в обе стороны.`,
-                },
+                { type: 'note', text: 'SSE — недооценённый. Работает по обычному HTTP, проходит через прокси, поддерживается браузерами (EventSource). Для «обновлений в одну сторону» — SSE проще WebSocket. WebSocket — когда нужен realtime в обе стороны.' },
               ],
             },
             {
@@ -1129,50 +1118,13 @@ curl -vI https://example.com 2>&1 | grep expire`,
                   type: 'code',
                   lang: 'text',
                   caption: 'WebSocket handshake (HTTP Upgrade)',
-                  code: `Клиент → сервер:
-GET /chat HTTP/1.1
-Host: example.com
-Upgrade: websocket
-Connection: Upgrade
-Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==
-Sec-WebSocket-Version: 13
-
-Сервер → клиент:
-HTTP/1.1 101 Switching Protocols
-Upgrade: websocket
-Connection: Upgrade
-Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
-
-После 101 Switching Protocols — TCP-соединение превращается в двусторонний канал.
-Больше не HTTP — WebSocket-фреймы в обе стороны.`,
+                  code: `Клиент → сервер:\nGET /chat HTTP/1.1\nHost: example.com\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\nSec-WebSocket-Version: 13\n\nСервер → клиент:\nHTTP/1.1 101 Switching Protocols\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\n\nПосле 101 Switching Protocols — TCP-соединение превращается в двусторонний канал.\nБольше не HTTP — WebSocket-фреймы в обе стороны.`,
                 },
                 {
                   type: 'code',
                   lang: 'javascript',
                   caption: 'Клиент на JS',
-                  code: `const ws = new WebSocket('wss://example.com/chat');
-
-ws.onopen = () => {
-  console.log('соединение открыто');
-  ws.send(JSON.stringify({ type: 'join', room: 'general' }));
-};
-
-ws.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  console.log('получено:', data);
-};
-
-ws.onerror = (error) => {
-  console.error('ошибка:', error);
-};
-
-ws.onclose = (event) => {
-  console.log('закрыто:', event.code, event.reason);
-  // авто-reconnect через backoff
-};
-
-// ping для проверки «жив ли» (или сервер присылает)
-setInterval(() => ws.send(JSON.stringify({ type: 'ping' })), 30000);`,
+                  code: `const ws = new WebSocket('wss://example.com/chat');\n\nws.onopen = () => {\n  console.log('соединение открыто');\n  ws.send(JSON.stringify({ type: 'join', room: 'general' }));\n};\n\nws.onmessage = (event) => {\n  const data = JSON.parse(event.data);\n  console.log('получено:', data);\n};\n\nws.onerror = (error) => {\n  console.error('ошибка:', error);\n};\n\nws.onclose = (event) => {\n  console.log('закрыто:', event.code, event.reason);\n  // авто-reconnect через backoff\n};\n\n// ping для проверки «жив ли» (или сервер присылает)\nsetInterval(() => ws.send(JSON.stringify({ type: 'ping' })), 30000);`,
                 },
                 {
                   type: 'list',
@@ -1185,10 +1137,7 @@ setInterval(() => ws.send(JSON.stringify({ type: 'ping' })), 30000);`,
                     'Ping/pong — heartbeats, чтобы прокси не закрыли «мёртвое» соединение',
                   ],
                 },
-                {
-                  type: 'note',
-                  text: `WebSocket не работает «сам по себе» через прокси и балансировщики: нужно явно включить Upgrade. nginx по умолчанию не проксирует WebSocket — нужны заголовки Upgrade/Connection. В K8s Ingress — аннотация. «WebSocket не работает за nginx» — классическая проблема.`,
-                },
+                { type: 'note', text: 'WebSocket не работает «сам по себе» через прокси и балансировщики: нужно явно включить Upgrade. nginx по умолчанию не проксирует WebSocket — нужны заголовки Upgrade/Connection. В K8s Ingress — аннотация. «WebSocket не работает за nginx» — классическая проблема.' },
               ],
             },
             {
@@ -1209,12 +1158,54 @@ setInterval(() => ws.send(JSON.stringify({ type: 'ping' })), 30000);`,
                   '101 Switching Protocols — «переключаюсь на другой протокол». Это единственный случай, когда HTTP-соединение «превращается» в не-HTTP. 426 — наоборот, «клиент должен использовать Upgrade» (если не прислал).',
               },
             },
+            {
+              id: 'nw-l9-s4',
+              title: 'Масштабирование WebSocket',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'WebSocket — stateful-соединение: клиент держит TCP-канал с конкретным сервером. Это ломает обычное горизонтальное масштабирование: если клиент А на сервере 1, а клиент Б на сервере 2 — как переслать сообщение от А к Б?' },
+                {
+                  type: 'mermaid',
+                  caption: 'WebSocket + pub/sub для масштабирования',
+                  code: `graph LR\n    C1["Клиент 1"] -->|"WebSocket"| S1["Server 1"]\n    C2["Клиент 2"] -->|"WebSocket"| S2["Server 2"]\n    S1 -->|"publish"| Redis[("Redis Pub/Sub<br/>или Kafka")]\n    S2 -->|"subscribe"| Redis\n    Redis -->|"message to Client 2"| S2`,
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Sticky sessions (IP Hash) — клиент всегда на одном сервере (просто, но не отказоустойчиво)',
+                    'Pub/sub (Redis, Kafka, NATS) — сервера обмениваются сообщениями (стандарт)',
+                    'Server 1 публикует в канал «room:42», все серверы подписаны',
+                    'Клиент Б получит сообщение, даже если он на Server 2',
+                    'Load balancer должен поддерживать WebSocket (Upgrade)',
+                  ],
+                },
+                { type: 'note', text: 'На собеседовании senior backend: «как масштабировать WebSocket?» — «pub/sub (Redis/Kafka) между инстансами, sticky sessions — временное решение». Без pub/sub — сообщения не дойдут до клиентов на других серверах. Это ключевой архитектурный вопрос.' },
+              ],
+            },
+            {
+              id: 'nw-l9-s5',
+              title: 'Проверь себя: масштабирование',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Как масштабировать WebSocket на несколько серверов?',
+                options: [
+                  { id: 'a', text: 'Никак, WebSocket не масштабируется' },
+                  { id: 'b', text: 'Pub/sub (Redis, Kafka, NATS) между серверами + sticky sessions на балансировщике' },
+                  { id: 'c', text: 'Просто добавить серверов — WebSocket сам синхронизируется' },
+                  { id: 'd', text: 'Заменить WebSocket на HTTP polling' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'WebSocket — stateful. Клиент привязан к одному серверу. Чтобы сообщения доходили между серверами — pub/sub (Redis, Kafka) или sticky sessions. Sticky — временное решение (сервер упал — клиент переподключается к другому). Pub/sub — стандарт.',
+              },
+            },
           ],
         },
         {
           id: 'nw-l10',
           title: 'Диагностика: curl, traceroute, tcpdump',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
               id: 'nw-l10-s1',
@@ -1225,40 +1216,9 @@ setInterval(() => ws.send(JSON.stringify({ type: 'ping' })), 30000);`,
                   type: 'code',
                   lang: 'bash',
                   caption: 'curl для отладки',
-                  code: `# -v — verbose: показать DNS, TCP, TLS, HTTP
-curl -v https://api.example.com/users
-
-# -I — только заголовки ответа
-curl -I https://example.com
-
-# -i — заголовки + тело
-curl -i https://example.com
-
-# Показать время каждого этапа
-curl -w "DNS: %{time_namelookup}s, TCP: %{time_connect}s, TLS: %{time_appconnect}s, Total: %{time_total}s\\n" -o /dev/null -s https://example.com
-
-# POST с JSON
-curl -X POST https://api.example.com/users \\
-  -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer TOKEN" \\
-  -d '{"name": "Anna"}'
-
-# Следовать редиректам
-curl -L https://example.com
-
-# Игнорировать ошибки TLS (только для отладки!)
-curl -k https://self-signed.local
-
-# Проверить, что сертификат валиден
-curl --fail --silent --show-error https://example.com || echo "ОШИБКА"
-
-# HTTP-код только
-curl -s -o /dev/null -w "%{http_code}" https://example.com/health`,
+                  code: `# -v — verbose: показать DNS, TCP, TLS, HTTP\ncurl -v https://api.example.com/users\n\n# -I — только заголовки ответа\ncurl -I https://example.com\n\n# -i — заголовки + тело\ncurl -i https://example.com\n\n# Показать время каждого этапа\ncurl -w "DNS: %{time_namelookup}s, TCP: %{time_connect}s, TLS: %{time_appconnect}s, Total: %{time_total}s\\n" -o /dev/null -s https://example.com\n\n# POST с JSON\ncurl -X POST https://api.example.com/users \\\n  -H "Content-Type: application/json" \\\n  -H "Authorization: Bearer TOKEN" \\\n  -d '{"name": "Anna"}'\n\n# Следовать редиректам\ncurl -L https://example.com\n\n# Игнорировать ошибки TLS (только для отладки!)\ncurl -k https://self-signed.local\n\n# Проверить, что сертификат валиден\ncurl --fail --silent --show-error https://example.com || echo "ОШИБКА"\n\n# HTTP-код только\ncurl -s -o /dev/null -w "%{http_code}" https://example.com/health`,
                 },
-                {
-                  type: 'note',
-                  text: `curl -v — лучший друг при отладке API. Показывает: DNS-резолвинг, TCP-соединение, TLS-рукопожатие, отправленные заголовки, ответ сервера. Если «API не работает» — сначала curl -v с сервера, потом уже смотреть в код.`,
-                },
+                { type: 'note', text: 'curl -v — лучший друг при отладке API. Показывает: DNS-резолвинг, TCP-соединение, TLS-рукопожатие, отправленные заголовки, ответ сервера. Если «API не работает» — сначала curl -v с сервера, потом уже смотреть в код.' },
               ],
             },
             {
@@ -1270,39 +1230,15 @@ curl -s -o /dev/null -w "%{http_code}" https://example.com/health`,
                   type: 'code',
                   lang: 'bash',
                   caption: 'traceroute и mtr',
-                  code: `# Путь пакета до сервера (какие роутеры проходит)
-traceroute google.com
-traceroute -T -p 443 google.com    # через TCP на 443 (обходит блокировки ICMP)
-
-# mtr — traceroute + ping в одном, обновляется
-mtr google.com
-mtr --report google.com            # однократный отчёт
-
-# Где теряются пакеты, где растёт задержка — видно сразу`,
+                  code: `# Путь пакета до сервера (какие роутеры проходит)\ntraceroute google.com\ntraceroute -T -p 443 google.com    # через TCP на 443 (обходит блокировки ICMP)\n\n# mtr — traceroute + ping в одном, обновляется\nmtr google.com\nmtr --report google.com            # однократный отчёт\n\n# Где теряются пакеты, где растёт задержка — видно сразу`,
                 },
                 {
                   type: 'code',
                   lang: 'bash',
                   caption: 'tcpdump',
-                  code: `# Весь трафик на порт 443
-sudo tcpdump -i any port 443
-
-# Только к конкретному хосту
-sudo tcpdump -i any host 8.8.8.8
-
-# С записью в файл (для разбора в Wireshark)
-sudo tcpdump -i any port 80 -w capture.pcap
-
-# Показать содержимое (не только заголовки)
-sudo tcpdump -i any -A port 80
-
-# Фильтры: tcp, udp, icmp, port, host, net
-sudo tcpdump -i any 'tcp port 443 and host api.example.com'`,
+                  code: `# Весь трафик на порт 443\nsudo tcpdump -i any port 443\n\n# Только к конкретному хосту\nsudo tcpdump -i any host 8.8.8.8\n\n# С записью в файл (для разбора в Wireshark)\nsudo tcpdump -i any port 80 -w capture.pcap\n\n# Показать содержимое (не только заголовки)\nsudo tcpdump -i any -A port 80\n\n# Фильтры: tcp, udp, icmp, port, host, net\nsudo tcpdump -i any 'tcp port 443 and host api.example.com'`,
                 },
-                {
-                  type: 'note',
-                  text: `tcpdump требует root (или CAP_NET_RAW). На macOS — /usr/sbin/tcpdump. На Windows — WinDump или Wireshark. pcap-файл из tcpdump открывается в Wireshark: там видно каждый пакет, каждый TLS-handshake, каждый HTTP-заголовок.`,
-                },
+                { type: 'note', text: 'tcpdump требует root (или CAP_NET_RAW). На macOS — /usr/sbin/tcpdump. На Windows — WinDump или Wireshark. pcap-файл из tcpdump открывается в Wireshark: там видно каждый пакет, каждый TLS-handshake, каждый HTTP-заголовок.' },
               ],
             },
             {
@@ -1321,6 +1257,49 @@ sudo tcpdump -i any 'tcp port 443 and host api.example.com'`,
                 correct: ['b'],
                 explanation:
                   '-v (verbose) — пошаговая отладка: DNS → TCP → TLS (сертификат, шифры) → отправленные заголовки → ответ сервера. Это главный инструмент отладки API и HTTPS. Если сайт «не открывается» — curl -v покажет, на каком шаге сломалось.',
+              },
+            },
+            {
+              id: 'nw-l10-s4',
+              title: 'Алгоритм диагностики: что и в каком порядке',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: '«Сайт не открывается» — с чего начать? Не с «перезапустить сервер». С пошаговой диагностики по слоям: DNS → TCP → TLS → HTTP. Каждый шаг — своя команда, свой ответ.' },
+                {
+                  type: 'code',
+                  lang: 'text',
+                  caption: 'Алгоритм диагностики по слоям',
+                  code: `1. DNS: имя → IP\ndig example.com\n→ нет ответа: проблема с DNS-сервером или доменом\n→ есть IP: идём дальше\n\n2. TCP: открыт ли порт?\nnc -zv example.com 443\ntelnet example.com 443\n→ Connection refused: сервис не слушает (упал)\n→ Timeout: firewall блокирует\n→ Connected: идём дальше\n\n3. TLS: рукопожатие и сертификат\nopenssl s_client -connect example.com:443 -servername example.com\ncurl -vI https://example.com\n→ certificate expired: обновить сертификат\n→ self-signed: недоверенный CA\n→ OK: идём дальше\n\n4. HTTP: что возвращает сервер?\ncurl -v https://example.com/health\n→ 200 OK: сервер работает, проблема в клиенте\n→ 500: ошибка приложения, смотреть логи\n→ 502: nginx не достучался до бэкенда\n→ 504: nginx достучался, бэкенд не ответил вовремя`,
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'DNS → IP: dig, nslookup',
+                    'TCP → порт: nc, telnet',
+                    'TLS → сертификат: openssl s_client, curl -v',
+                    'HTTP → ответ: curl -i',
+                    'Прокси/маршрут: traceroute, mtr',
+                    'Пакеты: tcpdump, Wireshark',
+                  ],
+                },
+                { type: 'note', text: 'Правило: сначала проверяйте с сервера (curl, dig с самого сервера), потом с клиента. Если с сервера работает, а с клиента нет — проблема в сети/прокси/DNS клиента. Если и с сервера не работает — проблема в приложении. Это разделение экономит часы.' },
+              ],
+            },
+            {
+              id: 'nw-l10-s5',
+              title: 'Проверь себя: диагностика',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте симптом и инструмент диагностики',
+                pairs: [
+                  { left: 'Домен не резолвится', right: 'dig / nslookup (DNS-слой)' },
+                  { left: 'Порт закрыт / timeout', right: 'nc -zv / telnet (TCP-слой)' },
+                  { left: 'Сертификат истёк', right: 'openssl s_client / curl -v (TLS-слой)' },
+                  { left: 'HTTP 502/504', right: 'curl -i + логи nginx (Application-слой)' },
+                ],
+                explanation:
+                  'Каждый симптом — на своём слое. DNS → dig. TCP → nc/telnet. TLS → openssl s_client. HTTP → curl. Правильный порядок: сверху вниз (DNS → TCP → TLS → HTTP). Не «перезапустить и надеяться», а проверить каждый слой.',
               },
             },
           ],

@@ -32,7 +32,7 @@ export const cicdBasicsCourse: Course = {
         {
           id: 'cd-l1',
           title: 'Что такое CI/CD',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'cd-l1-s1',
@@ -64,16 +64,7 @@ export const cicdBasicsCourse: Course = {
                 {
                   type: 'mermaid',
                   caption: 'Стадии CI/CD pipeline',
-                  code: `graph LR
-                    Commit["Commit / PR"] --> Lint["Lint"]
-                    Lint --> Unit["Unit-тесты"]
-                    Unit --> Build["Build"]
-                    Build --> Integ["Integration"]
-                    Integ --> E2E["E2E"]
-                    E2E --> Publish["Publish<br/>(registry)"]
-                    Publish --> Staging["Deploy<br/>staging"]
-                    Staging --> Smoke["Smoke<br/>staging"]
-                    Smoke --> Prod["Deploy<br/>prod"]`
+                  code: 'graph LR\n    Commit["Commit / PR"] --> Lint["Lint"]\n    Lint --> Unit["Unit-тесты"]\n    Unit --> Build["Build"]\n    Build --> Integ["Integration"]\n    Integ --> E2E["E2E"]\n    E2E --> Publish["Publish<br/>(registry)"]\n    Publish --> Staging["Deploy<br/>staging"]\n    Staging --> Smoke["Smoke<br/>staging"]\n    Smoke --> Prod["Deploy<br/>prod"]',
                 },
                 {
                   type: 'list',
@@ -105,12 +96,52 @@ export const cicdBasicsCourse: Course = {
                 explanation: 'Delivery = «всё готово к деплою, но прод — по кнопке». Deployment = «прод автоматически, если тесты прошли». 90% команд используют Delivery: прод под контролем человека.',
               },
             },
+            {
+              id: 'cd-l1-s4',
+              title: 'Три столпа CI/CD',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'CI/CD работает не «сам по себе». Ему нужны три вещи, без которых это просто «много YAML».' },
+                {
+                  type: 'list',
+                  items: [
+                    'Автотесты: без них CI/CD — это «автоматический деплой багов в прод»',
+                    'Артефакты: собранный образ/бинарь — единый артефакт для всех окружений (build once, deploy many)',
+                    'Наблюдаемость: метрики, логи, трейсы — иначе вы не узнаете, что деплой сломал прод',
+                  ],
+                },
+                {
+                  type: 'code',
+                  lang: 'text',
+                  caption: 'Что даёт каждый столп',
+                  code: 'Без автотестов:\n  CI/CD = автоматизация деплоя багов\n  → релизы «вслепую», откаты руками\n\nБез артефактов:\n  dev-сборка ≠ staging-сборка ≠ prod-сборка\n  → «на проде другой бинарь», баги неуловимы\n\nБез наблюдаемости:\n  деплой прошёл — а прод сломан\n  → узнаете от пользователей через час',
+                },
+                { type: 'note', text: 'Правило: CI/CD — это система, а не инструмент. GitHub Actions без тестов — это «автоматизация ничего». Перед настройкой pipeline убедитесь, что есть: тесты (unit + интеграционные), реестр артефактов (Docker registry), мониторинг (метрики + алерты). На собеседовании junior DevOps спросят «что нужно для CI/CD?» — это ответ.' },
+              ],
+            },
+            {
+              id: 'cd-l1-s5',
+              title: 'Проверь себя: столпы',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте столп CI/CD и его назначение',
+                pairs: [
+                  { left: 'Автотесты', right: 'Проверяют, что изменение не сломало функциональность' },
+                  { left: 'Артефакты', right: 'Единый бинарь/образ для dev, staging, prod' },
+                  { left: 'Наблюдаемость', right: 'Метрики, логи, трейсы — узнать, что сломалось' },
+                  { left: 'Fail fast', right: 'Упасть на lint, не тратя время на e2e' },
+                ],
+                explanation:
+                  'Тесты — защита от регрессий. Артефакты — «build once, deploy many». Наблюдаемость — видеть, что сломалось. Fail fast — дешёвые проверки раньше. Без любого из этих — CI/CD превращается в «автоматический деплой багов».',
+              },
+            },
           ],
         },
         {
           id: 'cd-l2',
           title: 'GitHub Actions: workflow, jobs, steps',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
               id: 'cd-l2-s1',
@@ -122,7 +153,7 @@ export const cicdBasicsCourse: Course = {
                   type: 'code',
                   lang: 'yaml',
                   caption: '.github/workflows/ci.yml',
-                  code: `name: CI\n\n# Когда запускать\non:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\n\n# Что делать\njobs:\n  lint:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n      - run: pip install ruff\n      - run: ruff check .\n\n  test:\n    runs-on: ubuntu-latest\n    needs: lint                # ждём lint — если упал, test не запустится\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n      - run: pip install -r requirements.txt\n      - run: pytest -v --junitxml=report.xml\n      - uses: actions/upload-artifact@v4\n        if: always()           # выгрузить отчёт, даже если тесты упали\n        with:\n          name: test-report\n          path: report.xml`,
+                  code: 'name: CI\n\n# Когда запускать\non:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\n\n# Что делать\njobs:\n  lint:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: "3.12"\n      - run: pip install ruff\n      - run: ruff check .\n\n  test:\n    runs-on: ubuntu-latest\n    needs: lint                # ждём lint — если упал, test не запустится\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: "3.12"\n      - run: pip install -r requirements.txt\n      - run: pytest -v --junitxml=report.xml\n      - uses: actions/upload-artifact@v4\n        if: always()           # выгрузить отчёт, даже если тесты упали\n        with:\n          name: test-report\n          path: report.xml',
                 },
                 {
                   type: 'list',
@@ -148,14 +179,14 @@ export const cicdBasicsCourse: Course = {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'Матрица версий и параллелизм',
-                  code: `jobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      fail-fast: false        # если одна версия упала, остальные продолжают\n      matrix:\n        python-version: ['3.10', '3.11', '3.12']\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: \${{ matrix.python-version }}\n      - run: pip install -r requirements.txt\n      - run: pytest`,
+                  code: 'jobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      fail-fast: false        # если одна версия упала, остальные продолжают\n      matrix:\n        python-version: [\'3.10\', \'3.11\', \'3.12\']\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: ${{ matrix.python-version }}\n      - run: pip install -r requirements.txt\n      - run: pytest',
                 },
                 { type: 'note', text: 'Матрица — главный способ проверить совместимость: несколько версий Python, Node, Go, ОС (ubuntu + windows + macos). Для Open Source — стандарт: PR должен проходить на всех поддерживаемых версиях.' },
                 {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'Последовательные и параллельные job',
-                  code: `jobs:\n  # Параллельно (по умолчанию)\n  lint: { runs-on: ubuntu-latest, steps: [...] }\n  typecheck: { runs-on: ubuntu-latest, steps: [...] }\n\n  # Ждёт оба\n  test:\n    needs: [lint, typecheck]\n    runs-on: ubuntu-latest\n    steps: [...]\n\n  # Ждёт test\n  deploy:\n    needs: test\n    runs-on: ubuntu-latest\n    if: github.ref == 'refs/heads/main'\n    steps: [...]`,
+                  code: 'jobs:\n  # Параллельно (по умолчанию)\n  lint: { runs-on: ubuntu-latest, steps: [...] }\n  typecheck: { runs-on: ubuntu-latest, steps: [...] }\n\n  # Ждёт оба\n  test:\n    needs: [lint, typecheck]\n    runs-on: ubuntu-latest\n    steps: [...]\n\n  # Ждёт test\n  deploy:\n    needs: test\n    runs-on: ubuntu-latest\n    if: github.ref == \'refs/heads/main\'\n    steps: [...]',
                 },
               ],
             },
@@ -176,12 +207,56 @@ export const cicdBasicsCourse: Course = {
                 explanation: 'Matrix — комбинаторный запуск. python-version: [3.10, 3.11, 3.12] = 3 job-а, каждый со своей версией. Fail-fast: false — упала одна, остальные продолжают.',
               },
             },
+            {
+              id: 'cd-l2-s4',
+              title: 'Выражения и контекст',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'В GitHub Actions есть контексты — переменные, которые GitHub подставляет автоматически. Знание пяти ключевых покрывает 90% случаев. Синтаксис — ${{ ... }}.' },
+                {
+                  type: 'table',
+                  caption: 'Пять ключевых контекстов',
+                  head: ['Контекст', 'Пример', 'Что содержит'],
+                  rows: [
+                    ['github', '${{ github.sha }}', 'SHA коммита, repo, actor, event_name'],
+                    ['secrets', '${{ secrets.API_KEY }}', 'Секреты репозитория / environment'],
+                    ['env', '${{ env.MY_VAR }}', 'Переменные, заданные в workflow'],
+                    ['matrix', '${{ matrix.python-version }}', 'Текущее значение в матрице'],
+                    ['needs', '${{ needs.build.outputs.version }}', 'Результаты предыдущего job-а'],
+                  ],
+                },
+                {
+                  type: 'code',
+                  lang: 'yaml',
+                  caption: 'Условия и выражения',
+                  code: 'steps:\n  - name: Deploy only on main\n    if: github.ref == \'refs/heads/main\' && github.event_name == \'push\'\n    run: ./deploy.sh\n\n  - name: Notify Slack on failure\n    if: failure()\n    run: |\n      curl -X POST ${{ secrets.SLACK_WEBHOOK }} \\\n        -d "{\\"text\\":\\"Build failed: ${{ github.sha }}\\"}"\n\n  - name: Tag version\n    run: echo "VERSION=${{ needs.build.outputs.version }}" >> $GITHUB_ENV',
+                },
+                { type: 'note', text: 'if: с выражениями — мощный инструмент. failure() — только если предыдущий шаг упал. success() — только если всё ок. always() — всегда (для cleanup). cancelled() — если workflow отменили. Комбинации: if: failure() && github.ref == \'refs/heads/main\'.' },
+              ],
+            },
+            {
+              id: 'cd-l2-s5',
+              title: 'Проверь себя: контексты',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте контекст и что он содержит',
+                pairs: [
+                  { left: 'github', right: 'sha, ref, actor, event_name' },
+                  { left: 'secrets', right: 'Секреты репозитория / environment' },
+                  { left: 'matrix', right: 'Текущее значение в матрице' },
+                  { left: 'needs', right: 'Outputs предыдущего job-а' },
+                ],
+                explanation:
+                  'github — метаданные репозитория и события. secrets — секреты. matrix — значение из matrix. needs — outputs предыдущего job. Ещё важны: env (переменные), runner (ОС, имя), job (статус). Этих пяти хватает в 90% workflow.',
+              },
+            },
           ],
         },
         {
           id: 'cd-l3',
           title: 'GitLab CI и .gitlab-ci.yml',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'cd-l3-s1',
@@ -193,7 +268,7 @@ export const cicdBasicsCourse: Course = {
                   type: 'code',
                   lang: 'yaml',
                   caption: '.gitlab-ci.yml',
-                  code: `stages:\n  - lint\n  - test\n  - build\n  - deploy\n\nvariables:\n  PIP_CACHE_DIR: "\$CI_PROJECT_DIR/.cache/pip"\n\nlint:\n  stage: lint\n  image: python:3.12-slim\n  script:\n    - pip install ruff\n    - ruff check .\n  cache:\n    key: pip\n    paths:\n      - .cache/pip\n\ntest:\n  stage: test\n  image: python:3.12-slim\n  script:\n    - pip install -r requirements.txt\n    - pytest --junitxml=report.xml\n  artifacts:\n    when: always\n    reports:\n      junit: report.xml\n    expire_in: 1 week\n  needs:\n    - lint\n\nbuild:\n  stage: build\n  image: docker:24\n  services:\n    - docker:24-dind\n  script:\n    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .\n    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA\n\ndeploy:\n  stage: deploy\n  script:\n    - kubectl set image deployment/app app=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA\n  when: manual\n  only:\n    - main`,
+                  code: 'stages:\n  - lint\n  - test\n  - build\n  - deploy\n\nvariables:\n  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"\n\nlint:\n  stage: lint\n  image: python:3.12-slim\n  script:\n    - pip install ruff\n    - ruff check .\n  cache:\n    key: pip\n    paths:\n      - .cache/pip\n\ntest:\n  stage: test\n  image: python:3.12-slim\n  script:\n    - pip install -r requirements.txt\n    - pytest --junitxml=report.xml\n  artifacts:\n    when: always\n    reports:\n      junit: report.xml\n    expire_in: 1 week\n  needs:\n    - lint\n\nbuild:\n  stage: build\n  image: docker:24\n  services:\n    - docker:24-dind\n  script:\n    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .\n    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA\n\ndeploy:\n  stage: deploy\n  script:\n    - kubectl set image deployment/app app=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA\n  when: manual\n  only:\n    - main',
                 },
                 {
                   type: 'list',
@@ -250,12 +325,55 @@ export const cicdBasicsCourse: Course = {
                 explanation: 'Идеи одинаковые, синтаксис разный. Зная одно, второе — вопрос привычки.',
               },
             },
+            {
+              id: 'cd-l3-s4',
+              title: 'Docker-in-Docker (dind)',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'В GitLab CI, чтобы собрать Docker-образ, нужен Docker. По умолчанию в job-е его нет. Решение — services: docker:24-dind (Docker-in-Docker): рядом с job-ом поднимается контейнер с Docker daemon, job к нему подключается.' },
+                {
+                  type: 'code',
+                  lang: 'yaml',
+                  caption: 'Docker build в GitLab CI',
+                  code: 'build:\n  stage: build\n  image: docker:24\n  services:\n    - name: docker:24-dind\n      alias: docker\n  variables:\n    DOCKER_HOST: tcp://docker:2376\n    DOCKER_TLS_CERTDIR: "/certs"\n  before_script:\n    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY\n  script:\n    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .\n    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'services: docker:24-dind — рядом поднимается Docker daemon',
+                    'DOCKER_HOST: tcp://docker:2376 — как к нему подключиться',
+                    'DOCKER_TLS_CERTDIR — TLS-сертификаты (по умолчанию в /certs)',
+                    'Альтернатива dind — Kaniko, Buildah (rootless, без Docker daemon)',
+                    'Kaniko безопаснее: нет привилегированного контейнера, работает без dind',
+                  ],
+                },
+                { type: 'note', text: 'Docker-in-Docker — стандарт в GitLab CI, но требует привилегированного контейнера (privileged: true) — риск безопасности. В 2025 всё чаще используют Kaniko: собирает Docker-образ без Docker daemon, работает rootless. Для Kubernetes — BuildKit в rootless-режиме. На собеседовании senior DevOps спросят «как собираете Docker в CI?» — «Kaniko или BuildKit rootless».' },
+              ],
+            },
+            {
+              id: 'cd-l3-s5',
+              title: 'Проверь себя: dind',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Зачем нужен services: docker:24-dind в GitLab CI?',
+                options: [
+                  { id: 'a', text: 'Ускоряет сборку' },
+                  { id: 'b', text: 'Запускает Docker daemon рядом с job-ом — чтобы можно было делать docker build' },
+                  { id: 'c', text: 'Заменяет docker registry' },
+                  { id: 'd', text: 'Требуется для GitLab' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'В GitLab CI job работает в контейнере без Docker daemon. services: docker:24-dind поднимает daemon рядом (sidecar), и job подключается к нему через DOCKER_HOST. Без dind — docker build не работает. Альтернативы: Kaniko, Buildah (rootless, без dind).',
+              },
+            },
           ],
         },
         {
           id: 'cd-l4',
           title: 'Секреты, кэш, артефакты',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
               id: 'cd-l4-s1',
@@ -267,13 +385,13 @@ export const cicdBasicsCourse: Course = {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'GitHub Actions',
-                  code: `# 1. Settings → Secrets and variables → Actions → New repository secret\n#    Имя: DATABASE_URL, Значение: postgres://...\n\n# 2. Использование в workflow\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Deploy\n        env:\n          DATABASE_URL: \${{ secrets.DATABASE_URL }}\n          API_KEY: \${{ secrets.API_KEY }}\n        run: |\n          ./deploy.sh\n# В логах значение будет *** (masked)`,
+                  code: '# 1. Settings → Secrets and variables → Actions → New repository secret\n#    Имя: DATABASE_URL, Значение: postgres://...\n\n# 2. Использование в workflow\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Deploy\n        env:\n          DATABASE_URL: ${{ secrets.DATABASE_URL }}\n          API_KEY: ${{ secrets.API_KEY }}\n        run: |\n          ./deploy.sh\n# В логах значение будет *** (masked)',
                 },
                 {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'GitLab CI',
-                  code: `# 1. Settings → CI/CD → Variables → Add variable\n#    Ключ: DATABASE_URL, Значение: ..., Masked: ✓, Protected: ✓\n\ndeploy:\n  script:\n    - ./deploy.sh\n  variables:\n    DATABASE_URL: $DATABASE_URL\n\n# Masked — значение скрыто в логах\n# Protected — доступно только в protected branches (main, tags)`,
+                  code: '# 1. Settings → CI/CD → Variables → Add variable\n#    Ключ: DATABASE_URL, Значение: ..., Masked: ✓, Protected: ✓\n\ndeploy:\n  script:\n    - ./deploy.sh\n  variables:\n    DATABASE_URL: $DATABASE_URL\n\n# Masked — значение скрыто в логах\n# Protected — доступно только в protected branches (main, tags)',
                 },
                 { type: 'note', text: 'Правила: (1) никогда не echo секрет — маскирование работает, но лучше не проверять; (2) не передавайте секреты в PR из fork — GitHub по умолчанию их не даёт; (3) ротация раз в N месяцев; (4) OIDC вместо долгоживущих ключей.' },
               ],
@@ -287,20 +405,20 @@ export const cicdBasicsCourse: Course = {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'actions/cache — ускорение установки',
-                  code: `- uses: actions/cache@v4\n  with:\n    path: |\n      ~/.cache/pip\n      ~/.cache/uv\n    key: \${{ runner.os }}-pip-\${{ hashFiles('**/requirements*.txt') }}\n    restore-keys: |\n      \${{ runner.os }}-pip-\n\n# key — уникальный ключ кэша\n# hashFiles — хэш файла; изменился requirements.txt — новый кэш\n# restore-keys — fallback: если точного нет, взять частичное совпадение`,
+                  code: '- uses: actions/cache@v4\n  with:\n    path: |\n      ~/.cache/pip\n      ~/.cache/uv\n    key: ${{ runner.os }}-pip-${{ hashFiles(\'**/requirements*.txt\') }}\n    restore-keys: |\n      ${{ runner.os }}-pip-\n\n# key — уникальный ключ кэша\n# hashFiles — хэш файла; изменился requirements.txt — новый кэш\n# restore-keys — fallback: если точного нет, взять частичное совпадение',
                 },
                 { type: 'note', text: 'Кэш и артефакты — разные вещи. Кэш — «переиспользовать между запусками» (pip-пакеты, node_modules). Артефакт — «передать из job-а в job / в UI / в релиз» (собранный jar, Docker-образ, отчёт тестов). Не путайте.' },
                 {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'Артефакты — передача между job-ами',
-                  code: `jobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: pip install build && python -m build\n      - uses: actions/upload-artifact@v4\n        with:\n          name: dist\n          path: dist/\n\n  deploy:\n    needs: build\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/download-artifact@v4\n        with:\n          name: dist\n          path: dist/\n      - run: ./deploy.sh dist/*.whl`,
+                  code: 'jobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: pip install build && python -m build\n      - uses: actions/upload-artifact@v4\n        with:\n          name: dist\n          path: dist/\n\n  deploy:\n    needs: build\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/download-artifact@v4\n        with:\n          name: dist\n          path: dist/\n      - run: ./deploy.sh dist/*.whl',
                 },
               ],
             },
             {
               id: 'cd-l4-s3',
-              title: 'Проверь себя',
+              title: 'Проверь себя: кэш vs артефакт',
               type: 'quiz',
               quiz: {
                 kind: 'single',
@@ -313,6 +431,44 @@ export const cicdBasicsCourse: Course = {
                 ],
                 correct: ['b'],
                 explanation: 'Артефакт = «продукт»: собранный jar, Docker-образ, отчёт. Кэш = «ускоритель»: pip-пакеты, node_modules. Артефакт передаётся из job-а в job, кэш переиспользуется между запусками.',
+              },
+            },
+            {
+              id: 'cd-l4-s4',
+              title: 'OIDC: секреты без секретов',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Классика: положить AWS_ACCESS_KEY_ID в GitHub Secrets. Плохо — ключ живёт годами, утечёт — катастрофа. OIDC (OpenID Connect): GitHub Actions генерирует JWT на время job-а, облако проверяет и выдаёт временные креды на 1 час. Нет ключей — нечего красть.' },
+                {
+                  type: 'mermaid',
+                  caption: 'OIDC: GitHub Actions → AWS',
+                  code: 'sequenceDiagram\n    participant Job as GitHub Job\n    participant GH as GitHub<br/>(OIDC issuer)\n    participant AWS as AWS STS\n    participant S3 as S3\n\n    Job->>GH: запрос JWT\n    GH-->>Job: JWT (подписан GitHub, 5 мин)\n    Job->>AWS: AssumeRoleWithWebIdentity(JWT)\n    AWS->>GH: проверка подписи JWT\n    AWS-->>Job: временные креды (1 час)\n    Job->>S3: upload (с временными кредами)',
+                },
+                {
+                  type: 'code',
+                  lang: 'yaml',
+                  caption: 'GitHub Actions + OIDC → AWS',
+                  code: 'permissions:\n  id-token: write   # обязательно для OIDC\n  contents: read\n\nsteps:\n  - uses: aws-actions/configure-aws-credentials@v4\n    with:\n      role-to-assume: arn:aws:iam::123456789:role/GitHubDeploy\n      aws-region: eu-west-1\n    # Никаких AWS_ACCESS_KEY_ID в secrets!',
+                },
+                { type: 'note', text: 'На собеседовании: «Как безопасно передать AWS-креды в CI?» — правильный ответ «OIDC, без хранения ключей». Плохой — «положить в GitHub Secrets, они же шифрованы». Ключ живёт годами, утечка = катастрофа. OIDC: утёк — истёк через час. Работает для AWS, GCP, Azure, HashiCorp Vault.' },
+              ],
+            },
+            {
+              id: 'cd-l4-s5',
+              title: 'Проверь себя: OIDC',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Почему OIDC безопаснее долгоживущих ключей в GitHub Secrets?',
+                options: [
+                  { id: 'a', text: 'OIDC быстрее' },
+                  { id: 'b', text: 'OIDC выдаёт временные креды (1 час) — утечка ограничена по времени' },
+                  { id: 'c', text: 'GitHub Secrets не шифрует' },
+                  { id: 'd', text: 'OIDC не требует интернета' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'Долгоживущий ключ утёк — катастрофа на годы. OIDC: JWT на 5 минут → временные креды на 1 час. Утекли — истекут. Плюс в IAM trust policy — только конкретный репозиторий/ветка. Стандарт для CI в 2025. Работает для AWS, GCP, Azure, Vault.',
               },
             },
           ],
@@ -330,7 +486,7 @@ export const cicdBasicsCourse: Course = {
         {
           id: 'cd-l5',
           title: 'Тесты в CI: pytest, Playwright, репорты',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
               id: 'cd-l5-s1',
@@ -341,7 +497,7 @@ export const cicdBasicsCourse: Course = {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'Полный CI для Python-проекта',
-                  code: `name: CI\non: [push, pull_request]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      fail-fast: false\n      matrix:\n        python-version: ['3.11', '3.12']\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: \${{ matrix.python-version }}\n          cache: 'pip'\n      - run: pip install -r requirements-dev.txt\n      - name: Lint\n        run: ruff check .\n      - name: Type check\n        run: mypy src/\n      - name: Tests\n        run: pytest -v --junitxml=report.xml --cov=src --cov-report=xml\n      - uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: reports-\${{ matrix.python-version }}\n          path: |\n            report.xml\n            coverage.xml`,
+                  code: 'name: CI\non: [push, pull_request]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      fail-fast: false\n      matrix:\n        python-version: ["3.11", "3.12"]\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: ${{ matrix.python-version }}\n          cache: "pip"\n      - run: pip install -r requirements-dev.txt\n      - name: Lint\n        run: ruff check .\n      - name: Type check\n        run: mypy src/\n      - name: Tests\n        run: pytest -v --junitxml=report.xml --cov=src --cov-report=xml\n      - uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: reports-${{ matrix.python-version }}\n          path: |\n            report.xml\n            coverage.xml',
                 },
                 {
                   type: 'list',
@@ -365,7 +521,7 @@ export const cicdBasicsCourse: Course = {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'E2E-тесты с Playwright',
-                  code: `jobs:\n  e2e:\n    runs-on: ubuntu-latest\n    timeout-minutes: 20\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with: { python-version: '3.12' }\n      - run: pip install -r requirements-dev.txt\n      - name: Install Playwright browsers\n        run: playwright install --with-deps chromium\n      - name: Run E2E tests\n        env:\n          BASE_URL: \${{ secrets.STAGING_URL }}\n        run: pytest tests/e2e/ -n 4 --tracing=retain-on-failure\n      - name: Upload traces\n        if: failure()\n        uses: actions/upload-artifact@v4\n        with:\n          name: playwright-traces\n          path: test-results/\n          retention-days: 7`,
+                  code: 'jobs:\n  e2e:\n    runs-on: ubuntu-latest\n    timeout-minutes: 20\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with: { python-version: "3.12" }\n      - run: pip install -r requirements-dev.txt\n      - name: Install Playwright browsers\n        run: playwright install --with-deps chromium\n      - name: Run E2E tests\n        env:\n          BASE_URL: ${{ secrets.STAGING_URL }}\n        run: pytest tests/e2e/ -n 4 --tracing=retain-on-failure\n      - name: Upload traces\n        if: failure()\n        uses: actions/upload-artifact@v4\n        with:\n          name: playwright-traces\n          path: test-results/\n          retention-days: 7',
                 },
                 {
                   type: 'list',
@@ -397,12 +553,49 @@ export const cicdBasicsCourse: Course = {
                 explanation: 'Без --junitxml вы видите только «exit code 1» в логе. С JUnit XML GitHub/GitLab парсят отчёт и показывают «5 passed, 2 failed» прямо в PR.',
               },
             },
+            {
+              id: 'cd-l5-s4',
+              title: 'Flaky-тесты в CI',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Флакающий тест (flaky) — падает «через раз» без изменений в коде. В CI это особенно больно: разработчики перестают доверять красным сборкам. Правильная стратегия — не «retry и забыть», а изолировать и починить.' },
+                {
+                  type: 'list',
+                  items: [
+                    'Retry (pytest-rerunfailures) маскирует проблему — не надо как «фикс»',
+                    'Карантин: @pytest.mark.flaky или отдельный job для flaky-тестов',
+                    'Метрика flaky rate: если > 2% — блокер релиза',
+                    'Причины: гонки, тайминги, общий стейт, внешние API',
+                    'В CI — только стабильные тесты; flaky — в nightly-сборку',
+                  ],
+                },
+                { type: 'note', text: 'На собеседовании QA/DevOps: «что делать с flaky-тестами?» — правильный ответ: «изолировать в карантин, найти причину, починить; не полагаться на retry». Retry — временная мера на время починки, а не постоянная практика.' },
+              ],
+            },
+            {
+              id: 'cd-l5-s5',
+              title: 'Проверь себя: flaky',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Что делать с тестом, который падает «через раз»?',
+                options: [
+                  { id: 'a', text: 'Оставить как есть — вреда нет' },
+                  { id: 'b', text: 'Изолировать в карантин (@flaky) и починить: найти причину (гонки, тайминги, стейт)' },
+                  { id: 'c', text: 'Удалить навсегда' },
+                  { id: 'd', text: 'Обернуть в retry и забыть' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'Flaky-тест подрывает доверие ко всему набору: красные сборки начинают игнорировать. Правильно — изолировать (skip с причиной / @flaky) и починить. Retry (d) — временная мера, а не фикс: он маскирует баг.',
+              },
+            },
           ],
         },
         {
           id: 'cd-l6',
           title: 'Docker в CI: сборка и публикация',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
               id: 'cd-l6-s1',
@@ -413,7 +606,7 @@ export const cicdBasicsCourse: Course = {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'build-push-action в GitHub Actions',
-                  code: `name: Build and push\non:\n  push:\n    branches: [main]\n    tags: ['v*']\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n      packages: write\n    steps:\n      - uses: actions/checkout@v4\n      - uses: docker/setup-buildx-action@v3\n      - name: Login to GHCR\n        uses: docker/login-action@v3\n        with:\n          registry: ghcr.io\n          username: \${{ github.actor }}\n          password: \${{ secrets.GITHUB_TOKEN }}\n      - name: Build and push\n        uses: docker/build-push-action@v6\n        with:\n          context: .\n          push: \${{ github.event_name != 'pull_request' }}\n          tags: |\n            ghcr.io/\${{ github.repository }}:\${{ github.sha }}\n            ghcr.io/\${{ github.repository }}:latest\n          cache-from: type=gha\n          cache-to: type=gha,mode=max`,
+                  code: 'name: Build and push\non:\n  push:\n    branches: [main]\n    tags: ["v*"]\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n      packages: write\n    steps:\n      - uses: actions/checkout@v4\n      - uses: docker/setup-buildx-action@v3\n      - name: Login to GHCR\n        uses: docker/login-action@v3\n        with:\n          registry: ghcr.io\n          username: ${{ github.actor }}\n          password: ${{ secrets.GITHUB_TOKEN }}\n      - name: Build and push\n        uses: docker/build-push-action@v6\n        with:\n          context: .\n          push: ${{ github.event_name != \'pull_request\' }}\n          tags: |\n            ghcr.io/${{ github.repository }}:${{ github.sha }}\n            ghcr.io/${{ github.repository }}:latest\n          cache-from: type=gha\n          cache-to: type=gha,mode=max',
                 },
                 {
                   type: 'list',
@@ -437,7 +630,7 @@ export const cicdBasicsCourse: Course = {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'docker/metadata-action — авто-теги',
-                  code: `- name: Docker metadata\n  id: meta\n  uses: docker/metadata-action@v5\n  with:\n    images: ghcr.io/\${{ github.repository }}\n    tags: |\n      type=ref,event=branch\n      type=ref,event=pr\n      type=semver,pattern={{version}}\n      type=semver,pattern={{major}}.{{minor}}\n      type=sha,prefix=sha-,format=short\n      type=raw,value=latest,enable={{is_default_branch}}\n\n- uses: docker/build-push-action@v6\n  with:\n    context: .\n    push: true\n    tags: \${{ steps.meta.outputs.tags }}\n    labels: \${{ steps.meta.outputs.labels }}`,
+                  code: '- name: Docker metadata\n  id: meta\n  uses: docker/metadata-action@v5\n  with:\n    images: ghcr.io/${{ github.repository }}\n    tags: |\n      type=ref,event=branch\n      type=ref,event=pr\n      type=semver,pattern={{version}}\n      type=semver,pattern={{major}}.{{minor}}\n      type=sha,prefix=sha-,format=short\n      type=raw,value=latest,enable={{is_default_branch}}\n\n- uses: docker/build-push-action@v6\n  with:\n    context: .\n    push: true\n    tags: ${{ steps.meta.outputs.tags }}\n    labels: ${{ steps.meta.outputs.labels }}',
                 },
                 {
                   type: 'table',
@@ -470,12 +663,55 @@ export const cicdBasicsCourse: Course = {
                 explanation: 'На PR — задача «проверить, что Dockerfile валиден». Push в registry на каждый PR засоряет место, может перезаписать тег latest. Push — только в main и на теги.',
               },
             },
+            {
+              id: 'cd-l6-s4',
+              title: 'Multi-arch и buildx',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Образ, собранный на amd64, не запустится на Apple Silicon (arm64) или Raspberry Pi. Multi-arch образ содержит варианты под обе архитектуры; Docker сам выбирает нужный при pull. Требует buildx + QEMU (эмуляция) или arm-раннер.' },
+                {
+                  type: 'code',
+                  lang: 'yaml',
+                  caption: 'Multi-arch в GitHub Actions',
+                  code: '- uses: docker/setup-qemu-action@v3      # эмуляция arm64\n- uses: docker/setup-buildx-action@v3\n\n- uses: docker/build-push-action@v6\n  with:\n    context: .\n    platforms: linux/amd64,linux/arm64\n    push: true\n    tags: ghcr.io/myorg/myapp:1.4.2',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'setup-qemu-action — эмулятор для кросс-архитектурной сборки',
+                    'platforms: linux/amd64,linux/arm64 — две архитектуры в одном теге',
+                    'QEMU замедляет arm64-сборку в 2–5 раз',
+                    'Self-hosted arm-раннер — быстрее, но дороже',
+                    'Для Go/Rust — кросс-компиляция (без QEMU), для Python/Node — QEMU',
+                  ],
+                },
+                { type: 'note', text: 'На собеседовании DevOps: «Как собрать образ под Mac и Linux одновременно?» — ответ: docker buildx build --platform linux/amd64,linux/arm64 --push. Без buildx — никак.' },
+              ],
+            },
+            {
+              id: 'cd-l6-s5',
+              title: 'Проверь себя: multi-arch',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Что нужно для multi-arch сборки в CI?',
+                options: [
+                  { id: 'a', text: 'setup-buildx-action' },
+                  { id: 'b', text: 'setup-qemu-action (для эмуляции arm64 на amd64-раннере)' },
+                  { id: 'c', text: 'Два разных Dockerfile для каждой архитектуры' },
+                  { id: 'd', text: 'Флаг platforms: linux/amd64,linux/arm64' },
+                ],
+                correct: ['a', 'b', 'd'],
+                explanation:
+                  'buildx (a), QEMU (b) и platforms (d) — обязательны. Один Dockerfile — смысл multi-arch: одинаковый рецепт, разные бинарники. Два Dockerfile (c) — антипаттерн. Для arm-раннера QEMU не нужен.',
+              },
+            },
           ],
         },
         {
           id: 'cd-l12',
           title: 'Docker buildx: multi-arch и кэш в CI',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
               id: 'cd-l12-s1',
@@ -486,33 +722,15 @@ export const cicdBasicsCourse: Course = {
                 {
                   type: 'mermaid',
                   caption: 'Multi-arch сборка: один тег — два образа',
-                  code: `graph LR
-                    Src["Один Dockerfile"] --> Buildx["buildx<br/>--platform amd64,arm64"]
-                    Buildx --> A1["linux/amd64"]
-                    Buildx --> A2["linux/arm64"]
-                    A1 --> Manifest["Manifest list<br/>myapp:1.4.2"]
-                    A2 --> Manifest
-                    Manifest --> Registry[("Registry")]
-                    Registry --> Mac["Mac M3<br/>→ arm64"]
-                    Registry --> Server["Linux x86<br/>→ amd64"]`
+                  code: 'graph LR\n    Src["Один Dockerfile"] --> Buildx["buildx<br/>--platform amd64,arm64"]\n    Buildx --> A1["linux/amd64"]\n    Buildx --> A2["linux/arm64"]\n    A1 --> Manifest["Manifest list<br/>myapp:1.4.2"]\n    A2 --> Manifest\n    Manifest --> Registry[("Registry")]\n    Registry --> Mac["Mac M3<br/>→ arm64"]\n    Registry --> Server["Linux x86<br/>→ amd64"]',
                 },
                 {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'Multi-arch в GitHub Actions',
-                  code: `- uses: docker/setup-qemu-action@v3      # эмуляция arm64 на amd64-раннере\n- uses: docker/setup-buildx-action@v3\n\n- uses: docker/build-push-action@v6\n  with:\n    context: .\n    platforms: linux/amd64,linux/arm64\n    push: true\n    tags: ghcr.io/myorg/myapp:1.4.2`,
+                  code: '- uses: docker/setup-qemu-action@v3      # эмуляция arm64 на amd64-раннере\n- uses: docker/setup-buildx-action@v3\n\n- uses: docker/build-push-action@v6\n  with:\n    context: .\n    platforms: linux/amd64,linux/arm64\n    push: true\n    tags: ghcr.io/myorg/myapp:1.4.2',
                 },
-                {
-                  type: 'list',
-                  items: [
-                    'setup-qemu-action — эмулятор для кросс-архитектурной сборки (нужен для arm64 на amd64)',
-                    'platforms: linux/amd64,linux/arm64 — две архитектуры в одной сборке',
-                    'Готовый тег содержит manifest list — Docker сам выберет нужный вариант при pull',
-                    'Эмуляция через QEMU медленнее нативной в 2–5 раз — сборка arm64 займёт в 3 раза больше',
-                    'Для CI с self-hosted arm-раннером QEMU не нужен',
-                  ],
-                },
-                { type: 'note', text: 'На собеседовании DevOps: «Как собрать образ под Mac и Linux одновременно?» — ответ: `docker buildx build --platform linux/amd64,linux/arm64 --push`. Без buildx — никак.' },
+                { type: 'note', text: 'На собеседовании DevOps: «Как собрать образ под Mac и Linux одновременно?» — ответ: docker buildx build --platform linux/amd64,linux/arm64 --push. Без buildx — никак.' },
               ],
             },
             {
@@ -525,13 +743,13 @@ export const cicdBasicsCourse: Course = {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'GHA cache (быстро, только в GitHub)',
-                  code: `- uses: docker/build-push-action@v6\n  with:\n    context: .\n    push: true\n    tags: ghcr.io/myorg/myapp:1.4.2\n    cache-from: type=gha\n    cache-to: type=gha,mode=max\n\n# mode=max — кэшировать все слои, включая промежуточные стадии\n# mode=min (по умолчанию) — только финальные слои`,
+                  code: '- uses: docker/build-push-action@v6\n  with:\n    context: .\n    push: true\n    tags: ghcr.io/myorg/myapp:1.4.2\n    cache-from: type=gha\n    cache-to: type=gha,mode=max\n\n# mode=max — кэшировать все слои, включая промежуточные стадии\n# mode=min (по умолчанию) — только финальные слои',
                 },
                 {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'Registry cache (универсально, любой CI)',
-                  code: `- uses: docker/build-push-action@v6\n  with:\n    context: .\n    push: true\n    tags: ghcr.io/myorg/myapp:1.4.2\n    cache-from: type=registry,ref=ghcr.io/myorg/myapp:buildcache\n    cache-to: type=registry,ref=ghcr.io/myorg/myapp:buildcache,mode=max`,
+                  code: '- uses: docker/build-push-action@v6\n  with:\n    context: .\n    push: true\n    tags: ghcr.io/myorg/myapp:1.4.2\n    cache-from: type=registry,ref=ghcr.io/myorg/myapp:buildcache\n    cache-to: type=registry,ref=ghcr.io/myorg/myapp:buildcache,mode=max',
                 },
                 { type: 'note', text: 'mode=max даёт лучший hit rate для multi-stage Dockerfile: без него промежуточные стадии (build-стадия с компиляторами) не кэшируются, и каждый раз всё пересобирается.' },
               ],
@@ -553,12 +771,49 @@ export const cicdBasicsCourse: Course = {
                 explanation: 'QEMU — эмулятор: на amd64-раннере он позволяет выполнять arm64-инструкции. Без него buildx для linux/arm64 не соберёт. С self-hosted arm-раннером QEMU не нужен — там нативная сборка.',
               },
             },
+            {
+              id: 'cd-l12-s4',
+              title: 'Почему кэш не работает: диагностика',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Кэш ломается чаще, чем кажется. Классические причины: изменился порядок COPY, добавили ARG перед установкой зависимостей, base image обновился, или `cache-to` настроен с `mode=min` (не кэширует промежуточные стадии).' },
+                {
+                  type: 'list',
+                  items: [
+                    'COPY . . до COPY requirements.txt — любая правка кода ломает кэш зависимостей',
+                    'ARG VERSION перед RUN pip install — меняется версия → ломается кэш',
+                    'FROM python:3.12 (без версии) — обновился минорный тег → кэш не совпадает',
+                    'mode=min вместо mode=max — промежуточные стадии не кэшируются',
+                    'Cache backend не настроен (cache-from без cache-to) — кэш никогда не пишется',
+                  ],
+                },
+                { type: 'note', text: 'Правило: `docker buildx build --progress=plain` покажет, какие слои CACHED, а какие пересобираются. Это первое, что нужно делать, когда сборка «внезапно» замедлилась. В GitHub Actions — включите `--progress=plain` через build-args.' },
+              ],
+            },
+            {
+              id: 'cd-l12-s5',
+              title: 'Проверь себя: кэш',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Что ломает кэш сборки Docker-образа?',
+                options: [
+                  { id: 'a', text: 'COPY . . перед pip install (код меняется — кэш ломается)' },
+                  { id: 'b', text: 'Изменение requirements.txt' },
+                  { id: 'c', text: 'mode=min вместо mode=max для multi-stage Dockerfile' },
+                  { id: 'd', text: 'Изменение файла ПОСЛЕ pip install (ниже по Dockerfile)' },
+                ],
+                correct: ['a', 'b', 'c'],
+                explanation:
+                  'COPY . . выше pip (a), изменение requirements.txt (b) и mode=min (c) — ломают кэш. Изменение файла ниже pip install (d) ломает только слои после него, кэш самого pip остаётся.',
+              },
+            },
           ],
         },
         {
           id: 'cd-l18',
           title: 'Jenkins: Jenkinsfile и declarative pipeline',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
               id: 'cd-l18-s1',
@@ -566,10 +821,8 @@ export const cicdBasicsCourse: Course = {
               type: 'theory',
               blocks: [
                 { type: 'p', text: 'Jenkins — старейший (2011) и до сих пор самый распространённый self-hosted CI/CD в enterprise. Банки, телеком, госсектор, крупные корпорации — часто «у нас Jenkins, потому что так исторически сложилось, и он работает». На собеседовании в таких компаниях Jenkins — обязательный пункт.' },
-                {
-                  type: 'p', text: 'Плюсы Jenkins: полностью self-hosted (важно для закрытых контуров), огромная экосистема плагинов (1800+), любая кастомизация, бесплатно. Минусы: требует администрирования, устаревший UI, «свой язык» Groovy, безопасность целиком на вас.' },
-                {
-                  type: 'note', text: 'На собеседовании DevOps/Platform: «С какими CI работали?» — упомянуть Jenkins обязательно. Даже если работали только с GitHub Actions — знать, что такое Jenkinsfile и stages, стоит.' },
+                { type: 'p', text: 'Плюсы Jenkins: полностью self-hosted (важно для закрытых контуров), огромная экосистема плагинов (1800+), любая кастомизация, бесплатно. Минусы: требует администрирования, устаревший UI, «свой язык» Groovy, безопасность целиком на вас.' },
+                { type: 'note', text: 'На собеседовании DevOps/Platform: «С какими CI работали?» — упомянуть Jenkins обязательно. Даже если работали только с GitHub Actions — знать, что такое Jenkinsfile и stages, стоит.' },
               ],
             },
             {
@@ -580,21 +833,13 @@ export const cicdBasicsCourse: Course = {
                 {
                   type: 'mermaid',
                   caption: 'Стадии типичного Jenkins-пайплайна',
-                  code: `graph LR
-                    Checkout["Checkout"] --> Lint["Lint"]
-                    Lint --> Test["Test"]
-                    Test --> Build["Build Docker"]
-                    Build --> Push["Push registry"]
-                    Push --> Deploy["Deploy"]
-                    Deploy --> Smoke["Smoke"]
-                    Lint -.->|"fail"| Stop["Pipeline failed"]
-                    Test -.->|"fail"| Stop`
+                  code: 'graph LR\n    Checkout["Checkout"] --> Lint["Lint"]\n    Lint --> Test["Test"]\n    Test --> Build["Build Docker"]\n    Build --> Push["Push registry"]\n    Push --> Deploy["Deploy"]\n    Deploy --> Smoke["Smoke"]\n    Lint -.->|"fail"| Stop["Pipeline failed"]\n    Test -.->|"fail"| Stop',
                 },
                 {
                   type: 'code',
                   lang: 'groovy',
                   caption: 'Jenkinsfile (declarative)',
-                  code: `pipeline {\n    agent any\n\n    environment {\n        REGISTRY = "ghcr.io/myorg"\n        IMAGE = "myorg/myapp"\n    }\n\n    options {\n        timeout(time: 30, unit: 'MINUTES')\n        buildDiscarder(logRotator(numToKeepStr: '10'))\n        disableConcurrentBuilds()\n    }\n\n    stages {\n        stage('Checkout') {\n            steps { checkout scm }\n        }\n\n        stage('Lint') {\n            agent { docker 'python:3.12-slim' }\n            steps {\n                sh 'pip install ruff'\n                sh 'ruff check .'\n            }\n        }\n\n        stage('Test') {\n            agent { docker 'python:3.12-slim' }\n            steps {\n                sh 'pip install -r requirements-dev.txt'\n                sh 'pytest --junitxml=report.xml --cov=src'\n            }\n            post {\n                always {\n                    junit 'report.xml'\n                }\n            }\n        }\n\n        stage('Build Docker') {\n            steps {\n                script {\n                    def image = docker.build("\${REGISTRY}/\${IMAGE}:\${env.BUILD_NUMBER}")\n                    docker.withRegistry("https://ghcr.io", "ghcr-credentials") {\n                        image.push()\n                        image.push("latest")\n                    }\n                }\n            }\n        }\n\n        stage('Deploy') {\n            when { branch 'main' }\n            steps {\n                sh "kubectl set image deployment/app app=\${REGISTRY}/\${IMAGE}:\${env.BUILD_NUMBER}"\n            }\n        }\n    }\n\n    post {\n        success { echo 'Pipeline succeeded' }\n        failure { echo 'Pipeline failed — check logs' }\n        always { cleanWs() }\n    }\n}`,
+                  code: 'pipeline {\n    agent any\n\n    environment {\n        REGISTRY = "ghcr.io/myorg"\n        IMAGE = "myorg/myapp"\n    }\n\n    options {\n        timeout(time: 30, unit: \'MINUTES\')\n        buildDiscarder(logRotator(numToKeepStr: \'10\'))\n        disableConcurrentBuilds()\n    }\n\n    stages {\n        stage(\'Checkout\') {\n            steps { checkout scm }\n        }\n\n        stage(\'Lint\') {\n            agent { docker \'python:3.12-slim\' }\n            steps {\n                sh \'pip install ruff\'\n                sh \'ruff check .\'\n            }\n        }\n\n        stage(\'Test\') {\n            agent { docker \'python:3.12-slim\' }\n            steps {\n                sh \'pip install -r requirements-dev.txt\'\n                sh \'pytest --junitxml=report.xml --cov=src\'\n            }\n            post {\n                always {\n                    junit \'report.xml\'\n                }\n            }\n        }\n\n        stage(\'Build Docker\') {\n            steps {\n                script {\n                    def image = docker.build("${REGISTRY}/${IMAGE}:${env.BUILD_NUMBER}")\n                    docker.withRegistry("https://ghcr.io", "ghcr-credentials") {\n                        image.push()\n                        image.push("latest")\n                    }\n                }\n            }\n        }\n\n        stage(\'Deploy\') {\n            when { branch \'main\' }\n            steps {\n                sh "kubectl set image deployment/app app=${REGISTRY}/${IMAGE}:${env.BUILD_NUMBER}"\n            }\n        }\n    }\n\n    post {\n        success { echo \'Pipeline succeeded\' }\n        failure { echo \'Pipeline failed — check logs\' }\n        always { cleanWs() }\n    }\n}',
                 },
                 {
                   type: 'list',
@@ -649,6 +894,23 @@ export const cicdBasicsCourse: Course = {
                 explanation: 'Jenkins: self-hosted, плагины, бесплатен. Но порог входа высокий — YAML (b) не про Jenkins, там Groovy (Jenkinsfile). Это его слабое место.',
               },
             },
+            {
+              id: 'cd-l18-s5',
+              title: 'Проверь себя: Jenkinsfile',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте элемент Jenkinsfile и его роль',
+                pairs: [
+                  { left: 'agent', right: 'Где запускать (runner / docker-образ)' },
+                  { left: 'stages', right: 'Последовательные стадии pipeline' },
+                  { left: 'when { branch }', right: 'Условие запуска (например, только main)' },
+                  { left: 'post { always }', right: 'Cleanup и уведомления в конце' },
+                ],
+                explanation:
+                  'agent — runner. stages — стадии. when — условие. post — финализация (cleanup, уведомления, junit). Ещё важны: environment (переменные), options (timeout, retry), steps (команды). На собеседовании DevOps спросят «что такое Jenkinsfile?» — это ответ.',
+              },
+            },
           ],
         },
       ],
@@ -664,7 +926,7 @@ export const cicdBasicsCourse: Course = {
         {
           id: 'cd-l9',
           title: 'Environments, concurrency, matrix',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'cd-l9-s1',
@@ -675,17 +937,13 @@ export const cicdBasicsCourse: Course = {
                 {
                   type: 'mermaid',
                   caption: 'Environments и promotion',
-                  code: `graph LR
-                    PR["PR"] --> Dev["dev<br/>(auto)"]
-                    Dev -->|"merge main"| Staging["staging<br/>(auto)"]
-                    Staging -->|"approve"| Prod["prod<br/>(manual)"]
-                    Prod -.->|"rollback"| Staging`
+                  code: 'graph LR\n    PR["PR"] --> Dev["dev<br/>(auto)"]\n    Dev -->|"merge main"| Staging["staging<br/>(auto)"]\n    Staging -->|"approve"| Prod["prod<br/>(manual)"]\n    Prod -.->|"rollback"| Staging',
                 },
                 {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'Деплой через environment',
-                  code: `jobs:\n  deploy-staging:\n    runs-on: ubuntu-latest\n    environment:\n      name: staging\n      url: https://staging.example.com\n    steps:\n      - run: ./deploy.sh\n        env:\n          API_URL: \${{ secrets.STAGING_API_URL }}   # из environment secrets\n\n  deploy-prod:\n    needs: deploy-staging\n    runs-on: ubuntu-latest\n    environment:\n      name: production\n      url: https://example.com\n    steps:\n      - run: ./deploy.sh\n        env:\n          API_URL: \${{ secrets.PROD_API_URL }}      # только из production\n\n# В GitHub UI → Settings → Environments → production\n# → Required reviewers: 2 человека\n# → Wait timer: 5 минут\n# → Deployment branches: только main`,
+                  code: 'jobs:\n  deploy-staging:\n    runs-on: ubuntu-latest\n    environment:\n      name: staging\n      url: https://staging.example.com\n    steps:\n      - run: ./deploy.sh\n        env:\n          API_URL: ${{ secrets.STAGING_API_URL }}\n\n  deploy-prod:\n    needs: deploy-staging\n    runs-on: ubuntu-latest\n    environment:\n      name: production\n      url: https://example.com\n    steps:\n      - run: ./deploy.sh\n        env:\n          API_URL: ${{ secrets.PROD_API_URL }}\n\n# В GitHub UI → Settings → Environments → production\n# → Required reviewers: 2 человека\n# → Wait timer: 5 минут\n# → Deployment branches: только main',
                 },
                 {
                   type: 'list',
@@ -710,13 +968,13 @@ export const cicdBasicsCourse: Course = {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'Concurrency: одна группа — один прогон',
-                  code: `name: CI\non: [push, pull_request]\n\nconcurrency:\n  group: \${{ github.workflow }}-\${{ github.ref }}\n  cancel-in-progress: true\n\n# Что происходит:\n# 1. Push A → workflow #1 стартует\n# 2. Push B в ту же ветку → workflow #1 ОТМЕНЯЕТСЯ, стартует #2\n# 3. Push C → #2 отменяется, стартует #3\n# Итог: работает только последний push, экономятся минуты`,
+                  code: 'name: CI\non: [push, pull_request]\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\n# Что происходит:\n# 1. Push A → workflow #1 стартует\n# 2. Push B в ту же ветку → workflow #1 ОТМЕНЯЕТСЯ, стартует #2\n# 3. Push C → #2 отменяется, стартует #3\n# Итог: работает только последний push, экономятся минуты',
                 },
                 {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'Concurrency для деплоя',
-                  code: `jobs:\n  deploy:\n    runs-on: ubuntu-latest\n    concurrency:\n      group: deploy-production    # глобально на весь репозиторий\n      cancel-in-progress: false   # деплой НЕ отменять: дать завершиться\n    steps: [...]`,
+                  code: 'jobs:\n  deploy:\n    runs-on: ubuntu-latest\n    concurrency:\n      group: deploy-production    # глобально на весь репозиторий\n      cancel-in-progress: false   # деплой НЕ отменять: дать завершиться\n    steps: [...]',
                 },
                 { type: 'note', text: 'Правило: для CI — cancel-in-progress: true (не жалко отменить). Для деплоя — false (не отменять в середине). Группа должна быть уникальной на то, что нужно сериализовать.' },
               ],
@@ -730,14 +988,14 @@ export const cicdBasicsCourse: Course = {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'Продвинутая матрица',
-                  code: `jobs:\n  test:\n    strategy:\n      fail-fast: false          # одна упала — остальные продолжают\n      max-parallel: 4           # не больше 4 одновременно\n      matrix:\n        os: [ubuntu-latest, windows-latest, macos-latest]\n        python: ['3.11', '3.12']\n        exclude:\n          # Не тестировать 3.11 на Windows\n          - os: windows-latest\n            python: '3.11'\n        include:\n          # Добавить специальную комбинацию\n          - os: ubuntu-latest\n            python: '3.13-dev'\n            experimental: true\n    runs-on: \${{ matrix.os }}\n    continue-on-error: \${{ matrix.experimental || false }}\n    steps: [...]`,
+                  code: 'jobs:\n  test:\n    strategy:\n      fail-fast: false          # одна упала — остальные продолжают\n      max-parallel: 4           # не больше 4 одновременно\n      matrix:\n        os: [ubuntu-latest, windows-latest, macos-latest]\n        python: ["3.11", "3.12"]\n        exclude:\n          - os: windows-latest\n            python: "3.11"\n        include:\n          - os: ubuntu-latest\n            python: "3.13-dev"\n            experimental: true\n    runs-on: ${{ matrix.os }}\n    continue-on-error: ${{ matrix.experimental || false }}\n    steps: [...]',
                 },
                 {
                   type: 'list',
                   items: [
                     'Оси (os × python) дают декартово произведение: 3 × 2 = 6 job-ов',
                     'exclude убирает конкретные комбинации (например, windows + 3.11)',
-                    'include добавляет комбинации, которых нет в произведении (например, экспериментальную версию)',
+                    'include добавляет комбинации, которых нет в произведении',
                     'max-parallel — ограничение параллельных job-ов (для платных минут)',
                     'continue-on-error: ${{ matrix.experimental }} — экспериментальные не валят pipeline',
                     'fail-fast: false — увидеть все падения сразу, а не только первое',
@@ -748,7 +1006,7 @@ export const cicdBasicsCourse: Course = {
             },
             {
               id: 'cd-l9-s4',
-              title: 'Проверь себя',
+              title: 'Проверь себя: concurrency',
               type: 'quiz',
               quiz: {
                 kind: 'single',
@@ -763,12 +1021,30 @@ export const cicdBasicsCourse: Course = {
                 explanation: 'Concurrency группирует прогоны. cancel-in-progress: true отменяет старый при новом push — не тратит минуты на устаревший код. Для деплоя ставят false, чтобы не отменить в середине.',
               },
             },
+            {
+              id: 'cd-l9-s5',
+              title: 'Проверь себя: environments',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Что даёт GitHub Environment для деплоя?',
+                options: [
+                  { id: 'a', text: 'Свои секреты (STAGING_API_URL ≠ PROD_API_URL)' },
+                  { id: 'b', text: 'Required reviewers — ручное одобрение перед деплоем' },
+                  { id: 'c', text: 'Deployment branches — только с main можно деплоить в prod' },
+                  { id: 'd', text: 'Автоматический rollback при падении' },
+                ],
+                correct: ['a', 'b', 'c'],
+                explanation:
+                  'Environment даёт: свои секреты (a), required reviewers (b), ограничение по веткам (c) и историю деплоев. Автоматический rollback (d) — нет: для отката нужен отдельный workflow или стратегия (blue-green, canary).',
+              },
+            },
           ],
         },
         {
           id: 'cd-l10',
           title: 'Self-hosted runners и кэш на масштабе',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'cd-l10-s1',
@@ -790,12 +1066,7 @@ export const cicdBasicsCourse: Course = {
                 {
                   type: 'mermaid',
                   caption: 'Self-hosted runner: как устроено',
-                  code: `graph LR
-                    GH["GitHub<br/>(workflow queue)"] -->|"1. poll"| Runner["Runner daemon<br/>(на вашем сервере)"]
-                    Runner -->|"2. get job"| Job["Job execution<br/>(в изолированном workspace)"]
-                    Job -->|"3. run steps"| Steps["Steps<br/>(build, test, deploy)"]
-                    Steps -->|"4. report"| GH
-                    Runner -.->|"privileged access"| Private["Внутренняя сеть<br/>(БД, API, K8s)"]`
+                  code: 'graph LR\n    GH["GitHub<br/>(workflow queue)"] -->|"1. poll"| Runner["Runner daemon<br/>(на вашем сервере)"]\n    Runner -->|"2. get job"| Job["Job execution<br/>(в изолированном workspace)"]\n    Job -->|"3. run steps"| Steps["Steps<br/>(build, test, deploy)"]\n    Steps -->|"4. report"| GH\n    Runner -.->|"privileged access"| Private["Внутренняя сеть<br/>(БД, API, K8s)"]',
                 },
               ],
             },
@@ -808,7 +1079,7 @@ export const cicdBasicsCourse: Course = {
                   type: 'code',
                   lang: 'bash',
                   caption: 'Установка runner (Linux)',
-                  code: `# В GitHub: Settings → Actions → Runners → New self-hosted runner\n# Скопировать команды из UI:\n\nmkdir actions-runner && cd actions-runner\ncurl -o actions-runner-linux-x64-2.319.1.tar.gz -L \\\n  https://github.com/actions/runner/releases/download/v2.319.1/actions-runner-linux-x64-2.319.1.tar.gz\ntar xzf ./actions-runner-linux-x64-2.319.1.tar.gz\n\n# Регистрация (токен из GitHub UI)\n./config.sh --url https://github.com/myorg/myrepo --token ABC123...\n\n# Запуск как сервис\nsudo ./svc.sh install\nsudo ./svc.sh start`,
+                  code: '# В GitHub: Settings → Actions → Runners → New self-hosted runner\n# Скопировать команды из UI:\n\nmkdir actions-runner && cd actions-runner\ncurl -o actions-runner-linux-x64-2.319.1.tar.gz -L https://github.com/actions/runner/releases/download/v2.319.1/actions-runner-linux-x64-2.319.1.tar.gz\ntar xzf ./actions-runner-linux-x64-2.319.1.tar.gz\n\n# Регистрация (токен из GitHub UI)\n./config.sh --url https://github.com/myorg/myrepo --token ABC123...\n\n# Запуск как сервис\nsudo ./svc.sh install\nsudo ./svc.sh start',
                 },
                 { type: 'note', text: '⚠️ ГЛАВНОЕ ПРАВИЛО: никогда не запускать self-hosted runner на публичном репозитории. Любой, кто сделает fork и PR, получит код-выполнение на вашем сервере (потенциально — доступ к внутренней сети). Только private-репозитории с доверенными контрибьюторами.' },
                 {
@@ -833,14 +1104,14 @@ export const cicdBasicsCourse: Course = {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'Actions Runner Controller (ARC) в Kubernetes',
-                  code: `# Установка ARC в K8s-кластер\nhelm install arc \\\n  --namespace arc-systems \\\n  --create-namespace \\\n  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller\n\n# Scale set: min 0, max 20 runners\nhelm install arc-runner-set \\\n  --namespace arc-runners \\\n  --create-namespace \\\n  --set githubConfigUrl="https://github.com/myorg/myrepo" \\\n  --set githubConfigSecret.github_token="\$GITHUB_TOKEN" \\\n  --set minRunners=0 \\\n  --set maxRunners=20 \\\n  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set\n\n# В workflow:\n# runs-on: arc-runner-set`,
+                  code: '# Установка ARC в K8s-кластер\nhelm install arc --namespace arc-systems --create-namespace oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller\n\n# Scale set: min 0, max 20 runners\nhelm install arc-runner-set --namespace arc-runners --create-namespace --set githubConfigUrl="https://github.com/myorg/myrepo" --set githubConfigSecret.github_token="$GITHUB_TOKEN" --set minRunners=0 --set maxRunners=20 oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set\n\n# В workflow:\n# runs-on: arc-runner-set',
                 },
                 {
                   type: 'list',
                   items: [
                     'ARC — оператор для K8s, запускает runners как Pod-ы',
                     'minRunners=0 — нет постоянных runners, экономим ресурсы',
-                    'maxRunners=20 —上限 на пиковую нагрузку',
+                    'maxRunners=20 — лимит на пиковую нагрузку',
                     'Каждый job → отдельный Pod → удаляется после завершения',
                     'KEDA — автоскейлер на основе очереди job-ов в GitHub',
                   ],
@@ -850,7 +1121,7 @@ export const cicdBasicsCourse: Course = {
             },
             {
               id: 'cd-l10-s4',
-              title: 'Проверь себя',
+              title: 'Проверь себя: безопасность',
               type: 'quiz',
               quiz: {
                 kind: 'single',
@@ -865,12 +1136,29 @@ export const cicdBasicsCourse: Course = {
                 explanation: 'Публичный репозиторий → любой может сделать fork и PR. Workflow из PR запустится на вашем runner. Атакующий получит код-выполнение на сервере и потенциально доступ к внутренней сети. Только private с доверенными контрибьюторами.',
               },
             },
+            {
+              id: 'cd-l10-s5',
+              title: 'Проверь себя: ephemeral',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте концепцию и её роль',
+                pairs: [
+                  { left: 'Self-hosted runner', right: 'Свой сервер вместо hosted VPS GitHub' },
+                  { left: 'Ephemeral runner', right: 'Одноразовый: создаётся на job, удаляется после' },
+                  { left: 'ARC в Kubernetes', right: 'Оператор для автомасштабирования runners' },
+                  { left: 'minRunners=0', right: 'Нет постоянных runners — экономим ресурсы' },
+                ],
+                explanation:
+                  'Self-hosted — свой сервер. Ephemeral — одноразовый (безопаснее). ARC — оператор в K8s. minRunners=0 — «ноль до первого job-а». Комбинация: ARC + ephemeral + minRunners=0 даёт безопасный и дешёвый self-hosted.',
+              },
+            },
           ],
         },
         {
           id: 'cd-l11',
           title: 'Composite actions и reusable workflows',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'cd-l11-s1',
@@ -882,13 +1170,13 @@ export const cicdBasicsCourse: Course = {
                   type: 'code',
                   lang: 'yaml',
                   caption: '.github/actions/setup-python-with-deps/action.yml',
-                  code: `name: Setup Python with deps\ndescription: Устанавливает Python и кэширует pip\n\ninputs:\n  python-version:\n    description: 'Версия Python'\n    required: true\n    default: '3.12'\n  requirements-file:\n    description: 'Файл с зависимостями'\n    default: 'requirements.txt'\n\nruns:\n  using: composite\n  steps:\n    - uses: actions/setup-python@v5\n      with:\n        python-version: \${{ inputs.python-version }}\n        cache: pip\n    - run: pip install -r \${{ inputs.requirements-file }}\n      shell: bash`,
+                  code: 'name: Setup Python with deps\ndescription: Устанавливает Python и кэширует pip\n\ninputs:\n  python-version:\n    description: "Версия Python"\n    required: true\n    default: "3.12"\n  requirements-file:\n    description: "Файл с зависимостями"\n    default: "requirements.txt"\n\nruns:\n  using: composite\n  steps:\n    - uses: actions/setup-python@v5\n      with:\n        python-version: ${{ inputs.python-version }}\n        cache: pip\n    - run: pip install -r ${{ inputs.requirements-file }}\n      shell: bash',
                 },
                 {
                   type: 'code',
                   lang: 'yaml',
                   caption: 'Использование composite action',
-                  code: `jobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: ./.github/actions/setup-python-with-deps\n        with:\n          python-version: '3.12'\n      - run: pytest`,
+                  code: 'jobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: ./.github/actions/setup-python-with-deps\n        with:\n          python-version: "3.12"\n      - run: pytest',
                 },
               ],
             },
@@ -897,16 +1185,17 @@ export const cicdBasicsCourse: Course = {
               title: 'Reusable workflow — переиспользовать job',
               type: 'theory',
               blocks: [
-                { type: 'code',
+                {
+                  type: 'code',
                   lang: 'yaml',
                   caption: '.github/workflows/reusable-test.yml',
-                  code: `name: Reusable test\n\non:\n  workflow_call:\n    inputs:\n      python-version:\n        required: true\n        type: string\n    secrets:\n      CODECOV_TOKEN:\n        required: false\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: \${{ inputs.python-version }}\n          cache: pip\n      - run: pip install -r requirements-dev.txt\n      - run: pytest --cov=src\n      - uses: codecov/codecov-action@v4\n        if: \${{ secrets.CODECOV_TOKEN != '' }}\n        with:\n          token: \${{ secrets.CODECOV_TOKEN }}`,
+                  code: 'name: Reusable test\n\non:\n  workflow_call:\n    inputs:\n      python-version:\n        required: true\n        type: string\n    secrets:\n      CODECOV_TOKEN:\n        required: false\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: ${{ inputs.python-version }}\n          cache: pip\n      - run: pip install -r requirements-dev.txt\n      - run: pytest --cov=src\n      - uses: codecov/codecov-action@v4\n        if: ${{ secrets.CODECOV_TOKEN != "" }}\n        with:\n          token: ${{ secrets.CODECOV_TOKEN }}',
                 },
                 {
                   type: 'code',
                   lang: 'yaml',
                   caption: '.github/workflows/ci.yml — вызов reusable',
-                  code: `jobs:\n  test-311:\n    uses: ./.github/workflows/reusable-test.yml\n    with:\n      python-version: '3.11'\n    secrets:\n      CODECOV_TOKEN: \${{ secrets.CODECOV_TOKEN }}\n\n  test-312:\n    uses: ./.github/workflows/reusable-test.yml\n    with:\n      python-version: '3.12'\n    secrets:\n      CODECOV_TOKEN: \${{ secrets.CODECOV_TOKEN }}`,
+                  code: 'jobs:\n  test-311:\n    uses: ./.github/workflows/reusable-test.yml\n    with:\n      python-version: "3.11"\n    secrets:\n      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}\n\n  test-312:\n    uses: ./.github/workflows/reusable-test.yml\n    with:\n      python-version: "3.12"\n    secrets:\n      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}',
                 },
                 { type: 'note', text: 'Reusable workflow вызывается через `jobs.<name>.uses`. Composite action — через `steps[].uses`. Reusable — это целый job на отдельном runner, composite — это шаги внутри существующего job.' },
               ],
@@ -933,7 +1222,7 @@ export const cicdBasicsCourse: Course = {
             },
             {
               id: 'cd-l11-s4',
-              title: 'Проверь себя',
+              title: 'Проверь себя: composite vs reusable',
               type: 'quiz',
               quiz: {
                 kind: 'single',
@@ -946,6 +1235,24 @@ export const cicdBasicsCourse: Course = {
                 ],
                 correct: ['b'],
                 explanation: 'Composite action = «функция из шагов», работает в текущем job. Reusable workflow = «функция из job-ов», запускается на своём runner, требует явной передачи secrets.',
+              },
+            },
+            {
+              id: 'cd-l11-s5',
+              title: 'Проверь себя: между репозиториями',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Как переиспользовать workflow между разными репозиториями организации?',
+                options: [
+                  { id: 'a', text: 'Скопировать YAML во все репозитории' },
+                  { id: 'b', text: 'Reusable workflow в `.github`-репозитории организации: `owner/repo/.github/workflows/x.yml@v1`' },
+                  { id: 'c', text: 'Только через composite actions' },
+                  { id: 'd', text: 'Это невозможно' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'Стандарт — `.github`-репозиторий организации (например, `myorg/.github`). Все репозитории вызывают `uses: myorg/.github/.github/workflows/ci.yml@v1`. Обновление workflow — в одном месте, все репозитории получают его. Версия — через `@v1` (тег). Composite actions между репозиториями тоже можно, но reusable workflow — стандарт для job-ов.',
               },
             },
           ],
