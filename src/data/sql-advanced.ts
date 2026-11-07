@@ -36,7 +36,7 @@ export const sqlAdvancedCourse: Course = {
         {
           id: 'sql-l9',
           title: 'Подзапросы: IN, EXISTS, скалярные',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
               id: 'sql-l9-s1',
@@ -113,12 +113,77 @@ WHERE NOT EXISTS (
                 explanation: 'NOT IN (1, 2, NULL) = «x ≠ 1 AND x ≠ 2 AND x ≠ NULL». Последнее всегда NULL (не true), значит всё условие false → 0 строк. NOT EXISTS такой проблемы не имеет.',
               },
             },
+            {
+              id: 'sql-l9-s4',
+              title: 'Коррелированные подзапросы',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Коррелированный подзапрос ссылается на строку внешнего запроса. Он выполняется для каждой строки внешнего запроса (или оптимизируется планировщиком в JOIN). Классика: «найти заказы, у которых сумма выше средней по этому пользователю».' },
+                {
+                  type: 'code',
+                  lang: 'sql',
+                  caption: 'Коррелированный подзапрос',
+                  code: `-- Заказы выше среднего чека КАЖДОГО пользователя
+SELECT o.id, o.user_id, o.total
+FROM orders o
+WHERE o.total > (
+    SELECT AVG(o2.total)
+    FROM orders o2
+    WHERE o2.user_id = o.user_id   -- корреляция: o.user_id
+);`,
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Коррелированный: ссылается на внешний запрос (o.user_id)',
+                    'Некоррелированный: независимый (AVG(total) по всей таблице)',
+                    'Коррелированный может быть медленным: выполняется для каждой строки',
+                    'Планировщик часто переписывает в JOIN/LATERAL',
+                    'Для «топ-1 по группе» обычно лучше ROW_NUMBER (см. оконные функции)',
+                  ],
+                },
+                { type: 'note', text: 'На собеседовании: «чем коррелированный подзапрос отличается от обычного?» — «коррелированный ссылается на внешний запрос и выполняется для каждой строки (или переписывается в JOIN)». Это база для понимания оконных функций.' },
+              ],
+            },
+            {
+              id: 'sql-l9-s5',
+              title: 'Практика: подзапросы',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Разница между IN и EXISTS на практике: результат один, но семантика разная. EXISTS останавливается на первой найденной строке — быстрее, если строк много.' },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE users (id INTEGER, email TEXT);
+CREATE TABLE orders (id INTEGER, user_id INTEGER, total INTEGER, status TEXT);
+INSERT INTO users VALUES (1, 'a@x.com'), (2, 'b@x.com'), (3, 'c@x.com');
+INSERT INTO orders VALUES
+  (10, 1, 1000, 'paid'),
+  (11, 1, 500, 'paid'),
+  (12, 2, 2000, 'cancelled'),
+  (13, 3, 300, 'new');`,
+                    task: 'Через подзапрос найдите email пользователей, у которых есть хотя бы один оплаченный заказ. Колонка: email. Отсортируйте по email.',
+                    solution: `SELECT email FROM users
+WHERE id IN (
+    SELECT user_id FROM orders WHERE status = 'paid'
+)
+ORDER BY email;`,
+                    expected: {
+                      columns: ['email'],
+                      rows: [['a@x.com']],
+                      order: 'order',
+                    },
+                    hint: 'SELECT email FROM users WHERE id IN (SELECT user_id FROM orders WHERE status = ...)',
+                  },
+                },
+              ],
+            },
           ],
         },
         {
           id: 'sql-l10',
           title: 'CTE: WITH для читаемости',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'sql-l10-s1',
@@ -194,34 +259,74 @@ ORDER BY tu.revenue DESC;`,
             },
             {
               id: 'sql-l10-s4',
+              title: 'CTE vs подзапрос: когда что',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'CTE — не «всегда лучше». Иногда подзапрос читается проще. Правило: если подзапрос один и короткий — можно и подзапрос. Если 2+ или длинный — CTE.' },
+                {
+                  type: 'table',
+                  caption: 'CTE vs подзапрос',
+                  head: ['Ситуация', 'Лучше'],
+                  rows: [
+                    ['Один простой подзапрос', 'Подзапрос (короче)'],
+                    ['2+ подзапросов', 'CTE (читается сверху вниз)'],
+                    ['Подзапрос используется 2+ раз', 'CTE (один раз определили)'],
+                    ['Нужна рекурсия (иерархия)', 'CTE (WITH RECURSIVE)'],
+                    ['Нужно отладить по шагам', 'CTE (каждый блок отдельно)'],
+                  ],
+                },
+                {
+                  type: 'code',
+                  lang: 'sql',
+                  caption: 'CTE в PostgreSQL: MATERIALIZED и NOT MATERIALIZED',
+                  code: `-- По умолчанию CTE в PostgreSQL 12+ может инлайниться
+WITH paid AS (
+    SELECT user_id, SUM(total) AS revenue
+    FROM orders WHERE status = 'paid'
+    GROUP BY user_id
+)
+SELECT * FROM paid WHERE revenue > 1000;
+
+-- Принудительно материализовать (полезно, если CTE тяжёлый и используется 2+ раз)
+WITH paid AS MATERIALIZED (
+    SELECT ...
+)
+SELECT ...
+
+-- Принудительно инлайнить (как обычный подзапрос)
+WITH paid AS NOT MATERIALIZED (...)
+SELECT ...`,
+                },
+                { type: 'note', text: 'На собеседовании middle: «CTE — это временная таблица?» — «нет, это именованный подзапрос; в PostgreSQL 12+ может инлайниться, если не используется дважды или не помечен MATERIALIZED». MATERIALIZED — когда хотите «посчитать один раз и переиспользовать».' },
+              ],
+            },
+            {
+              id: 'sql-l10-s5',
               title: 'Практика: CTE для фильтра по агрегату',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'CTE удобен, когда нужно сначала посчитать агрегат, а потом отфильтровать по нему. HAVING тоже умеет, но CTE читается лучше, когда агрегатов несколько.',
-                },
+                { type: 'p', text: 'CTE удобен, когда нужно сначала посчитать агрегат, а потом отфильтровать по нему. HAVING тоже умеет, но CTE читается лучше, когда агрегатов несколько.' },
                 {
                   type: 'sandbox',
                   sandbox: {
                     schema: `CREATE TABLE orders (id INTEGER, user_id INTEGER, total INTEGER, status TEXT);
-            INSERT INTO orders VALUES
-              (1, 1, 1000, 'paid'),
-              (2, 1, 500, 'paid'),
-              (3, 2, 2000, 'paid'),
-              (4, 2, 500, 'cancelled'),
-              (5, 3, 300, 'new');`,
+INSERT INTO orders VALUES
+  (1, 1, 1000, 'paid'),
+  (2, 1, 500, 'paid'),
+  (3, 2, 2000, 'paid'),
+  (4, 2, 500, 'cancelled'),
+  (5, 3, 300, 'new');`,
                     task: 'Через CTE найдите пользователей, у которых сумма оплаченных заказов больше 1000. Колонки: user_id, revenue. Отсортируйте по user_id.',
                     solution: `WITH paid AS (
-              SELECT user_id, SUM(total) AS revenue
-              FROM orders
-              WHERE status = 'paid'
-              GROUP BY user_id
-            )
-            SELECT user_id, revenue
-            FROM paid
-            WHERE revenue > 1000
-            ORDER BY user_id;`,
+    SELECT user_id, SUM(total) AS revenue
+    FROM orders
+    WHERE status = 'paid'
+    GROUP BY user_id
+)
+SELECT user_id, revenue
+FROM paid
+WHERE revenue > 1000
+ORDER BY user_id;`,
                     expected: {
                       columns: ['user_id', 'revenue'],
                       rows: [
@@ -240,7 +345,7 @@ ORDER BY tu.revenue DESC;`,
         {
           id: 'sql-l11',
           title: 'INSERT, UPDATE, DELETE',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'sql-l11-s1',
@@ -310,12 +415,75 @@ DELETE FROM orders;`,
                 explanation: 'INSERT — создать, UPDATE — изменить, DELETE — удалить, SELECT — прочитать.',
               },
             },
+            {
+              id: 'sql-l11-s4',
+              title: 'UPSERT и RETURNING',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'UPSERT (INSERT ... ON CONFLICT) — «вставь или обнови, если уже есть». Классика: идемпотентный consumer — повторная обработка события не создаёт дубликат. RETURNING — вернуть значения из изменённых строк за один запрос (без второго SELECT).' },
+                {
+                  type: 'code',
+                  lang: 'sql',
+                  caption: 'UPSERT + RETURNING (PostgreSQL)',
+                  code: `-- UPSERT: вставить, если нет; обновить, если есть
+INSERT INTO users (email, name)
+VALUES ('anna@example.com', 'Анна')
+ON CONFLICT (email)
+DO UPDATE SET name = EXCLUDED.name
+RETURNING id, email, name;
+-- Вернёт: id=1, email=anna@example.com, name=Анна
+
+-- RETURNING при INSERT
+INSERT INTO orders (user_id, total)
+VALUES (1, 1000)
+RETURNING id, created_at;
+
+-- RETURNING при UPDATE
+UPDATE orders SET status = 'paid'
+WHERE id = 42
+RETURNING id, status, updated_at;
+
+-- RETURNING при DELETE
+DELETE FROM sessions
+WHERE expires_at < NOW()
+RETURNING user_id;   -- кто разлогинен`,
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'ON CONFLICT (col) — по какому constraint ловить дубликат',
+                    'EXCLUDED — «строка, которую пытались вставить»',
+                    'RETURNING — «вернуть значения из изменённых строк»',
+                    'В MySQL — INSERT ... ON DUPLICATE KEY UPDATE (без RETURNING)',
+                    'RETURNING есть в PostgreSQL, SQLite, MariaDB; в MySQL — нет',
+                  ],
+                },
+                { type: 'note', text: 'На собеседовании middle backend: «как сделать UPSERT в PostgreSQL?» — «INSERT ... ON CONFLICT (col) DO UPDATE SET ... RETURNING». «Зачем RETURNING?» — «получить id/значения без второго SELECT». Без UPSERT идемпотентность consumer-а не сделать.' },
+              ],
+            },
+            {
+              id: 'sql-l11-s5',
+              title: 'Проверь себя: UPSERT',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Что делает `INSERT ... ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name`?',
+                options: [
+                  { id: 'a', text: 'Всегда вставляет новую строку' },
+                  { id: 'b', text: 'Вставляет; если email уже есть — обновляет name' },
+                  { id: 'c', text: 'Всегда обновляет существующую строку' },
+                  { id: 'd', text: 'Удаляет дубликат по email' },
+                ],
+                correct: ['b'],
+                explanation: 'UPSERT: «вставь, но если конфликт по email — обнови name значением из EXCLUDED (то, что пытались вставить)». Классика для идемпотентной обработки: повторный INSERT не создаёт дубликат, а обновляет.',
+              },
+            },
           ],
         },
         {
           id: 'sql-l12',
           title: 'Практика: реальные задачи',
-          minutes: 35,
+          minutes: 40,
           steps: [
             {
               id: 'sql-l12-s1',
@@ -410,6 +578,41 @@ HAVING o.total != SUM(oi.quantity * oi.price);
                 explanation: 'Нужно соединить orders и order_items, сгруппировать по заказу, посчитать SUM(quantity * price) и сравнить с сохранённым total через HAVING.',
               },
             },
+            {
+              id: 'sql-l12-s5',
+              title: 'Практика: сверка данных',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Задача из реальной жизни: после миграции проверить, что сумма заказа совпадает с суммой позиций. Если нет — баг в коде, который пишет в БД, или в миграции.' },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE orders (id INTEGER, total INTEGER);
+CREATE TABLE order_items (id INTEGER, order_id INTEGER, quantity INTEGER, price INTEGER);
+INSERT INTO orders VALUES (1, 1000), (2, 500), (3, 300);
+INSERT INTO order_items VALUES
+  (10, 1, 2, 500),
+  (11, 2, 1, 500),
+  (12, 3, 1, 100);`,
+                    task: 'Найдите заказы, у которых orders.total не совпадает с SUM(order_items.quantity * order_items.price). Колонки: id, total, computed. Отсортируйте по id.',
+                    solution: `SELECT o.id, o.total, SUM(oi.quantity * oi.price) AS computed
+FROM orders o
+JOIN order_items oi ON oi.order_id = o.id
+GROUP BY o.id, o.total
+HAVING o.total != SUM(oi.quantity * oi.price)
+ORDER BY o.id;`,
+                    expected: {
+                      columns: ['id', 'total', 'computed'],
+                      rows: [
+                        [3, 300, 100],
+                      ],
+                      order: 'order',
+                    },
+                    hint: 'JOIN orders и order_items, GROUP BY o.id, HAVING o.total != SUM(oi.quantity * oi.price)',
+                  },
+                },
+              ],
+            },
           ],
         },
       ],
@@ -425,7 +628,7 @@ HAVING o.total != SUM(oi.quantity * oi.price);
         {
           id: 'sql-l13',
           title: 'Индексы: B-tree, GIN, составные',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
               id: 'sql-l13-s1',
@@ -444,7 +647,7 @@ HAVING o.total != SUM(oi.quantity * oi.price);
                     N1 --> L1["Лист: 5, 10"]
                     N1 --> L2["Лист: 30, 45"]
                     N2 --> L3["Лист: 70, 90"]
-                    N3 --> L4["Лист: 110, 130"]`
+                    N3 --> L4["Лист: 110, 130"]`,
                 },
                 {
                   type: 'code',
@@ -518,12 +721,62 @@ SELECT indexname, indexdef FROM pg_indexes WHERE tablename = 'orders';`,
                 explanation: 'Составной индекс (user_id, status) работает для запросов, где есть первый столбец. WHERE status без user_id — не использует индекс. Для такого запроса нужен отдельный индекс на (status).',
               },
             },
+            {
+              id: 'sql-l13-s4',
+              title: 'Покрывающий индекс и INCLUDE',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Покрывающий индекс (covering index) — индекс, который содержит все столбцы, нужные запросу. Тогда СУБД читает только индекс, не заглядывая в таблицу. В PostgreSQL — через INCLUDE: «в индексе есть ключ, но дополнительные столбцы только для чтения».' },
+                {
+                  type: 'code',
+                  lang: 'sql',
+                  caption: 'INCLUDE и покрывающий индекс',
+                  code: `-- Запрос: SELECT total, created_at FROM orders WHERE user_id = 5;
+-- Обычный индекс: Index Scan + Heap Fetch (читает таблицу)
+CREATE INDEX idx_orders_user ON orders(user_id);
+
+-- Покрывающий индекс: только Index Scan (без таблицы)
+CREATE INDEX idx_orders_user_include ON orders(user_id) INCLUDE (total, created_at);
+-- Index Only Scan — быстрее, если visibility map актуален (после VACUUM)
+
+-- Покрывающий составной (альтернатива, но ключ весит больше)
+CREATE INDEX idx_orders_user_total ON orders(user_id, total, created_at);`,
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'INCLUDE — «в индексе есть, но не для поиска»',
+                    'Index Only Scan — не читает таблицу, только индекс',
+                    'Покрывающий индекс больше по размеру, но быстрее для SELECT',
+                    'INCLUDE лучше, чем составной ключ: ключ меньше, поиск по (user_id) не страдает',
+                    'Index Only Scan требует актуальной visibility map (VACUUM)',
+                  ],
+                },
+                { type: 'note', text: 'На собеседовании middle: «что такое покрывающий индекс?» — «индекс, содержащий все нужные столбцы, так что СУБД не читает таблицу (Index Only Scan)». «Чем INCLUDE лучше составного ключа?» — «ключ меньше, поиск по первому столбцу не страдает, но при этом все нужные данные в индексе».' },
+              ],
+            },
+            {
+              id: 'sql-l13-s5',
+              title: 'Проверь себя: типы',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте тип индекса и его назначение',
+                pairs: [
+                  { left: 'B-tree', right: '=, <, >, BETWEEN, ORDER BY' },
+                  { left: 'GIN', right: 'jsonb, массивы, полнотекст' },
+                  { left: 'BRIN', right: 'Огромные таблицы с сортированными данными' },
+                  { left: 'INCLUDE', right: 'Покрывающий: все столбцы в индексе' },
+                ],
+                explanation: 'B-tree — универсал. GIN — jsonb/массивы/поиск. BRIN — логи/метрики. INCLUDE — покрывающий (Index Only Scan). На собеседовании middle: «какой индекс для jsonb?» — GIN.',
+              },
+            },
           ],
         },
         {
           id: 'sql-l14',
           title: 'Транзакции и уровни изоляции',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
               id: 'sql-l14-s1',
@@ -546,20 +799,17 @@ SELECT indexname, indexdef FROM pg_indexes WHERE tablename = 'orders';`,
                     else ошибка (например, constraint)
                         C->>DB: ROLLBACK
                         DB-->>C: откат (балансы как были)
-                    end`
+                    end`,
                 },
                 {
                   type: 'code',
                   lang: 'sql',
-                  caption: 'Явная транзакция',
+                  caption: 'Явная транзакция + SAVEPOINT',
                   code: `BEGIN;
 UPDATE accounts SET balance = balance - 100 WHERE id = 1;
 UPDATE accounts SET balance = balance + 100 WHERE id = 2;
 -- Если всё ок:
 COMMIT;
-
--- Если что-то пошло не так (например, во втором UPDATE):
-ROLLBACK;
 
 -- SAVEPOINT — точка отката внутри транзакции
 BEGIN;
@@ -567,7 +817,7 @@ UPDATE orders SET status = 'paid' WHERE id = 42;
 SAVEPOINT after_payment;
 UPDATE inventory SET stock = stock - 1 WHERE product_id = 7;
 -- Если склад упал — откатим только до savepoint
-ROLLBACK TO SAVEPOINT after_payment;   -- заказ остаётся paid, склад не тронут
+ROLLBACK TO SAVEPOINT after_payment;
 COMMIT;`,
                 },
               ],
@@ -619,12 +869,60 @@ SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL REPEATABLE READ;`,
                 explanation: 'SAVEPOINT — точка внутри транзакции. ROLLBACK TO откатывает только операции после неё, транзакция остаётся открытой. Позволяет «частично откатить» внутри одной большой транзакции.',
               },
             },
+            {
+              id: 'sql-l14-s4',
+              title: 'Аномалии на практике',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Три классические аномалии, от которых защищают уровни изоляции. Понимание — ключ к выбору правильного уровня.' },
+                {
+                  type: 'table',
+                  caption: 'Три аномалии',
+                  head: ['Аномалия', 'Сценарий', 'Защита'],
+                  rows: [
+                    ['Dirty read', 'Транзакция A видит незакоммиченные изменения B', 'Read Committed и выше'],
+                    ['Non-repeatable read', 'A читает X дважды, между ними B изменил X', 'Repeatable Read и выше'],
+                    ['Phantom read', 'A читает диапазон дважды, между ними B добавил строку', 'Serializable (в PG — Repeatable Read)'],
+                  ],
+                },
+                {
+                  type: 'code',
+                  lang: 'sql',
+                  caption: 'Пример non-repeatable read',
+                  code: `-- Транзакция A (Read Committed)
+BEGIN;
+SELECT balance FROM accounts WHERE id = 1;  -- 1000
+-- Транзакция B: UPDATE accounts SET balance = 500 WHERE id = 1; COMMIT;
+SELECT balance FROM accounts WHERE id = 1;  -- 500 (изменилось!)
+COMMIT;
+
+-- При Repeatable Read: оба SELECT вернут 1000 (snapshot)`,
+                },
+                { type: 'note', text: 'На собеседовании middle: «что такое phantom read?» — «A читает диапазон дважды, B добавил строку, второй SELECT возвращает больше строк». «Как защититься?» — «Serializable; в PostgreSQL Repeatable Read тоже защищает (через snapshot)». Это отличает middle от junior.' },
+              ],
+            },
+            {
+              id: 'sql-l14-s5',
+              title: 'Проверь себя: аномалии',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте аномалию и её суть',
+                pairs: [
+                  { left: 'Dirty read', right: 'Видим незакоммиченные изменения другой транзакции' },
+                  { left: 'Non-repeatable read', right: 'Дважды читаем строку — значение изменилось' },
+                  { left: 'Phantom read', right: 'Дважды читаем диапазон — появились новые строки' },
+                  { left: 'Serializable', right: 'Уровень изоляции, защищающий от всех трёх' },
+                ],
+                explanation: 'Dirty — «грязные» данные. Non-repeatable — «строка изменилась». Phantom — «строки появились». Serializable — уровень, защищающий от всех трёх. На собеседовании middle: «какие аномалии знаете?» — три из этого списка.',
+              },
+            },
           ],
         },
         {
           id: 'sql-l15',
           title: 'EXPLAIN и оптимизация запросов',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
               id: 'sql-l15-s1',
@@ -641,7 +939,7 @@ SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL REPEATABLE READ;`,
                     end
                     subgraph Good["Хорошо: Index Scan"]
                         G1["Index Scan on idx_orders_user_id<br/>cost=0..12<br/>rows=3"] --> G2["rows=3 (без перебора)"]
-                    end`
+                    end`,
                 },
                 {
                   type: 'code',
@@ -715,6 +1013,59 @@ SELECT * FROM orders WHERE created_at >= '2025-01-01' AND created_at < '2025-01-
                 explanation: 'Индекс B-tree построен по значениям created_at. DATE(created_at) — новое значение на каждую строку, индекс к нему не применим. Решение: переписать как диапазон created_at >= X AND < Y.',
               },
             },
+            {
+              id: 'sql-l15-s4',
+              title: 'BUFFERS и auto_explain',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'EXPLAIN ANALYZE показывает время, но не говорит, откуда оно берётся: CPU или диск. BUFFERS добавляет информацию о страницах: сколько из кэша (shared hit) и сколько с диска (shared read).' },
+                {
+                  type: 'code',
+                  lang: 'sql',
+                  caption: 'EXPLAIN с BUFFERS',
+                  code: `EXPLAIN (ANALYZE, BUFFERS)
+SELECT * FROM orders WHERE user_id = 5;
+
+-- Index Scan using idx_orders_user_id on orders
+--   (actual time=0.02..0.03 rows=3 loops=1)
+--   Index Cond: (user_id = 5)
+--   Buffers: shared hit=4 read=2
+-- Planning Time: 0.1 ms
+-- Execution Time: 0.05 ms
+--
+-- shared hit=4   → 4 страницы из кэша (быстро)
+-- read=2        → 2 страницы с диска (медленно)`,
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'shared hit — страницы из shared_buffers (быстро)',
+                    'shared read — страницы с диска (медленно)',
+                    'temp read/written — временные файлы (сортировка не влезла в work_mem)',
+                    'Много read → либо мало shared_buffers, либо плохой индекс',
+                    'auto_explain (shared_preload_libraries) — логирует планы медленных запросов автоматически',
+                  ],
+                },
+                { type: 'note', text: 'На собеседовании middle: «как понять, что запрос тормозит из-за диска, а не CPU?» — «EXPLAIN (ANALYZE, BUFFERS): высокий shared read = много чтения с диска; shared hit = из кэша». Без BUFFERS видно только «45 мс», но непонятно — это CPU или I/O.' },
+              ],
+            },
+            {
+              id: 'sql-l15-s5',
+              title: 'Проверь себя: BUFFERS',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'В EXPLAIN ANALYZE BUFFERS видите `shared read=50000`. Что это значит?',
+                options: [
+                  { id: 'a', text: '50 000 строк прочитано' },
+                  { id: 'b', text: '50 000 страниц (× 8 KB = 400 MB) прочитано с диска — данные не в кэше' },
+                  { id: 'c', text: 'Ошибка в плане' },
+                  { id: 'd', text: '50 000 транзакций' },
+                ],
+                correct: ['b'],
+                explanation: 'shared read — страницы, которых не было в shared_buffers, читались с диска. 1 страница = 8 KB. 50000 read = 400 MB I/O. Это дорого. Причины: мало shared_buffers, плохой индекс, или запрос реально читает много данных.',
+              },
+            },
           ],
         },
       ],
@@ -730,7 +1081,7 @@ SELECT * FROM orders WHERE created_at >= '2025-01-01' AND created_at < '2025-01-
         {
           id: 'sql-l16',
           title: 'Оконные функции: OVER, PARTITION BY',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
               id: 'sql-l16-s1',
@@ -744,7 +1095,7 @@ SELECT * FROM orders WHERE created_at >= '2025-01-01' AND created_at < '2025-01-
                   code: `graph LR
                     Rows["Все строки<br/>orders"] --> Partition["PARTITION BY user_id<br/>(группы по юзеру)"]
                     Partition --> Calc["SUM(total) OVER<br/>(сумма в группе)"]
-                    Calc --> Result["Каждая строка<br/>+ колонка суммы<br/>в её группе"]`
+                    Calc --> Result["Каждая строка<br/>+ колонка суммы<br/>в её группе"]`,
                 },
                 {
                   type: 'code',
@@ -850,28 +1201,73 @@ GROUP BY DATE(created_at);`,
             },
             {
               id: 'sql-l16-s4',
-              title: 'Практика: ROW_NUMBER в оконных функциях',
+              title: 'ROWS BETWEEN: скользящее окно',
               type: 'theory',
               blocks: [
+                { type: 'p', text: 'По умолчанию OVER (ORDER BY ...) — накопительное окно (от начала до текущей строки). ROWS BETWEEN позволяет задать произвольные границы: «последние 7 строк», «от текущей до +3», «всё окно».' },
                 {
-                  type: 'p',
-                  text: 'Оконные функции позволяют пронумеровать строки внутри группы, не схлопывая их. Классика — «топ-N по каждому пользователю».',
+                  type: 'code',
+                  lang: 'sql',
+                  caption: 'ROWS BETWEEN',
+                  code: `-- Скользящее среднее за последние 7 дней
+SELECT
+    day,
+    revenue,
+    AVG(revenue) OVER (
+        ORDER BY day
+        ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+    ) AS avg_7d
+FROM daily_revenue;
+
+-- Накопительная сумма (от начала до текущей)
+SUM(revenue) OVER (
+    ORDER BY day
+    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+) AS running_total
+
+-- Итог по всему окну (без порядка)
+SUM(revenue) OVER (
+    PARTITION BY month
+    ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+) AS month_total
+
+-- Разница с предыдущей строкой
+revenue - LAG(revenue) OVER (ORDER BY day) AS diff_prev_day`,
                 },
+                {
+                  type: 'list',
+                  items: [
+                    'ROWS BETWEEN 6 PRECEDING AND CURRENT ROW — 7 строк (6 до + текущая)',
+                    'UNBOUNDED PRECEDING — от начала окна',
+                    'UNBOUNDED FOLLOWING — до конца окна',
+                    'Без ORDER BY — всё окно целиком (не накопительно)',
+                    'ROWS vs RANGE: ROWS — по строкам, RANGE — по значениям (для дат, чисел)',
+                  ],
+                },
+                { type: 'note', text: 'На собеседовании middle: «как посчитать скользящее среднее за 7 дней?» — «AVG(revenue) OVER (ORDER BY day ROWS BETWEEN 6 PRECEDING AND CURRENT ROW)». «Чем ROWS отличается от RANGE?» — «ROWS — по строкам; RANGE — по значениям (для дат — календарные дни)».' },
+              ],
+            },
+            {
+              id: 'sql-l16-s5',
+              title: 'Практика: ROW_NUMBER',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Оконные функции позволяют пронумеровать строки внутри группы, не схлопывая их. Классика — «топ-N по каждому пользователю».' },
                 {
                   type: 'sandbox',
                   sandbox: {
                     schema: `CREATE TABLE orders (id INTEGER, user_id INTEGER, total INTEGER);
-            INSERT INTO orders VALUES
-              (1, 1, 1000),
-              (2, 1, 500),
-              (3, 1, 200),
-              (4, 2, 3000),
-              (5, 2, 100);`,
+INSERT INTO orders VALUES
+  (1, 1, 1000),
+  (2, 1, 500),
+  (3, 1, 200),
+  (4, 2, 3000),
+  (5, 2, 100);`,
                     task: 'Пронумеруйте заказы внутри каждого пользователя по убыванию суммы (колонка rn). Выведите user_id, id, total, rn. Отсортируйте по user_id и rn.',
                     solution: `SELECT user_id, id, total,
-              ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY total DESC) AS rn
-            FROM orders
-            ORDER BY user_id, rn;`,
+  ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY total DESC) AS rn
+FROM orders
+ORDER BY user_id, rn;`,
                     expected: {
                       columns: ['user_id', 'id', 'total', 'rn'],
                       rows: [
@@ -893,7 +1289,7 @@ GROUP BY DATE(created_at);`,
         {
           id: 'sql-l17',
           title: 'Миграции и версионирование схемы',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'sql-l17-s1',
@@ -941,7 +1337,7 @@ alembic history`,
               title: 'Expand-contract и опасные миграции',
               type: 'theory',
               blocks: [
-                { type: 'p', text: 'Опасная миграция — та, что ломает приложение во время деплоя. Пример: переименовать колонку. Пока идёт деплой (30 сек), старый код читает `name`, а новый — `full_name`. В этот момент что-то падает. Решение — expand-contract (3 деплоя).' },
+                { type: 'p', text: 'Опасная миграция — та, что ломает приложение во время деплоя. Пример: переименовать колонку. Пока идёт деплой (30 сек), старый код читает name, а новый — full_name. В этот момент что-то падает. Решение — expand-contract (3 деплоя).' },
                 {
                   type: 'code',
                   lang: 'sql',
@@ -988,6 +1384,61 @@ ALTER TABLE users DROP COLUMN name;
                 explanation: 'При обычном RENAME COLUMN старый код (читающий старое имя) сломается во время деплоя. Expand-contract: expand (добавить новую) → migrate (код пишет в обе) → contract (удалить старую). Никакого даунтайма.',
               },
             },
+            {
+              id: 'sql-l17-s4',
+              title: 'CREATE INDEX CONCURRENTLY',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Обычный CREATE INDEX блокирует запись в таблицу на всё время построения. На большой таблице (10M строк) — это минуты простоя. CONCURRENTLY строит индекс без блокировки: таблица доступна для чтения и записи.' },
+                {
+                  type: 'code',
+                  lang: 'sql',
+                  caption: 'CONCURRENTLY vs обычный',
+                  code: `-- Плохо: блокирует запись на всё время построения
+CREATE INDEX idx_orders_user_id ON orders(user_id);
+-- На 10M строк — 30+ секунд блокировки записи
+
+-- Хорошо: не блокирует
+CREATE INDEX CONCURRENTLY idx_orders_user_id ON orders(user_id);
+-- Дольше по времени, но запись работает
+
+-- Если CONCURRENTLY упал (например, из-за ограничения):
+-- останется «invalid» индекс, его нужно удалить и повторить
+SELECT indexrelid::regclass, indisvalid FROM pg_index WHERE NOT indisvalid;
+DROP INDEX CONCURRENTLY idx_orders_user_id;
+CREATE INDEX CONCURRENTLY idx_orders_user_id ON orders(user_id);`,
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Обычный CREATE INDEX — блокирует запись (SHARE lock)',
+                    'CONCURRENTLY — не блокирует, но дольше (2 прохода по таблице)',
+                    'CONCURRENTLY нельзя внутри транзакции (ошибка)',
+                    'Если упал — остаётся invalid индекс, надо DROP и повторить',
+                    'Проверка: SELECT * FROM pg_index WHERE NOT indisvalid',
+                  ],
+                },
+                { type: 'note', text: 'На собеседовании middle: «как создать индекс на большой прод-таблице без простоя?» — «CREATE INDEX CONCURRENTLY». «Что если упал?» — «останется invalid индекс, удалить и повторить». «Можно в транзакции?» — «нет, ошибка». Это классический вопрос по продакшн-миграциям.' },
+              ],
+            },
+            {
+              id: 'sql-l17-s5',
+              title: 'Проверь себя: CONCURRENTLY',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Почему CREATE INDEX CONCURRENTLY нельзя запускать внутри транзакции?',
+                options: [
+                  { id: 'a', text: 'Он не поддерживается в PostgreSQL' },
+                  { id: 'b', text: 'Он работает в несколько фаз и не может быть атомарным: если упадёт посередине — оставит invalid индекс' },
+                  { id: 'c', text: 'Он блокирует таблицу' },
+                  { id: 'd', text: 'Он работает только с UNIQUE' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'CONCURRENTLY строит индекс в фоне (2+ прохода по таблице). Если упадёт посередине, транзакция откатить его не может — индекс останется в состоянии invalid. Поэтому CONCURRENTLY требует autocommit (вне транзакции). Проверка: SELECT * FROM pg_index WHERE NOT indisvalid.',
+              },
+            },
           ],
         },
       ],
@@ -1000,19 +1451,16 @@ ALTER TABLE users DROP COLUMN name;
       title: 'Продвинутые возможности PostgreSQL',
       lessons: [
         {
-          id: 'sql-l14',
+          id: 'sql-l18',
           title: 'Рекурсивные CTE: иерархии и деревья',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
-              id: 'sql-l14-s1',
+              id: 'sql-l18-s1',
               title: 'WITH RECURSIVE: как строится дерево',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'Обычный CTE выполняется один раз. Рекурсивный (WITH RECURSIVE) — повторяется, пока не перестанет возвращать новые строки. Это единственный способ обойти иерархию в SQL: дерево категорий, оргструктуру, цепочку комментариев, граф зависимостей.',
-                },
+                { type: 'p', text: 'Обычный CTE выполняется один раз. Рекурсивный (WITH RECURSIVE) — повторяется, пока не перестанет возвращать новые строки. Это единственный способ обойти иерархию в SQL: дерево категорий, оргструктуру, цепочку комментариев, граф зависимостей.' },
                 {
                   type: 'mermaid',
                   caption: 'Рекурсивный CTE обходит дерево категорий итерация за итерацией',
@@ -1033,16 +1481,7 @@ ALTER TABLE users DROP COLUMN name;
                     A --> C
                     B --> D
                     B --> E
-                    C --> F`
-                },
-                {
-                  type: 'code',
-                  lang: 'sql',
-                  caption: 'Схема таблицы categories',
-                  code: `categories
-  id         integer primary key
-  name       text
-  parent_id  integer references categories(id)  -- NULL для корневых`,
+                    C --> F`,
                 },
                 {
                   type: 'code',
@@ -1075,21 +1514,15 @@ ORDER BY level, id;`,
                     'level — вычисляемый столбец, показывает глубину',
                   ],
                 },
-                {
-                  type: 'note',
-                  text: 'WITH RECURSIVE — не «рекурсивная функция», а цикл: PostgreSQL выполняет anchor, потом снова recursive с новым набором, пока результат не станет пустым. Глубокие деревья (>1000 уровней) ограничены `max_recursion_depth` в конфиге.',
-                },
+                { type: 'note', text: 'WITH RECURSIVE — не «рекурсивная функция», а цикл: PostgreSQL выполняет anchor, потом снова recursive с новым набором, пока результат не станет пустым. Глубокие деревья (>1000 уровней) ограничены `max_recursion_depth` в конфиге.' },
               ],
             },
             {
-              id: 'sql-l14-s2',
+              id: 'sql-l18-s2',
               title: 'Практические паттерны: путь до корня и поддерево',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'Два главных паттерна: «все потомки категории» (top-down, для навигации) и «путь до корня» (bottom-up, для хлебных крошек). Один и тот же RECURSIVE, но направление разное — смотря куда смотрит JOIN.',
-                },
+                { type: 'p', text: 'Два главных паттерна: «все потомки категории» (top-down, для навигации) и «путь до корня» (bottom-up, для хлебных крошек). Один и тот же RECURSIVE, но направление разное — смотря куда смотрит JOIN.' },
                 {
                   type: 'code',
                   lang: 'sql',
@@ -1107,8 +1540,7 @@ ORDER BY level, id;`,
     FROM categories c
     JOIN subtree s ON c.parent_id = s.id
 )
-SELECT * FROM subtree;
--- Phones, iPhone, Android, (и их потомки, если есть)`,
+SELECT * FROM subtree;`,
                 },
                 {
                   type: 'code',
@@ -1122,73 +1554,111 @@ SELECT * FROM subtree;
 
     UNION ALL
 
-    -- Recursive: идём к родителю
+    -- Recursive: идём к родителю (JOIN наоборот)
     SELECT c.id, c.name, c.parent_id,
            c.name || ' > ' || p.full_path,
            p.depth + 1
     FROM categories c
-    JOIN path p ON p.parent_id = c.id    -- ← JOIN наоборот: c — родитель
+    JOIN path p ON p.parent_id = c.id
 )
 SELECT full_path FROM path
 ORDER BY depth DESC
 LIMIT 1;
 -- "Electronics > Phones > iPhone"`,
                 },
-                {
-                  type: 'table',
-                  caption: 'Когда какой паттерн',
-                  head: ['Задача', 'Направление JOIN', 'Пример'],
-                  rows: [
-                    ['Все потомки (навигация)', 'c.parent_id = current.id', 'Список товаров в категории + подкатегориях'],
-                    ['Путь до корня (хлебные крошки)', 'current.parent_id = c.id', 'Electronics > Phones > iPhone'],
-                    ['Проверка циклов', 'Ограничить depth + NOT IN (visited)', 'Не зациклиться, если данные битые'],
-                    ['Иерархия комментариев', 'c.parent_id = comment.id', 'Ответы на комментарии любой глубины'],
-                  ],
-                },
-                {
-                  type: 'note',
-                  text: 'Если в данных возможен цикл (A → B → A), рекурсивный CTE уйдёт в бесконечность. Защита: добавить в SELECT `depth` и в WHERE — `depth < 50`, либо хранить посещённые id в массиве и проверять `NOT (c.id = ANY(visited))`.',
-                },
+                { type: 'note', text: 'Если в данных возможен цикл (A → B → A), рекурсивный CTE уйдёт в бесконечность. Защита: добавить в SELECT `depth` и в WHERE — `depth < 50`, либо хранить посещённые id в массиве и проверять `NOT (c.id = ANY(visited))`.' },
               ],
             },
             {
-              id: 'sql-l14-s3',
-              title: 'Проверь себя',
+              id: 'sql-l18-s3',
+              title: 'Проверь себя: компоненты',
               type: 'quiz',
               quiz: {
-                kind: 'sorting',
-                question: 'Расставьте части рекурсивного CTE в правильном порядке выполнения',
-                items: [
-                  'Anchor: выбрать стартовые строки',
-                  'UNION ALL',
-                  'Recursive: присоединить следующий уровень',
-                  'Повторять, пока recursive не вернёт 0 строк',
+                kind: 'matching',
+                question: 'Сопоставьте компонент рекурсивного CTE и его роль',
+                pairs: [
+                  { left: 'Anchor member', right: 'Стартовый запрос (до UNION ALL)' },
+                  { left: 'Recursive member', right: 'Ссылается на сам CTE, добавляет строки' },
+                  { left: 'UNION ALL', right: 'Обязателен между anchor и recursive' },
+                  { left: 'WITH RECURSIVE', right: 'Ключевые слова для рекурсивного CTE' },
                 ],
-                correct: [
-                  'Anchor: выбрать стартовые строки',
-                  'UNION ALL',
-                  'Recursive: присоединить следующий уровень',
-                  'Повторять, пока recursive не вернёт 0 строк',
-                ],
-                explanation: 'Сначала anchor (один раз), потом recursive (в цикле до пустого результата). Между ними UNION ALL. Не UNION: UNION дороже и бессмысленно отбрасывает дубли на каждом шаге.',
+                explanation: 'Anchor — старт. Recursive — шаг. UNION ALL — между ними. WITH RECURSIVE — ключевые слова. Не UNION: UNION отбрасывает дубли и работает медленнее.',
               },
+            },
+            {
+              id: 'sql-l18-s4',
+              title: 'Проверь себя: остановка рекурсии',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Что останавливает рекурсию в WITH RECURSIVE?',
+                options: [
+                  { id: 'a', text: 'Явное ключевое слово STOP' },
+                  { id: 'b', text: 'Recursive member возвращает 0 новых строк' },
+                  { id: 'c', text: 'Автоматический таймаут 1 сек' },
+                  { id: 'd', text: 'Ограничение max_recursion_depth по умолчанию' },
+                ],
+                correct: ['b'],
+                explanation: 'Рекурсия останавливается естественно, когда recursive member возвращает пустой набор. Если данные содержат цикл — уйдёт в бесконечность, нужна защита (depth + NOT IN visited).',
+              },
+            },
+            {
+              id: 'sql-l18-s5',
+              title: 'Практика: recursive CTE',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Обойдём дерево категорий и посчитаем уровень вложенности. Sandbox использует SQLite — `WITH RECURSIVE` поддерживается.' },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE categories (id INTEGER, name TEXT, parent_id INTEGER);
+INSERT INTO categories VALUES
+  (1, 'Electronics', NULL),
+  (2, 'Phones', 1),
+  (3, 'Laptops', 1),
+  (4, 'iPhone', 2),
+  (5, 'Android', 2);`,
+                    task: 'Через WITH RECURSIVE обойдите дерево от корня (parent_id IS NULL) и выведите id, name, level. Отсортируйте по level, id.',
+                    solution: `WITH RECURSIVE tree AS (
+    SELECT id, name, parent_id, 1 AS level
+    FROM categories
+    WHERE parent_id IS NULL
+    UNION ALL
+    SELECT c.id, c.name, c.parent_id, t.level + 1
+    FROM categories c
+    JOIN tree t ON c.parent_id = t.id
+)
+SELECT id, name, level FROM tree
+ORDER BY level, id;`,
+                    expected: {
+                      columns: ['id', 'name', 'level'],
+                      rows: [
+                        [1, 'Electronics', 1],
+                        [2, 'Phones', 2],
+                        [3, 'Laptops', 2],
+                        [4, 'iPhone', 3],
+                        [5, 'Android', 3],
+                      ],
+                      order: 'order',
+                    },
+                    hint: 'WITH RECURSIVE tree AS (SELECT ... WHERE parent_id IS NULL UNION ALL SELECT ... JOIN tree) SELECT ...',
+                  },
+                },
+              ],
             },
           ],
         },
         {
-          id: 'sql-l15',
+          id: 'sql-l19',
           title: 'JSONB: полуструктурированные данные',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
-              id: 'sql-l15-s1',
+              id: 'sql-l19-s1',
               title: 'JSON vs JSONB и когда это нужно',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'PostgreSQL имеет два типа для JSON: `json` (текст, как пришёл) и `jsonb` (бинарный, разобранный). В 99% случаев нужен JSONB: он быстрее в поиске, поддерживает индексы, канонизирует порядок ключей. `json` — только если нужно сохранить исходный текст байт-в-байт (редко).',
-                },
+                { type: 'p', text: 'PostgreSQL имеет два типа для JSON: `json` (текст, как пришёл) и `jsonb` (бинарный, разобранный). В 99% случаев нужен JSONB: он быстрее в поиске, поддерживает индексы, канонизирует порядок ключей. `json` — только если нужно сохранить исходный текст байт-в-байт (редко).' },
                 {
                   type: 'mermaid',
                   caption: 'Реляционная модель vs JSONB',
@@ -1198,7 +1668,7 @@ LIMIT 1;
                     end
                     subgraph Doc["JSONB: гибкая схема"]
                         D1["orders<br/>id, user_id, total,<br/>metadata jsonb<br/>{ source, promo,<br/>utm: { source, medium } }"]
-                    end`
+                    end`,
                 },
                 {
                   type: 'table',
@@ -1212,32 +1682,14 @@ LIMIT 1;
                     ['Связи 1:N (много атрибутов)', 'Отдельная таблица (а не JSONB)'],
                   ],
                 },
-                {
-                  type: 'note',
-                  text: 'JSONB — не «серебряная пуля». Если поле участвует в JOIN, его лучше вынести в колонку. JSONB хорош для «необязательных, разнообразных, редких» данных. Классика: `orders.metadata` с UTM-метками, `events.payload` с параметрами события, `users.preferences` с настройками.',
-                },
+                { type: 'note', text: 'JSONB — не «серебряная пуля». Если поле участвует в JOIN, его лучше вынести в колонку. JSONB хорош для «необязательных, разнообразных, редких» данных. Классика: `orders.metadata` с UTM-метками, `events.payload` с параметрами события, `users.preferences` с настройками.' },
               ],
             },
             {
-              id: 'sql-l15-s2',
+              id: 'sql-l19-s2',
               title: 'Операторы и индексы',
               type: 'theory',
               blocks: [
-                {
-                  type: 'code',
-                  lang: 'sql',
-                  caption: 'Таблица с JSONB',
-                  code: `CREATE TABLE orders (
-    id serial PRIMARY KEY,
-    user_id integer,
-    total numeric,
-    metadata jsonb
-);
-
-INSERT INTO orders (user_id, total, metadata) VALUES
-(1, 1000, '{"source": "web", "promo": "SAVE10",
-            "utm": {"source": "google", "medium": "cpc"}}');`,
-                },
                 {
                   type: 'code',
                   lang: 'sql',
@@ -1261,7 +1713,7 @@ SELECT metadata #>> '{utm,medium}' FROM orders;
                 {
                   type: 'code',
                   lang: 'sql',
-                  caption: 'Операторы фильтрации',
+                  caption: 'Операторы фильтрации и индексы',
                   code: `-- @> : содержит (JSONB слева включает JSONB справа)
 SELECT * FROM orders WHERE metadata @> '{"promo": "SAVE10"}';
 
@@ -1271,30 +1723,18 @@ SELECT * FROM orders WHERE metadata ? 'promo';
 -- ?| : хотя бы один из ключей существует
 SELECT * FROM orders WHERE metadata ?| array['promo', 'coupon'];
 
--- ?& : все ключи существуют
-SELECT * FROM orders WHERE metadata ?& array['source', 'utm'];`,
-                },
-                {
-                  type: 'code',
-                  lang: 'sql',
-                  caption: 'Индексы для JSONB',
-                  code: `-- GIN по всему JSONB: для @>, ?, ?|, ?&
+-- GIN по всему JSONB: для @>, ?, ?|, ?&
 CREATE INDEX idx_orders_metadata ON orders USING gin (metadata);
 
--- GIN с jsonb_path_ops: компактнее, только для @>
-CREATE INDEX idx_orders_metadata_path
-    ON orders USING gin (metadata jsonb_path_ops);
-
 -- B-tree по конкретному полю: если часто фильтруете по нему
-CREATE INDEX idx_orders_source
-    ON orders ((metadata ->> 'source'));`,
+CREATE INDEX idx_orders_source ON orders ((metadata ->> 'source'));`,
                 },
                 {
                   type: 'list',
                   items: [
                     '-> и #> — возвращают JSONB (с кавычками для строк)',
                     '->> и #>> — возвращают TEXT (без кавычек, можно сравнивать с обычными строками)',
-                    '@> — «содержит»: main инструмент для фильтра по JSONB',
+                    '@> — «содержит»: главный инструмент для фильтра по JSONB',
                     'GIN-индекс нужен для @>, ?, ?|, ?&',
                     'B-tree по `(metadata ->> \'field\')` — если фильтруете по одному конкретному полю',
                     'jsonb_path_ops компактнее, но работает только с @>',
@@ -1303,8 +1743,8 @@ CREATE INDEX idx_orders_source
               ],
             },
             {
-              id: 'sql-l15-s3',
-              title: 'Проверь себя',
+              id: 'sql-l19-s3',
+              title: 'Проверь себя: извлечение',
               type: 'quiz',
               quiz: {
                 kind: 'single',
@@ -1319,29 +1759,59 @@ CREATE INDEX idx_orders_source
                 explanation: '-> возвращает jsonb: для строки "web" вы получите `"web"` (с кавычками). ->> возвращает text: `web` (без кавычек). Для сравнения с обычной строкой (`= \'web\'`) нужен ->>.',
               },
             },
+            {
+              id: 'sql-l19-s4',
+              title: 'Проверь себя: когда JSONB',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'В каких случаях стоит использовать JSONB, а не обычные колонки?',
+                options: [
+                  { id: 'a', text: 'Метаданные события (разные для разных типов)' },
+                  { id: 'b', text: 'Поле, которое часто участвует в JOIN' },
+                  { id: 'c', text: 'Настройки пользователя (гибкая схема)' },
+                  { id: 'd', text: 'Вебхуки, payload которых меняется между клиентами' },
+                ],
+                correct: ['a', 'c', 'd'],
+                explanation: 'JSONB — для «необязательных, разнообразных, редких» данных: метаданные (a), настройки (c), вебхуки (d). Для JOIN (b) — обычные колонки: JSONB усложнит запрос и план, индексы на JSONB-поля работают хуже.',
+              },
+            },
+            {
+              id: 'sql-l19-s5',
+              title: 'Проверь себя: операторы фильтрации',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте оператор JSONB и его действие',
+                pairs: [
+                  { left: '@>', right: 'Содержит указанный JSONB-фрагмент' },
+                  { left: '?', right: 'Ключ существует на верхнем уровне' },
+                  { left: '->>', right: 'Извлечь значение как TEXT' },
+                  { left: '#>>', right: 'Извлечь по пути как TEXT' },
+                ],
+                explanation: '@> — «содержит». ? — «ключ есть». ->> — «значение как TEXT». #>> — «значение по пути как TEXT». Ещё: ?| (хотя бы один ключ), ?& (все ключи). На собеседовании middle: «какой оператор для JSONB-фильтра?» — @>.',
+              },
+            },
           ],
         },
         {
-          id: 'sql-l16',
+          id: 'sql-l20',
           title: 'Представления и материализованные представления',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
-              id: 'sql-l16-s1',
+              id: 'sql-l20-s1',
               title: 'VIEW vs MATERIALIZED VIEW',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'VIEW — сохранённый SQL-запрос. Каждый раз при обращении к view PostgreSQL пересчитывает его заново. MATERIALIZED VIEW — тот же запрос, но результат сохранён на диске: данные не пересчитываются, пока не сделаете REFRESH.',
-                },
+                { type: 'p', text: 'VIEW — сохранённый SQL-запрос. Каждый раз при обращении к view PostgreSQL пересчитывает его заново. MATERIALIZED VIEW — тот же запрос, но результат сохранён на диске: данные не пересчитываются, пока не сделаете REFRESH.' },
                 {
                   type: 'mermaid',
                   caption: 'Как работает MATERIALIZED VIEW',
                   code: `graph LR
                     Q["Запрос: SELECT *<br/>FROM daily_revenue"] --> MV[("MATERIALIZED VIEW<br/>~1000 строк на диске")]
                     MV -.->|"REFRESH<br/>пересчёт (медленно)"| Base[("Базовые таблицы<br/>orders, ~1M строк")]
-                    Base -.->|"раз в час"| MV`
+                    Base -.->|"раз в час"| MV`,
                 },
                 {
                   type: 'table',
@@ -1354,32 +1824,14 @@ CREATE INDEX idx_orders_source
                     ['Когда', 'Простая инкапсуляция логики', 'Тяжёлые агрегаты, отчёты, денормализация'],
                   ],
                 },
-                {
-                  type: 'note',
-                  text: 'Не путайте с «обычным представлением» в 1С или MySQL — там VIEW тоже вычисляется на лету. MATERIALIZED — это фишка PostgreSQL (и Oracle, но с нюансами). В MySQL материализованных view нет из коробки.',
-                },
+                { type: 'note', text: 'Не путайте с «обычным представлением» в 1С или MySQL — там VIEW тоже вычисляется на лету. MATERIALIZED — это фишка PostgreSQL (и Oracle, но с нюансами). В MySQL материализованных view нет из коробки.' },
               ],
             },
             {
-              id: 'sql-l16-s2',
+              id: 'sql-l20-s2',
               title: 'Создание, обновление, индексы',
               type: 'theory',
               blocks: [
-                {
-                  type: 'code',
-                  lang: 'sql',
-                  caption: 'Обычное VIEW',
-                  code: `CREATE VIEW active_users AS
-SELECT id, email, created_at
-FROM users
-WHERE is_active = true;
-
--- Использование — как обычная таблица
-SELECT * FROM active_users WHERE created_at > '2025-01-01';
-
--- Удаление
-DROP VIEW active_users;`,
-                },
                 {
                   type: 'code',
                   lang: 'sql',
@@ -1426,8 +1878,8 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY daily_revenue;
               ],
             },
             {
-              id: 'sql-l16-s3',
-              title: 'Проверь себя',
+              id: 'sql-l20-s3',
+              title: 'Проверь себя: что выбрать',
               type: 'quiz',
               quiz: {
                 kind: 'multiple',
@@ -1442,6 +1894,56 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY daily_revenue;
                 explanation: 'MATERIALIZED VIEW оправдан, когда запрос тяжёлый, а данные меняются редко (a, c). Если нужна мгновенная свежесть (b) или таблица маленькая (d) — обычный VIEW или вообще без view.',
               },
             },
+            {
+              id: 'sql-l20-s4',
+              title: 'Проверь себя: VIEW vs MATERIALIZED',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте объект и его поведение',
+                pairs: [
+                  { left: 'VIEW', right: 'Вычисляется при каждом запросе' },
+                  { left: 'MATERIALIZED VIEW', right: 'Результат сохранён на диске' },
+                  { left: 'REFRESH', right: 'Пересчитать MATERIALIZED VIEW' },
+                  { left: 'REFRESH CONCURRENTLY', right: 'Пересчёт без блокировки чтения' },
+                ],
+                explanation: 'VIEW — на лету. MATERIALIZED — на диске. REFRESH — пересчёт. CONCURRENTLY — без блокировки (нужен UNIQUE INDEX). На собеседовании middle: «как обновить matview без даунтайма?» — REFRESH CONCURRENTLY.',
+              },
+            },
+            {
+              id: 'sql-l20-s5',
+              title: 'Практика: VIEW',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Создадим VIEW для «активных пользователей» — тех, у кого есть хотя бы один оплаченный заказ. Sandbox — SQLite, поддерживает CREATE VIEW.' },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE users (id INTEGER, email TEXT);
+CREATE TABLE orders (id INTEGER, user_id INTEGER, total INTEGER, status TEXT);
+INSERT INTO users VALUES (1, 'a@x.com'), (2, 'b@x.com'), (3, 'c@x.com');
+INSERT INTO orders VALUES
+  (10, 1, 1000, 'paid'),
+  (11, 1, 500, 'paid'),
+  (12, 2, 2000, 'cancelled'),
+  (13, 3, 300, 'new');
+CREATE VIEW active_users AS
+SELECT DISTINCT u.id, u.email
+FROM users u
+JOIN orders o ON o.user_id = u.id
+WHERE o.status = 'paid';`,
+                    task: 'Через созданный VIEW active_users выведите email пользователей с оплаченными заказами. Колонка: email. Отсортируйте по email.',
+                    solution: `SELECT email FROM active_users ORDER BY email;`,
+                    expected: {
+                      columns: ['email'],
+                      rows: [['a@x.com']],
+                      order: 'order',
+                    },
+                    hint: 'SELECT email FROM active_users ORDER BY email',
+                  },
+                },
+              ],
+            },
           ],
         },
       ],
@@ -1455,12 +1957,12 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY daily_revenue;
       title: 'Практикум',
       lessons: [
         {
-          id: 'sql-l17',
+          id: 'sql-l21',
           title: 'Практика: recursive CTE, JSONB, views',
           minutes: 35,
           steps: [
             {
-              id: 'sql-l17-s1',
+              id: 'sql-l21-s1',
               title: 'Шаги recursive CTE',
               type: 'quiz',
               quiz: {
@@ -1482,7 +1984,7 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY daily_revenue;
               },
             },
             {
-              id: 'sql-l17-s2',
+              id: 'sql-l21-s2',
               title: 'Что останавливает рекурсию',
               type: 'quiz',
               quiz: {
@@ -1499,7 +2001,7 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY daily_revenue;
               },
             },
             {
-              id: 'sql-l17-s3',
+              id: 'sql-l21-s3',
               title: 'JSONB: извлечь как текст',
               type: 'quiz',
               quiz: {
@@ -1516,7 +2018,7 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY daily_revenue;
               },
             },
             {
-              id: 'sql-l17-s4',
+              id: 'sql-l21-s4',
               title: 'JSONB: фильтр по содержимому',
               type: 'quiz',
               quiz: {
@@ -1533,7 +2035,7 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY daily_revenue;
               },
             },
             {
-              id: 'sql-l17-s5',
+              id: 'sql-l21-s5',
               title: 'JSONB: тип индекса',
               type: 'quiz',
               quiz: {
@@ -1546,7 +2048,7 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY daily_revenue;
               },
             },
             {
-              id: 'sql-l17-s6',
+              id: 'sql-l21-s6',
               title: 'VIEW vs MATERIALIZED VIEW',
               type: 'quiz',
               quiz: {
@@ -1563,7 +2065,7 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY daily_revenue;
               },
             },
             {
-              id: 'sql-l17-s7',
+              id: 'sql-l21-s7',
               title: 'REFRESH CONCURRENTLY',
               type: 'quiz',
               quiz: {
@@ -1580,7 +2082,7 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY daily_revenue;
               },
             },
             {
-              id: 'sql-l17-s8',
+              id: 'sql-l21-s8',
               title: 'ROW_NUMBER vs RANK',
               type: 'quiz',
               quiz: {
@@ -1597,7 +2099,7 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY daily_revenue;
               },
             },
             {
-              id: 'sql-l17-s9',
+              id: 'sql-l21-s9',
               title: 'ACID: изоляция',
               type: 'quiz',
               quiz: {
@@ -1614,7 +2116,7 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY daily_revenue;
               },
             },
             {
-              id: 'sql-l17-s10',
+              id: 'sql-l21-s10',
               title: 'Напишите recursive CTE',
               type: 'quiz',
               quiz: {

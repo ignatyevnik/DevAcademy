@@ -466,10 +466,10 @@ curl https://server.com:8443/api
                 kind: 'matching',
                 question: 'Сопоставьте протокол и транспорт, на котором он работает',
                 pairs: [
-                  { left: 'HTTP/1.1, HTTP/2', right: 'TCP' },
+                  { left: 'HTTP/1.1, HTTP/2', right: 'TCP (порты 80/443)' },
                   { left: 'HTTP/3', right: 'QUIC (поверх UDP)' },
-                  { left: 'DNS (обычный)', right: 'UDP' },
-                  { left: 'SSH', right: 'TCP' },
+                  { left: 'DNS (обычный)', right: 'UDP (порт 53)' },
+                  { left: 'SSH', right: 'TCP (порт 22)' },
                 ],
                 explanation:
                   'HTTP/1.1, 2 и SSH — TCP (надёжность важнее). HTTP/3 — QUIC поверх UDP (независимые потоки, быстрее на плохих сетях). DNS — обычно UDP (короткий запрос, повтор при потере). На собеседовании «почему HTTP/3 на UDP» — ответ QUIC.',

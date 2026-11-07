@@ -63,7 +63,7 @@ export const gitopsCourse: Course = {
                     subgraph After["После деплоя"]
                         LB2["LB"] -.->|"0%"| B2["Blue v1.0<br/>(откат за секунду)"]
                         LB2 -->|"100%"| G2["Green v1.1"]
-                    end`
+                    end`,
                 },
                 {
                   type: 'mermaid',
@@ -74,7 +74,7 @@ export const gitopsCourse: Course = {
                     S3 --> S4["100%"]
                     S1 -.->|"плохо"| Stop["0%<br/>(автооткат)"]
                     S2 -.->|"плохо"| Stop
-                    S3 -.->|"плохо"| Stop`
+                    S3 -.->|"плохо"| Stop`,
                 },
               ],
             },
@@ -83,10 +83,7 @@ export const gitopsCourse: Course = {
               title: 'Feature flags и rollback',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'Feature flag (feature toggle) — «переключатель» в коде, который включает/выключает функциональность без деплоя. Позволяет деплоить «выключенным», включать для 1% пользователей, откатывать за секунды.',
-                },
+                { type: 'p', text: 'Feature flag (feature toggle) — «переключатель» в коде, который включает/выключает функциональность без деплоя. Позволяет деплоить «выключенным», включать для 1% пользователей, откатывать за секунды.' },
                 {
                   type: 'code',
                   lang: 'python',
@@ -132,12 +129,51 @@ def new_checkout(user):
                 explanation: 'Rolling — стандарт K8s. Blue-green — два окружения, откат за секунду, дорого. Canary — постепенная раскатка с метриками. Feature flag — «деплой ≠ релиз».',
               },
             },
+            {
+              id: 'cd-l7-s4',
+              title: 'Когда какую стратегию выбирать',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Стратегия — не «что моднее», а «что подходит задаче». Три вопроса: сколько стоит откат, сколько трафика можно потерять, есть ли инфраструктура для двух окружений.' },
+                {
+                  type: 'table',
+                  caption: 'Выбор стратегии',
+                  head: ['Ситуация', 'Стратегия', 'Почему'],
+                  rows: [
+                    ['Обычный stateless-сервис', 'RollingUpdate', 'Стандарт K8s, просто, откат через undo'],
+                    ['Критичный сервис (деньги)', 'Blue-green', 'Мгновенный откат, два окружения'],
+                    ['Новая фича с риском', 'Canary + feature flags', 'Постепенно, с метриками, откат за секунды'],
+                    ['БД с миграцией схемы', 'Expand-contract + feature flags', 'Миграция не ломает старую версию'],
+                    ['Mobile-приложение', 'Feature flags', 'Релиз в App Store нельзя откатить'],
+                  ],
+                },
+                { type: 'note', text: 'На собеседовании: «как деплоить критичный сервис?» — правильный ответ «blue-green или canary с feature flags, не rolling». Rolling — для «не страшно, если 30 секунд будет 50% ошибок». Для денег — blue-green.' },
+              ],
+            },
+            {
+              id: 'cd-l7-s5',
+              title: 'Проверь себя: когда что',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Платёжный сервис, где каждая ошибка = потерянные деньги. Какую стратегию выбрать?',
+                options: [
+                  { id: 'a', text: 'Rolling update (K8s default)' },
+                  { id: 'b', text: 'Blue-green (два окружения, переключение трафика за секунду)' },
+                  { id: 'c', text: 'Recreate (удалить все поды, создать новые)' },
+                  { id: 'd', text: 'Никакую — деплоить руками ночью' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'Blue-green: пока green не проверен, все деньги идут через blue. Откат — переключить трафик обратно за секунду. Rolling может пропустить 5% ошибочных запросов — для платежей это неприемлемо. Recreate = полный простой. «Руками ночью» — не стратегия.',
+              },
+            },
           ],
         },
         {
           id: 'cd-l13',
           title: 'Feature flags: LaunchDarkly, Unleash, GrowthBook',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'cd-l13-s1',
@@ -166,7 +202,7 @@ def new_checkout(user):
                     Half --> Full["100%<br/>удалить флаг"]
                     Canary -.->|"ошибка"| Off
                     Small -.->|"ошибка"| Off
-                    Half -.->|"ошибка"| Off`
+                    Half -.->|"ошибка"| Off`,
                 },
               ],
             },
@@ -240,6 +276,22 @@ def new_checkout(user):
                 explanation: 'Release toggle — на дни/недели, удаляется после 100% раската. Kill switch — навсегда: если фича валит прод, выключить за секунды. Не удалять: страховка.',
               },
             },
+            {
+              id: 'cd-l13-s5',
+              title: 'Проверь себя: типы',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте тип флага и его назначение',
+                pairs: [
+                  { left: 'Release toggle', right: 'Раскатывает новую фичу постепенно' },
+                  { left: 'Experiment toggle', right: 'A/B-тест: 50/50' },
+                  { left: 'Ops toggle', right: 'Kill switch при инциденте' },
+                  { left: 'Permission toggle', right: 'Разные фичи для free / pro / enterprise' },
+                ],
+                explanation: 'Release — раскатка. Experiment — A/B. Ops (kill switch) — страховка. Permission — тарифы. На собеседовании middle: «зачем четыре типа?» — «у каждого свой жизненный цикл; release удаляется, kill switch — навсегда».',
+              },
+            },
           ],
         },
       ],
@@ -255,7 +307,7 @@ def new_checkout(user):
         {
           id: 'cd-l14',
           title: 'ArgoCD: установка, Application, sync',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
               id: 'cd-l14-s1',
@@ -283,7 +335,7 @@ def new_checkout(user):
                         else нет расхождения
                             Argo->>Argo: status: Synced (no-op)
                         end
-                    end`
+                    end`,
                 },
                 {
                   type: 'list',
@@ -401,12 +453,28 @@ spec:
                 explanation: 'selfHeal — «drift correction»: если кто-то сделал kubectl edit в обход Git, ArgoCD через 3 минуты вернёт как в Git. Это ключевое свойство GitOps: Git — единственный источник правды.',
               },
             },
+            {
+              id: 'cd-l14-s5',
+              title: 'Проверь себя: Application и sync',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте поле Application и его назначение',
+                pairs: [
+                  { left: 'source.repoURL + path', right: 'Откуда брать манифесты в Git' },
+                  { left: 'destination', right: 'Куда деплоить (кластер + namespace)' },
+                  { left: 'syncPolicy.automated', right: 'Автоматически синхронизировать с Git' },
+                  { left: 'selfHeal', right: 'Возвращать кластер к Git при ручных правках' },
+                ],
+                explanation: 'source — «откуда». destination — «куда». automated — «синхронизировать автоматически». selfHeal — «защита от дрифта». Ещё важны: prune (удалять лишнее), syncOptions (CreateNamespace). На собеседовании middle DevOps это база.',
+              },
+            },
           ],
         },
         {
           id: 'cd-l15',
           title: 'Flux и сравнение с ArgoCD',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'cd-l15-s1',
@@ -423,7 +491,7 @@ spec:
                     GR --> HR["HelmRelease<br/>«какой чарт»"]
                     K --> K8s["K8s API"]
                     HR --> K8s
-                    IP["ImagePolicy<br/>«новая версия»"] -.->|"image automation"| K`
+                    IP["ImagePolicy<br/>«новая версия»"] -.->|"image automation"| K`,
                 },
                 {
                   type: 'code',
@@ -500,6 +568,77 @@ spec:
                 explanation: 'Flux — «Unix way»: каждый CRD делает одно. ArgoCD — «одно приложение, богатый UI». Оба — GitOps, оба CNCF graduated. Выбор зависит от культуры команды.',
               },
             },
+            {
+              id: 'cd-l15-s4',
+              title: 'Image Automation и drift detection',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Оба инструмента умеют обнаруживать расхождения (drift) и показывать diff. Flux дополнительно умеет автоматически обновлять образы в Git: ImagePolicy сканирует registry, ImageUpdateAutomation коммитит новый тег в репозиторий.' },
+                {
+                  type: 'code',
+                  lang: 'yaml',
+                  caption: 'Flux Image Automation',
+                  code: `apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: myapp
+  namespace: flux-system
+spec:
+  image: ghcr.io/myorg/myapp
+  interval: 5m
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: myapp
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: myapp
+  policy:
+    semver:
+      range: '>=1.4.0'
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageUpdateAutomation
+metadata:
+  name: myapp
+  namespace: flux-system
+spec:
+  interval: 30m
+  update:
+    strategy: Setters
+    path: ./apps/myapp`,
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'ImageRepository — сканирует registry (каждые 5 минут)',
+                    'ImagePolicy — выбирает версию (semver, alphabetical, numerical)',
+                    'ImageUpdateAutomation — коммитит новый тег в Git',
+                    'Полный цикл: новый образ в registry → Flux коммитит новый тег → ArgoCD/Flux деплоит',
+                    'Image automation — killer feature Flux, в ArgoCD — через Image Updater (менее нативный)',
+                  ],
+                },
+                { type: 'note', text: 'На собеседовании senior: «как автоматизировать деплой нового образа в GitOps?» — «Flux ImagePolicy + ImageUpdateAutomation, или Argo CD Image Updater». Это разница между «деплой по кнопке» и «деплой по пушу образа».' },
+              ],
+            },
+            {
+              id: 'cd-l15-s5',
+              title: 'Проверь себя: image automation',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте CRD Flux и его назначение',
+                pairs: [
+                  { left: 'GitRepository', right: 'Откуда брать манифесты (URL Git)' },
+                  { left: 'Kustomization', right: 'Что применить из репозитория' },
+                  { left: 'HelmRelease', right: 'Установить Helm-чарт' },
+                  { left: 'ImagePolicy', right: 'Выбрать версию образа из registry' },
+                ],
+                explanation: 'GitRepository — «где лежит». Kustomization — «что применить». HelmRelease — «какой чарт». ImagePolicy — «какая версия образа». Ещё: ImageUpdateAutomation — «закоммитить новый тег в Git». Flux — «Unix way»: каждый CRD делает одно.',
+              },
+            },
           ],
         },
       ],
@@ -515,7 +654,7 @@ spec:
         {
           id: 'cd-l16',
           title: 'Supply chain: SBOM, cosign, SLSA',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
               id: 'cd-l16-s1',
@@ -533,7 +672,7 @@ spec:
                     Deps["Зависимости<br/>(npm, pip)"] -.->|"1. подмена"| Build
                     Build -.->|"2. компрометация<br/>раннера"| Build
                     Reg -.->|"3. подмена<br/>образа"| Deploy
-                    Src -.->|"4. подмена<br/>исходника"| Src`
+                    Src -.->|"4. подмена<br/>исходника"| Src`,
                 },
               ],
             },
@@ -627,12 +766,28 @@ spec:
                 explanation: 'SBOM — состав. cosign — подпись. Admission controller — проверка подписи при деплое. «Только публичные образы с Docker Hub» — наоборот, риск: любой может залить подменённый.',
               },
             },
+            {
+              id: 'cd-l16-s5',
+              title: 'Проверь себя: инструменты',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте инструмент и его роль',
+                pairs: [
+                  { left: 'Syft', right: 'Генерация SBOM (состав образа)' },
+                  { left: 'cosign', right: 'Подпись образа и проверка подписи' },
+                  { left: 'Kyverno', right: 'Admission controller: блокирует неподписанные образы' },
+                  { left: 'SLSA', right: 'Уровни гарантии происхождения артефакта' },
+                ],
+                explanation: 'Syft — SBOM. cosign — подпись. Kyverno — проверка при деплое. SLSA — уровни гарантии (1–4). Все четыре — строительные блоки supply-chain security.',
+              },
+            },
           ],
         },
         {
           id: 'cd-l17',
           title: 'Secrets в CI: Vault, OIDC, sealed-secrets',
-          minutes: 30,
+          minutes: 35,
           steps: [
             {
               id: 'cd-l17-s1',
@@ -642,7 +797,7 @@ spec:
                 { type: 'p', text: 'GitHub Secrets, GitLab Variables — удобны, но это «секреты в облаке». Для enterprise нужен свой control plane: ротация, аудит, разграничение по проектам. Плюс — не все секреты в CI: часть нужна приложениям в рантайме (БД, API-ключи).' },
                 {
                   type: 'table',
-                  caption: 'Три подхода',
+                  caption: 'Пять подходов',
                   head: ['Подход', 'Где живут', 'Когда'],
                   rows: [
                     ['CI secrets', 'GitHub/GitLab', 'Простые проекты, стартапы'],
@@ -674,7 +829,7 @@ spec:
                     Job->>AWS: AssumeRoleWithWebIdentity(JWT)
                     AWS->>GH: проверка подписи JWT
                     AWS-->>Job: временные креды (1 час)
-                    Job->>S3: upload (с временными кредами)`
+                    Job->>S3: upload (с временными кредами)`,
                 },
                 {
                   type: 'code',
@@ -733,7 +888,15 @@ metadata:
 stringData:
   password: ENC[AES256_GCM,data:...,iv:...,tag:...,type:str]`,
                 },
-                { type: 'list', items: ['sealed-secrets — K8s-only, привязан к кластеру', 'SOPS — любые файлы, ключи в AWS KMS / GCP KMS / age', 'Оба — GitOps-friendly: зашифрованное лежит в Git', 'Ключ расшифровки НЕ в Git — в кластере / KMS'] },
+                {
+                  type: 'list',
+                  items: [
+                    'sealed-secrets — K8s-only, привязан к кластеру',
+                    'SOPS — любые файлы, ключи в AWS KMS / GCP KMS / age',
+                    'Оба — GitOps-friendly: зашифрованное лежит в Git',
+                    'Ключ расшифровки НЕ в Git — в кластере / KMS',
+                  ],
+                },
               ],
             },
             {
@@ -753,6 +916,22 @@ stringData:
                 explanation: 'Ключ в GitHub Secrets живёт годами: утёк — catastrophe. OIDC: JWT на 5 минут → временные креды на 1 час. Если утекут — истекут через час.',
               },
             },
+            {
+              id: 'cd-l17-s5',
+              title: 'Проверь себя: инструменты',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте инструмент и его особенность',
+                pairs: [
+                  { left: 'Vault', right: 'Отдельный сервис: аудит, ротация, multi-tenancy' },
+                  { left: 'OIDC', right: 'Временные креды без хранения ключей' },
+                  { left: 'sealed-secrets', right: 'Зашифрованные Secret в Git, расшифровка в кластере' },
+                  { left: 'SOPS', right: 'Любые YAML с зашифрованными значениями' },
+                ],
+                explanation: 'Vault — enterprise control plane. OIDC — «секреты без секретов». sealed-secrets — K8s-only GitOps. SOPS — универсально для любых YAML. Выбор — по задаче: CI → OIDC, K8s-манифесты в Git → sealed-secrets/SOPS, enterprise → Vault.',
+              },
+            },
           ],
         },
       ],
@@ -768,7 +947,7 @@ stringData:
         {
           id: 'cd-l19',
           title: 'DORA-метрики и мониторинг пайплайнов',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'cd-l19-s1',
@@ -783,7 +962,7 @@ stringData:
                     DF["Deployment Frequency<br/>↑ элита: по требованию"] --> Perf["DORA:<br/>скорость + стабильность"]
                     LT["Lead Time for Changes<br/>↓ элита: менее 1 дня"] --> Perf
                     CFR["Change Failure Rate<br/>↓ элита: около 5%"] --> Perf
-                    MTTR["Failed Deployment Recovery<br/>↓ элита: менее 1 часа"] --> Perf`
+                    MTTR["Failed Deployment Recovery<br/>↓ элита: менее 1 часа"] --> Perf`,
                 },
                 {
                   type: 'table',
@@ -844,6 +1023,53 @@ stringData:
                 ],
                 correct: ['b'],
                 explanation: 'Высокий CFR + падающая DF = «страшно релизить». Причины: нет автотестов на регресс, нет feature flags, rollback руками. Нанимать QA — лечить симптом. Senior смотрит на процесс.',
+              },
+            },
+            {
+              id: 'cd-l19-s4',
+              title: 'DORA и SRE: как связаны',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'DORA измеряет «как быстро и стабильно мы доставляем». SRE (Site Reliability Engineering) — «как обеспечить надёжность». Они дополняют друг друга: DORA — про процесс, SRE — про результат для пользователя.' },
+                {
+                  type: 'table',
+                  caption: 'DORA vs SRE',
+                  head: ['Аспект', 'DORA', 'SRE'],
+                  rows: [
+                    ['Фокус', 'Процесс доставки (CI/CD)', 'Надёжность сервиса (SLO, SLI, SLA)'],
+                    ['Метрики', 'DF, LT, CFR, MTTR', 'SLO (availability, latency), error budget'],
+                    ['Цель', 'Быстрее и стабильнее доставлять', 'Держать надёжность на заданном уровне'],
+                    ['Кто', 'Вся команда разработки', 'SRE-команда или DevOps-инженеры'],
+                    ['Связь', 'Высокий CFR → SLO падает → бюджет сгорает', 'SLO задаёт «сколько можно ломать»'],
+                  ],
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'SLO (Service Level Objective) — «99.9% доступности»',
+                    'Error budget — «сколько можно ломать» = 100% − SLO',
+                    'Если error budget сгорает — замораживаем релизы, чиним надёжность',
+                    'DORA-метрики показывают, почему бюджет сгорает',
+                    'DORA + SRE — полная картина: процесс + результат',
+                  ],
+                },
+                { type: 'note', text: 'На собеседовании senior DevOps/SRE: «как связаны DORA и SLO?» — «DORA — процесс доставки; SLO — результат. Высокий CFR → SLO падает → error budget сгорает → заморозка релизов». Это показывает, что вы понимаете всю картину, а не только «деплой быстрее».' },
+              ],
+            },
+            {
+              id: 'cd-l19-s5',
+              title: 'Проверь себя: SLO',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте метрику и её назначение',
+                pairs: [
+                  { left: 'Deployment Frequency', right: 'Как часто деплоим в прод' },
+                  { left: 'Lead Time for Changes', right: 'Время от коммита до прода' },
+                  { left: 'Change Failure Rate', right: 'Доля деплоев, вызвавших сбой' },
+                  { left: 'SLO (error budget)', right: 'Сколько можно ломать до заморозки релизов' },
+                ],
+                explanation: 'DF, LT, CFR — DORA-метрики процесса. SLO/error budget — SRE-метрика результата. Вместе дают полную картину: «доставляем быстро, ломаем редко, держим надёжность». На собеседовании senior это ключевые понятия.',
               },
             },
           ],
