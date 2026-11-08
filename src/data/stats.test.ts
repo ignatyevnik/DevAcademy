@@ -51,3 +51,37 @@ describe('findLesson', () => {
     expect(findLesson(course, 'nonexistent-lesson')).toBeNull();
   });
 });
+
+// ─────────────────────────────────────────────
+// Правило проекта: минимум 5 шагов в уроке
+// Исключение: вводные уроки (*-l0) — могут быть короче
+// ─────────────────────────────────────────────
+
+describe('минимум 5 шагов в уроке', () => {
+  it('все уроки, кроме вводных (*-l0), имеют ≥5 шагов', () => {
+    const violations: string[] = [];
+
+    for (const course of courses) {
+      for (const mod of course.modules) {
+        for (const lesson of mod.lessons) {
+          if (lesson.id.endsWith('-l0')) continue;
+          if (lesson.steps.length < 5) {
+            violations.push(
+              `  • ${course.slug} → ${mod.id} → ${lesson.id} («${lesson.title}»): ${lesson.steps.length} шагов`,
+            );
+          }
+        }
+      }
+    }
+
+    if (violations.length > 0) {
+      throw new Error(
+        `\n\n❌ Уроки с < 5 шагов (${violations.length}):\n` +
+          violations.join('\n') +
+          '\n\nДобавьте шаги или пометьте урок как вводный (*-l0).\n',
+      );
+    }
+
+    expect(violations).toEqual([]);
+  });
+});

@@ -1150,6 +1150,58 @@ INSERT INTO orders VALUES
                 explanation: 'INNER — только совпадения. LEFT — всё из левой. RIGHT — всё из правой (редко). FULL — всё из обеих. На собеседовании «LEFT vs INNER» — стандарт.',
               },
             },
+            {
+              id: 'sql-l8-s4',
+              title: 'Практика: LEFT JOIN + COUNT',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Главная «фишка» LEFT JOIN в аналитике — посчитать что-то «включая нули». «Сколько заказов у каждого пользователя, включая тех, у кого их ноль». Ключевая деталь: `COUNT(o.id)`, а не `COUNT(*)` — иначе пользователи без заказов получат `1`, а не `0` (потому что LEFT JOIN оставляет одну строку с NULL в правой части).' },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE users (id INTEGER, email TEXT);
+CREATE TABLE orders (id INTEGER, user_id INTEGER);
+INSERT INTO users VALUES
+  (1, 'a@x.com'),
+  (2, 'b@x.com'),
+  (3, 'c@x.com');
+INSERT INTO orders VALUES
+  (10, 1),
+  (11, 1),
+  (12, 2);`,
+                    task: 'Выведите `id`, `email` каждого пользователя и количество его заказов (колонка `order_count`), ВКЛЮЧАЯ пользователей без заказов (у них должно быть 0). Отсортируйте по `id`.',
+                    solution: `SELECT u.id, u.email, COUNT(o.id) AS order_count\nFROM users u\nLEFT JOIN orders o ON o.user_id = u.id\nGROUP BY u.id, u.email\nORDER BY u.id;`,
+                    expected: {
+                      columns: ['id', 'email', 'order_count'],
+                      rows: [
+                        [1, 'a@x.com', 2],
+                        [2, 'b@x.com', 1],
+                        [3, 'c@x.com', 0],
+                      ],
+                      order: 'order',
+                    },
+                    hint: 'LEFT JOIN orders o ON o.user_id = u.id + COUNT(o.id) (НЕ COUNT(*)) + GROUP BY u.id, u.email',
+                  },
+                },
+              ],
+            },
+            {
+              id: 'sql-l8-s5',
+              title: 'Проверь себя: LEFT vs INNER',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Когда LEFT JOIN вернёт больше строк, чем INNER JOIN?',
+                options: [
+                  { id: 'a', text: 'Когда есть пользователи без заказов' },
+                  { id: 'b', text: 'Когда есть заказы без пользователей' },
+                  { id: 'c', text: 'Когда у всех пользователей есть хотя бы один заказ' },
+                  { id: 'd', text: 'LEFT JOIN всегда возвращает больше строк' },
+                ],
+                correct: ['a'],
+                explanation: 'LEFT JOIN сохраняет всех из левой таблицы. Если у кого-то нет пары справа (пользователи без заказов) — они появятся в LEFT JOIN, но не в INNER. Если у всех пары есть — LEFT и INNER дадут одно и то же (не «всегда больше», d — неверно). Заказы без пользователей — это уже про RIGHT/FULL (b — не про LEFT).',
+              },
+            },
           ],
         },
       ],

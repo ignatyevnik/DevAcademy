@@ -10,19 +10,16 @@ export async function getPyodide(): Promise<PyodideInterface> {
       return loadPyodide({
         indexURL: `${import.meta.env.BASE_URL}assets/pyodide/`,
       });
-    })();
+    })().catch((e) => {
+      // Сбросить, чтобы следующая попытка могла загрузить заново
+      pyodidePromise = null;
+      throw e;
+    });
   }
   return pyodidePromise;
 }
 
 type PyProxy = ReturnType<PyodideInterface['toPy']>;
-
-export interface PythonRunResult {
-  stdout: string;
-  stderr: string;
-  error: string | null;
-  namespace: PyProxy | null;
-}
 
 export interface PythonRunResult {
   stdout: string;
@@ -41,7 +38,6 @@ export async function runPython(
   py.setStdout({ batched: (s) => { stdout += s + '\n'; } });
   py.setStderr({ batched: (s) => { stderr += s + '\n'; } });
 
-  // Свой namespace на каждый запуск — переменные не текут между шагами
   const ns = py.toPy({});
   ns.set('__builtins__', py.globals.get('__builtins__'));
   ns.set('__name__', '__main__');

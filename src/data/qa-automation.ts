@@ -101,6 +101,53 @@ export const qaAutomationCourse: Course = {
                   'conftest.py — специальный файл pytest. Он загружается автоматически, а фикстуры и хуки из него доступны всем тестам в той же директории и ниже. Импортировать его не нужно.',
               },
             },
+            {
+              id: 'qa-l17-s4',
+              title: 'Маркеры: группировка и фильтрация',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Маркеры позволяют помечать тесты и запускать только нужные группы. Это критично, когда тестов много: smoke на каждый PR, полный набор — ночью.',
+                },
+                {
+                  type: 'code',
+                  lang: 'python',
+                  caption: 'Использование маркеров',
+                  code: 'import pytest\n\n@pytest.mark.smoke\ndef test_login(): ...\n\n@pytest.mark.slow\n@pytest.mark.integration\ndef test_full_flow(): ...',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    '@pytest.mark.slow — долгие тесты, исключаются на PR (pytest -m "not slow")',
+                    '@pytest.mark.smoke — быстрые критичные тесты, гоняются первыми',
+                    '@pytest.mark.integration — требуют внешних сервисов (БД, API)',
+                    'Маркеры нужно объявлять в pytest.ini (markers = ...), иначе --strict-markers упадёт',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Не злоупотребляйте маркерами. Если тест помечен как slow, но идёт 2 секунды — это ложь, которая путает команду. Маркер должен отражать реальное поведение.',
+                },
+              ],
+            },
+            {
+              id: 'qa-l17-s5',
+              title: 'Проверь себя: команды и маркеры',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте команду pytest и её действие',
+                pairs: [
+                  { left: 'pytest -k "cart"', right: 'Запустить тесты, в имени которых есть «cart»' },
+                  { left: 'pytest -m "not slow"', right: 'Пропустить тесты с маркером slow' },
+                  { left: 'pytest --lf', right: 'Запустить только тесты, упавшие в прошлый раз' },
+                  { left: 'pytest --co', right: 'Показать список тестов без запуска' },
+                ],
+                explanation:
+                  '-k фильтрует по имени, -m — по маркеру, --lf — «last failed», --co — «collect only». Эти четыре команды покрывают 80% ежедневной работы с pytest.',
+              },
+            },
           ],
         },
         {
@@ -175,6 +222,53 @@ export const qaAutomationCourse: Course = {
                   'Подключение к БД дорогое. session создаст его один раз на весь прогон и закроет в конце. Исключение — если тесты меняют данные и изолированное подключение нужно для чистоты.',
               },
             },
+            {
+              id: 'qa-l18-s4',
+              title: 'autouse и зависимости между фикстурами',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Фикстура может зависеть от другой фикстуры — просто укажите её в параметрах. А `autouse=True` заставляет фикстуру срабатывать автоматически, без явного упоминания в тесте. Это удобно для «фоновых» сбросов, но злоупотребление скрывает зависимости.',
+                },
+                {
+                  type: 'code',
+                  lang: 'python',
+                  caption: 'Зависимость между фикстурами + autouse',
+                  code: 'import pytest\n\n@pytest.fixture(scope="session")\ndef db():\n    conn = connect("test_db")\n    yield conn\n    conn.close()\n\n@pytest.fixture\ndef client(db):                       # ← зависит от db\n    return Client(db_connection=db)\n\n@pytest.fixture(autouse=True)         # ← срабатывает до каждого теста\n@pytest.fixture\ndef reset_cache():\n    cache.clear()\n    yield\n    cache.clear()',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Фикстура принимает другие фикстуры как аргументы — pytest разрешит зависимости в правильном порядке',
+                    'autouse=True — фикстура выполняется автоматически, без упоминания в тесте',
+                    'autouse оправдан для фоновых «сбросов» (кэш, временные файлы, БД)',
+                    'Если фикстура нужна только одному тесту — передавайте явно, не через autouse',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Не ставьте autouse на всё подряд. Если тест «сам не знает», от каких фикстур зависит, — отладка превращается в гадание. autouse — для действительно глобального (reset кэша, сброс БД), а не для удобства.',
+                },
+              ],
+            },
+            {
+              id: 'qa-l18-s5',
+              title: 'Проверь себя: типичные ошибки',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте ошибку в фикстуре и её последствие',
+                pairs: [
+                  { left: 'Фикстура без teardown (нет yield)', right: 'Ресурсы остаются: подключения, файлы, записи в БД' },
+                  { left: 'scope="function" для дорогой БД', right: 'Тесты идут медленно: подключение пересоздаётся каждый раз' },
+                  { left: 'autouse=True на всё подряд', right: 'Скрытые зависимости, тест сложно отладить' },
+                  { left: 'Общая фикстура-пользователь на всех', right: 'Флаки: тесты мешают друг другу' },
+                ],
+                explanation:
+                  'Забытый teardown — «загрязнение». Дорогая фикстура с function — медленно. autouse на всё — скрытые зависимости. Общие данные — гонки. Четыре классические проблемы фикстур, на которых спотыкаются при параллельном запуске.',
+              },
+            },
           ],
         },
         {
@@ -246,6 +340,54 @@ export const qaAutomationCourse: Course = {
                   'Свою функцию «a + b» мокать бессмысленно: вы её и тестируете. Всё внешнее и недетерминированное (сеть, БД, время) — под замену.',
               },
             },
+            {
+              id: 'qa-l19-s4',
+              title: 'monkeypatch: подмена без mock',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'pytest даёт встроенную фикстуру `monkeypatch` для точечной подмены переменных, атрибутов, переменных окружения. Она проще, чем `patch`, и не требует `with` — подмена откатывается автоматически после теста.',
+                },
+                {
+                  type: 'code',
+                  lang: 'python',
+                  caption: 'monkeypatch: три частых сценария',
+                  code: 'import os\nfrom datetime import datetime\n\ndef test_config(monkeypatch):\n    # 1. Переменная окружения\n    monkeypatch.setenv("APP_ENV", "test")\n    assert os.environ["APP_ENV"] == "test"\n\n    # 2. Атрибут модуля / класса\n    monkeypatch.setattr("myapp.config.DEBUG", True)\n\n    # 3. Подмена функции целиком\n    monkeypatch.setattr("myapp.utils.get_now", lambda: datetime(2025, 1, 1))',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'setenv / delenv — переменные окружения',
+                    'setattr / delattr — атрибуты объектов и модулей',
+                    'setitem / delitem — элементы словаря',
+                    'Автоматический откат после теста (в отличие от прямого присваивания)',
+                    'Проще, чем patch, когда нужно подменить одну переменную, а не вызвать зависимость',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Правило выбора: `monkeypatch` — для подмены данных/атрибутов/окружения; `unittest.mock.patch` / `mocker` — когда нужно проверить, что зависимость была вызвана (assert_called_with). Не смешивайте в одном тесте, если можно обойтись одним инструментом.',
+                },
+              ],
+            },
+            {
+              id: 'qa-l19-s5',
+              title: 'Проверь себя: инструменты',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте инструмент и его назначение',
+                pairs: [
+                  { left: 'unittest.mock.patch', right: 'Подменить метод/функцию и проверить вызов' },
+                  { left: 'mocker (pytest-mock)', right: 'Короткий синтаксис patch с автооткатом' },
+                  { left: 'monkeypatch', right: 'Подменить атрибут/переменную окружения без mock' },
+                  { left: 'assert_called_once_with', right: 'Проверить, что зависимость вызвана с нужными аргументами' },
+                ],
+                explanation:
+                  'patch — базовый инструмент. mocker — обёртка для удобства. monkeypatch — для переменных/атрибутов. assert_called_* — проверка факта вызова. На собеседовании middle QA: «чем monkeypatch отличается от patch?» — «первый меняет атрибуты, второй — мокает вызов».',
+              },
+            },
           ],
         },
         {
@@ -307,6 +449,54 @@ export const qaAutomationCourse: Course = {
                 correct: ['b'],
                 explanation:
                   'Схема — это контракт. Если поле переименовали или изменили тип, клиенты сломаются, даже если статус-код 200. Валидация схемы ловит такие изменения раньше.',
+              },
+            },
+            {
+              id: 'qa-l20-s4',
+              title: 'Схемы из OpenAPI: contract testing',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Писать схемы руками — долго и легко разойтись с реальностью. Если у API есть OpenAPI/Swagger-спецификация, схему можно взять оттуда и валидировать ответы автоматически. Это и есть contract testing: тест проверяет соответствие API его же контракту.',
+                },
+                {
+                  type: 'code',
+                  lang: 'python',
+                  caption: 'Валидация ответа по OpenAPI-спецификации',
+                  code: 'import requests, yaml\nfrom openapi_core import OpenAPIRequestValidator\nfrom openapi_core.contrib.requests import RequestsOpenAPIRequest\n\nspec = yaml.safe_load(open("openapi.yaml"))\nvalidator = OpenAPIRequestValidator(spec)\n\ndef test_matches_openapi():\n    r = requests.get("https://api.example.com/users/1")\n    request = RequestsOpenAPIRequest(r.request)\n    response = validator.validate_response(request, r)\n    # если схема ответа не совпала с OpenAPI — исключение',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'OpenAPI / Swagger — стандарт описания REST API (YAML или JSON)',
+                    'Валидация по спецификации = contract testing',
+                    'Ловит расхождения между документацией и реальным поведением',
+                    'Инструменты: openapi-core (Python), schemathesis, Dredd',
+                    'Схема — единый источник правды: клиенты генерят код из неё, тесты — валидируют по ней',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Если у команды нет OpenAPI-спеки — это первый кандидат на введение. Без неё «валидация схемы» быстро расходится с реальностью: кто-то добавил поле — тест зелёный, документация старая, клиенты падают.',
+                },
+              ],
+            },
+            {
+              id: 'qa-l20-s5',
+              title: 'Проверь себя: что проверять',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте проверку API и то, что она ловит',
+                pairs: [
+                  { left: 'HTTP-статус', right: 'Успех/ошибка (200, 401, 404, 500)' },
+                  { left: 'Схема ответа (jsonschema)', right: 'Переименование поля, неверный тип' },
+                  { left: 'Негативные сценарии', right: 'Пустые поля, огромные строки, отсутствие токена' },
+                  { left: 'OpenAPI contract testing', right: 'Расхождение API с документацией' },
+                ],
+                explanation:
+                  'Статус — успех/ошибка. Схема — типы и обязательные поля. Негатив — поведение на «плохих» данных. OpenAPI — соответствие документации. Вместе — четыре уровня проверки контракта API, которые покрывают 90% регрессий.',
               },
             },
           ],
@@ -402,6 +592,48 @@ export const qaAutomationCourse: Course = {
                 correct: ['a', 'c'],
                 explanation:
                   'UI-тесты оправданы там, где важна связка «браузер + фронтенд + бэкенд». Проверка 404 — API-тест (быстрее, стабильнее). Цвет кнопки — unit или visual-regression, не E2E.',
+              },
+            },
+            {
+              id: 'qa-l21-s4',
+              title: 'Когда UI-тесты НЕ нужны: антипаттерны',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'UI-тесты — самые дорогие в поддержке. Пять сценариев, где их использование превращает набор в «вечно красный CI», и что делать вместо.',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Проверка вёрстки и цветов — визуальные тесты (Playwright screenshot) или unit-тесты CSS, не E2E-клики',
+                    'Дублирование API-тестов — если сценарий проверяется запросом, не надо «кликать по форме» на 100 тестов',
+                    'Массовые проверки валидации (пустые поля, длина) — параметризованные API-тесты в разы быстрее',
+                    'Тестирование производительности через UI — для этого нагрузочные тесты (Locust, k6), UI даст неверные цифры',
+                    'Проверка «каждой страницы на каждом устройстве» — матрица взрывается: 5 страниц × 20 устройств = 100 медленных тестов',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Правило: если сценарий можно проверить «ниже» (API, unit, визуальный тест) — проверяйте ниже. UI-тест оставьте только на то, что действительно требует браузера: навигация, JavaScript-логика, интеграция фронта с бэком.',
+                },
+              ],
+            },
+            {
+              id: 'qa-l21-s5',
+              title: 'Проверь себя: инструменты',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте инструмент и его ключевую особенность',
+                pairs: [
+                  { left: 'Selenium', right: 'Стандарт индустрии, WebDriver, любой язык' },
+                  { left: 'Playwright', right: 'Auto-waiting, trace viewer, несколько браузеров' },
+                  { left: 'Cypress', right: 'JS-only, отличный DX в браузере' },
+                  { left: 'Визуальные тесты', right: 'Скриншот-сравнение, а не клики' },
+                ],
+                explanation:
+                  'Selenium — универсальность, но медленный. Playwright — скорость и надёжность (стандарт 2025 для Python). Cypress — JS-команды с хорошим DX. Визуальные тесты — отдельный инструмент для проверки вёрстки, не заменяет E2E.',
               },
             },
           ],
@@ -518,6 +750,23 @@ export const qaAutomationCourse: Course = {
                   'get_by_role — семантичный локатор: остаётся стабильным при смене класса, вёрстки, обёртки. Если кнопку переименуют — тест сломается, но это и есть сигнал, что изменился UX. CSS и XPath хрупкие: рефакторинг вёрстки их ломает.',
               },
             },
+            {
+              id: 'qa-l22-s5',
+              title: 'Проверь себя: локаторы',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте локатор и когда его использовать',
+                pairs: [
+                  { left: 'get_by_role("button", name="Войти")', right: 'Кнопки, ссылки, заголовки — семантика' },
+                  { left: 'get_by_label("Email")', right: 'Поля формы, связанные с <label>' },
+                  { left: 'get_by_placeholder("Введите email")', right: 'Поля с placeholder (когда label нет)' },
+                  { left: 'get_by_test_id("submit")', right: 'data-testid, если договорились с разработчиками' },
+                ],
+                explanation:
+                  'Роль — для кнопок и ссылок. Label — для полей формы. Placeholder — запасной для input. test_id — когда ничего семантичного нет. CSS/XPath — в последнюю очередь, они самые хрупкие.',
+              },
+            },
           ],
         },
         {
@@ -628,6 +877,23 @@ export const qaAutomationCourse: Course = {
                   'Фиксированные паузы — антипаттерн: тест становится медленным и всё равно нестабильным. expect умеет ждать и падает сразу, как только состояние достигнуто или истёк таймаут.',
               },
             },
+            {
+              id: 'qa-l23-s5',
+              title: 'Проверь себя: методы expect',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте метод expect и что он проверяет',
+                pairs: [
+                  { left: 'to_be_visible()', right: 'Элемент отображается на странице' },
+                  { left: 'to_have_text("Готово")', right: 'Текст элемента точно совпадает' },
+                  { left: 'to_have_url("/dashboard")', right: 'URL страницы соответствует ожиданию' },
+                  { left: 'to_have_count(3)', right: 'Количество элементов в списке равно 3' },
+                ],
+                explanation:
+                  'to_be_visible — видимость. to_have_text — точный текст (to_contain_text — подстрока). to_have_url — навигация. to_have_count — количество. Все четыре — стандарт Playwright для проверок с auto-waiting.',
+              },
+            },
           ],
         },
         {
@@ -731,6 +997,23 @@ export const qaAutomationCourse: Course = {
                   'Расчёт суммы — бизнес-логика. Она тестируется юнит-тестами на бэкенде и не должна зависеть от UI. Page Object — только про работу со страницей: найти, кликнуть, проверить отображение.',
               },
             },
+            {
+              id: 'qa-l24-s5',
+              title: 'Проверь себя: где что место',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте элемент и место, где он должен находиться',
+                pairs: [
+                  { left: 'Локатор кнопки «Войти»', right: 'Page Object (LoginPage)' },
+                  { left: 'Проверка «весь сценарий прошёл»', right: 'Тест' },
+                  { left: 'Открытие браузера и viewport', right: 'Фикстура pytest' },
+                  { left: 'Расчёт скидки 10% для VIP', right: 'Unit-тест на бэкенде' },
+                ],
+                explanation:
+                  'Локаторы — в Page Object. Итоговые проверки — в тесте. Управление браузером — в фикстуре. Бизнес-логика — в юнит-тестах. Так каждый слой отвечает за своё, а тесты остаются читаемыми и поддерживаемыми.',
+              },
+            },
           ],
         },
       ],
@@ -821,6 +1104,54 @@ export const qaAutomationCourse: Course = {
                 correct: ['b'],
                 explanation:
                   'Сам UI-логин проверяется одним отдельным тестом. Остальным тестам нужен только результат — авторизованное состояние. API-логин даёт его за 100 мс вместо 2–3 сек и избавляет от зависимости от вёрстки формы.',
+              },
+            },
+            {
+              id: 'qa-l25-s4',
+              title: 'API-клиент как класс',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Когда API-тестов становится много, запросы начинают дублироваться: headers, base_url, обработка ошибок. Выносят в отдельный класс `ApiClient` — аналог Page Object, только для HTTP.',
+                },
+                {
+                  type: 'code',
+                  lang: 'python',
+                  caption: 'api_client.py',
+                  code: 'class ApiClient:\n    def __init__(self, playwright, base_url, token=None):\n        headers = {"Authorization": f"Bearer {token}"} if token else {}\n        self.api = playwright.request.new_context(\n            base_url=base_url,\n            extra_http_headers=headers,\n        )\n\n    def get_user(self, user_id: int):\n        r = self.api.get(f"/users/{user_id}")\n        r.raise_for_status()\n        return r.json()\n\n    def create_order(self, payload: dict):\n        r = self.api.post("/orders", data=payload)\n        assert r.status == 201, r.text\n        return r.json()\n\n    def dispose(self):\n        self.api.dispose()',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'ApiClient — тонкая обёртка: base_url, headers, методы',
+                    'raise_for_status() — упасть на 4xx/5xx, а не молча вернуть JSON ошибки',
+                    'assert r.status == 201 — если API вернул не то, сразу видно',
+                    'dispose() — не забыть закрыть контекст (в фикстуре через yield)',
+                    'По аналогии с Page Object: тест не знает URL-ов и headers',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Не путайте: Page Object — для UI (клики, локаторы). API-клиент — для HTTP (методы, схемы). Часто оба живут в одном проекте: pages/ для UI, api/ для запросов. Это норма.',
+                },
+              ],
+            },
+            {
+              id: 'qa-l25-s5',
+              title: 'Проверь себя: методы API',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте метод APIRequestContext и его назначение',
+                pairs: [
+                  { left: 'api.get("/users/1")', right: 'GET-запрос' },
+                  { left: 'api.post("/orders", data=...)', right: 'POST с телом запроса' },
+                  { left: 'response.to_be_ok()', right: 'Проверить, что статус 2xx (с auto-waiting)' },
+                  { left: 'api.dispose()', right: 'Закрыть контекст, освободить ресурсы' },
+                ],
+                explanation:
+                  'get/post/put/delete — HTTP-методы. to_be_ok — expect, не assert (умеет ждать). dispose — освобождение. На собеседовании middle QA: «чем APIRequestContext отличается от requests?» — «интеграция с Playwright, единый контекст с UI, auto-waiting в expect».',
               },
             },
           ],
@@ -930,6 +1261,23 @@ export const qaAutomationCourse: Course = {
                   'Happy path должен идти к реальному API — так проверяется настоящая интеграция. Моки оправданы для edge-кейсов (500, таймаут, медленно) и для подсматривания запросов (промокод).',
               },
             },
+            {
+              id: 'qa-l26-s5',
+              title: 'Проверь себя: методы route',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте метод route и его назначение',
+                pairs: [
+                  { left: 'route.fulfill(status=500)', right: 'Вернуть свой ответ с заданным статусом' },
+                  { left: 'route.continue_()', right: 'Пропустить запрос к реальному серверу' },
+                  { left: 'route.abort()', right: 'Оборвать запрос как «нет сети»' },
+                  { left: 'route.request.post_data_json', right: 'Прочитать тело исходящего запроса' },
+                ],
+                explanation:
+                  'fulfill — подменить ответ. continue_ — пропустить. abort — оборвать. request — прочитать исходящие данные. Четыре метода покрывают 100% работы с page.route.',
+              },
+            },
           ],
         },
         {
@@ -1027,6 +1375,23 @@ export const qaAutomationCourse: Course = {
                 correct: ['b'],
                 explanation:
                   'Параллель ломает тесты почти всегда из-за shared state: два теста пишут в одну строку БД, один удаляет пользователя другого, общий лог-файл. Фикс — уникальные данные на тест (uuid в email, timestamp в заказе).',
+              },
+            },
+            {
+              id: 'qa-l27-s5',
+              title: 'Проверь себя: команды параллели',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте флаг и его назначение',
+                pairs: [
+                  { left: '-n auto', right: 'По числу ядер CPU' },
+                  { left: '--dist=loadscope', right: 'Тесты одного класса — в один воркер' },
+                  { left: '--shard=1/4', right: 'Первая четверть тестов (для GitHub Actions matrix)' },
+                  { left: 'fail-fast: false', right: 'Не останавливать другие shard при падении одного' },
+                ],
+                explanation:
+                  '-n auto — ядра. loadscope — по классам. shard — по четвертям. fail-fast: false — не обрывать остальные. Вместе дают «16 параллельных тестов вместо 1 последовательного».',
               },
             },
           ],
@@ -1143,6 +1508,23 @@ export const qaAutomationCourse: Course = {
                   'Снимать компонент, маскировать динамику и допускать небольшой diff — три главных приёма против шума. А вот «разные браузеры» — наоборот, увеличивают число эталонов и ложных падений.',
               },
             },
+            {
+              id: 'qa-l28-s5',
+              title: 'Проверь себя: параметры скриншота',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте параметр и его назначение',
+                pairs: [
+                  { left: 'mask=[...]', right: 'Закрасить динамические элементы' },
+                  { left: 'max_diff_pixels=100', right: 'Допуск по числу различающихся пикселей' },
+                  { left: 'animations="disabled"', right: 'Отключить анимации на время скриншота' },
+                  { left: '--update-snapshots', right: 'Перезаписать эталонные скриншоты' },
+                ],
+                explanation:
+                  'mask — маскирует динамику. max_diff_pixels — допускает антиалиасинг. animations — убирает движение. --update-snapshots — перезаписывает эталоны после осознанного изменения вёрстки.',
+              },
+            },
           ],
         },
       ],
@@ -1165,10 +1547,7 @@ export const qaAutomationCourse: Course = {
               title: 'Пять ситуаций, где нужен SQL',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'Тестировщику SQL нужен не для «разработки», а для проверки. Вот типичные ситуации, где без него не обойтись.',
-                },
+                { type: 'p', text: 'Тестировщику SQL нужен не для «разработки», а для проверки. Вот типичные ситуации, где без него не обойтись.' },
                 {
                   type: 'list',
                   items: [
@@ -1179,10 +1558,7 @@ export const qaAutomationCourse: Course = {
                     'Проверить миграцию: после обновления схемы старые данные не побились.',
                   ],
                 },
-                {
-                  type: 'note',
-                  text: 'Тестировщик не пишет продакшн-запросы и не оптимизирует БД. Его SQL — SELECT-ориентированный: посмотреть, проверить, найти. UPDATE/INSERT — только на тестовой БД и с осторожностью.',
-                },
+                { type: 'note', text: 'Тестировщик не пишет продакшн-запросы и не оптимизирует БД. Его SQL — SELECT-ориентированный: посмотреть, проверить, найти. UPDATE/INSERT — только на тестовой БД и с осторожностью.' },
               ],
             },
             {
@@ -1190,24 +1566,39 @@ export const qaAutomationCourse: Course = {
               title: 'Схема, на которой будем учиться',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'Все примеры в модуле — на схеме интернет-магазина. Четыре таблицы, связанные по id.',
-                },
+                { type: 'p', text: 'Все примеры в модуле — на схеме интернет-магазина. Четыре таблицы, связанные по id.' },
                 {
                   type: 'code',
                   lang: 'sql',
                   caption: 'Схема интернет-магазина',
-                  code: 'users\n  id          integer primary key\n  email       text\n  name        text\n  created_at  timestamp\n\norders\n  id          integer primary key\n  user_id     integer references users(id)\n  status      text      -- new | paid | shipped | cancelled\n  total       numeric\n  created_at  timestamp\n\nproducts\n  id          integer primary key\n  name        text\n  category    text\n  price       numeric\n\norder_items\n  id          integer primary key\n  order_id    integer references orders(id)\n  product_id  integer references products(id)\n  quantity    integer\n  price       numeric   -- цена на момент заказа (может отличаться от products.price)',
+                  code: `users
+  id          integer primary key
+  email       text
+  name        text
+  created_at  timestamp
+
+orders
+  id          integer primary key
+  user_id     integer references users(id)
+  status      text      -- new | paid | shipped | cancelled
+  total       numeric
+  created_at  timestamp
+
+products
+  id          integer primary key
+  name        text
+  category    text
+  price       numeric
+
+order_items
+  id          integer primary key
+  order_id    integer references orders(id)
+  product_id  integer references products(id)
+  quantity    integer
+  price       numeric   -- цена на момент заказа (может отличаться от products.price)`,
                 },
-                {
-                  type: 'p',
-                  text: 'Связи: у пользователя много заказов, у заказа много позиций, у позиции — один товар. Такая структура (users → orders → order_items → products) знакома почти всем, кто работал с бизнес-приложениями.',
-                },
-                {
-                  type: 'note',
-                  text: 'Синтаксис примеров — PostgreSQL. В MySQL/MSSQL мелочи отличаются (например, IFNULL vs COALESCE), но принципы одинаковые. SQL учится один раз — дальше меняются нюансы диалекта.',
-                },
+                { type: 'p', text: 'Связи: у пользователя много заказов, у заказа много позиций, у позиции — один товар. Такая структура (users → orders → order_items → products) знакома почти всем, кто работал с бизнес-приложениями.' },
+                { type: 'note', text: 'Синтаксис примеров — PostgreSQL. В MySQL/MSSQL мелочи отличаются (например, IFNULL vs COALESCE), но принципы одинаковые. SQL учится один раз — дальше меняются нюансы диалекта.' },
               ],
             },
             {
@@ -1228,6 +1619,54 @@ export const qaAutomationCourse: Course = {
                   'Тестировщик использует SQL для проверки данных после действий. Написание эндпоинтов, схем и оптимизация индексов — задачи разработчика и DBA.',
               },
             },
+            {
+              id: 'qa-l29-s4',
+              title: 'Первый SQL-запрос: SELECT',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'SELECT — это «что взять», FROM — «откуда». Звёздочка `*` означает «все колонки». Попробуйте выполнить запрос в песочнице.' },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE users (id INTEGER, email TEXT, name TEXT);
+INSERT INTO users VALUES
+  (1, 'anna@x.com', 'Анна'),
+  (2, 'boris@x.com', 'Борис'),
+  (3, 'vera@x.com', 'Вера');`,
+                    task: 'Выведите `id` и `email` всех пользователей. Отсортируйте по `id`.',
+                    solution: 'SELECT id, email FROM users ORDER BY id;',
+                    expected: {
+                      columns: ['id', 'email'],
+                      rows: [
+                        [1, 'anna@x.com'],
+                        [2, 'boris@x.com'],
+                        [3, 'vera@x.com'],
+                      ],
+                      order: 'order',
+                    },
+                    hint: 'SELECT id, email FROM users ORDER BY id',
+                  },
+                },
+                { type: 'note', text: 'Без ORDER BY порядок строк не гарантирован — СУБД может вернуть «в любом». Если тест полагается на порядок — всегда сортируйте.' },
+              ],
+            },
+            {
+              id: 'qa-l29-s5',
+              title: 'Проверь себя: таблицы и связи',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте таблицу и что в ней хранится',
+                pairs: [
+                  { left: 'users', right: 'Пользователи: email, имя, дата регистрации' },
+                  { left: 'orders', right: 'Заказы: статус, сумма, дата' },
+                  { left: 'order_items', right: 'Позиции заказа: товар и количество' },
+                  { left: 'products', right: 'Каталог товаров: название, цена' },
+                ],
+                explanation:
+                  'users → orders → order_items → products — связи «один ко многим». Понимание схемы — половина навыка SQL: прежде чем писать запрос, надо знать, где какие данные.',
+              },
+            },
           ],
         },
         {
@@ -1240,20 +1679,31 @@ export const qaAutomationCourse: Course = {
               title: 'Что вернуть и откуда',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'SELECT — это «что взять», FROM — «откуда взять», WHERE — «какие строки подходят». Порядок в запросе именно такой, хотя логически сначала фильтруются строки, а потом выбираются колонки.',
-                },
+                { type: 'p', text: 'SELECT — это «что взять», FROM — «откуда взять», WHERE — «какие строки подходят». Порядок в запросе именно такой, хотя логически сначала фильтруются строки, а потом выбираются колонки.' },
                 {
                   type: 'code',
                   lang: 'sql',
                   caption: 'Простейший SELECT',
-                  code: '-- Все колонки, все строки (осторожно: на большой таблице — долго)\nSELECT * FROM users;\n\n-- Конкретные колонки\nSELECT id, email FROM users;\n\n-- С псевдонимом\nSELECT email AS contact FROM users;\n\n-- Фильтрация\nSELECT id, email FROM users WHERE name = \'Анна\';\n\n-- Несколько условий: AND / OR\nSELECT * FROM orders\nWHERE status = \'paid\' AND total > 1000;\n\nSELECT * FROM orders\nWHERE status = \'paid\' OR status = \'shipped\';',
+                  code: `-- Все колонки, все строки (осторожно: на большой таблице — долго)
+SELECT * FROM users;
+
+-- Конкретные колонки
+SELECT id, email FROM users;
+
+-- С псевдонимом
+SELECT email AS contact FROM users;
+
+-- Фильтрация
+SELECT id, email FROM users WHERE name = 'Анна';
+
+-- Несколько условий: AND / OR
+SELECT * FROM orders
+WHERE status = 'paid' AND total > 1000;
+
+SELECT * FROM orders
+WHERE status = 'paid' OR status = 'shipped';`,
                 },
-                {
-                  type: 'note',
-                  text: 'SELECT * на большой таблице — антипаттерн. Он тянет все колонки, включая blob/text, и ломается, когда в таблицу добавили новую колонку. Для тестов и проверок лучше явно перечислять нужные поля.',
-                },
+                { type: 'note', text: 'SELECT * на большой таблице — антипаттерн. Он тянет все колонки, включая blob/text, и ломается, когда в таблицу добавили новую колонку. Для тестов и проверок лучше явно перечислять нужные поля.' },
               ],
             },
             {
@@ -1265,20 +1715,37 @@ export const qaAutomationCourse: Course = {
                   type: 'code',
                   lang: 'sql',
                   caption: 'Основные операторы',
-                  code: '-- Сравнения\nWHERE total = 1000\nWHERE total != 1000\nWHERE total > 500\nWHERE total BETWEEN 500 AND 1000    -- включительно с обеих сторон\n\n-- Списки\nWHERE status IN (\'paid\', \'shipped\')\nWHERE status NOT IN (\'cancelled\', \'deleted\')\n\n-- NULL (ВАЖНО: не работает через =)\nWHERE user_id IS NULL\nWHERE user_id IS NOT NULL\n\n-- LIKE — поиск по шаблону\nWHERE email LIKE \'%@gmail.com\'      -- заканчивается на\nWHERE name LIKE \'Ан%\'               -- начинается на «Ан»\nWHERE name LIKE \'%ова\'              -- заканчивается на «ова»\nWHERE email LIKE \'%@_mail.com\'      -- _ — один любой символ\n\n-- Даты\nWHERE created_at >= \'2025-01-01\'\nWHERE created_at >= NOW() - INTERVAL \'7 days\'',
+                  code: `-- Сравнения
+WHERE total = 1000
+WHERE total != 1000
+WHERE total > 500
+WHERE total BETWEEN 500 AND 1000    -- включительно с обеих сторон
+
+-- Списки
+WHERE status IN ('paid', 'shipped')
+WHERE status NOT IN ('cancelled', 'deleted')
+
+-- NULL (ВАЖНО: не работает через =)
+WHERE user_id IS NULL
+WHERE user_id IS NOT NULL
+
+-- LIKE — поиск по шаблону
+WHERE email LIKE '%@gmail.com'      -- заканчивается на
+WHERE name LIKE 'Ан%'               -- начинается на «Ан»
+WHERE name LIKE '%ова'              -- заканчивается на «ова»
+WHERE email LIKE '%@_mail.com'      -- _ — один любой символ
+
+-- Даты
+WHERE created_at >= '2025-01-01'
+WHERE created_at >= NOW() - INTERVAL '7 days'`,
                 },
-                {
-                  type: 'note',
-                  text: 'NULL — это «неизвестно», а не «пустая строка». Любое сравнение с NULL через = даёт NULL (не true и не false), поэтому WHERE user_id = NULL вернёт 0 строк. Используйте IS NULL / IS NOT NULL.',
-                },
-                {
-                  type: 'p',
-                  text: 'Регистр: PostgreSQL и MySQL сравнивают строки с учётом регистра (в большинстве коллаций). Чтобы не зависеть — используйте LOWER() или ILIKE (PostgreSQL):',
-                },
+                { type: 'note', text: 'NULL — это «неизвестно», а не «пустая строка». Любое сравнение с NULL через = даёт NULL (не true и не false), поэтому WHERE user_id = NULL вернёт 0 строк. Используйте IS NULL / IS NOT NULL.' },
+                { type: 'p', text: 'Регистр: PostgreSQL и MySQL сравнивают строки с учётом регистра (в большинстве коллаций). Чтобы не зависеть — используйте LOWER() или ILIKE (PostgreSQL):' },
                 {
                   type: 'code',
                   lang: 'sql',
-                  code: 'WHERE LOWER(email) LIKE \'%@gmail.com\'    -- универсально\nWHERE email ILIKE \'%@gmail.com\'          -- только PostgreSQL',
+                  code: `WHERE LOWER(email) LIKE '%@gmail.com'    -- универсально
+WHERE email ILIKE '%@gmail.com'          -- только PostgreSQL`,
                 },
               ],
             },
@@ -1291,18 +1758,35 @@ export const qaAutomationCourse: Course = {
                   type: 'code',
                   lang: 'sql',
                   caption: 'Сортировка и ограничение',
-                  code: '-- Сортировка по возрастанию (по умолчанию)\nSELECT * FROM orders ORDER BY created_at;\n\n-- По убыванию\nSELECT * FROM orders ORDER BY created_at DESC;\n\n-- По нескольким полям: сначала статус, потом дата\nSELECT * FROM orders ORDER BY status, created_at DESC;\n\n-- Топ-10 последних заказов\nSELECT * FROM orders ORDER BY created_at DESC LIMIT 10;\n\n-- Пропустить 20, взять 10 (пагинация)\nSELECT * FROM orders ORDER BY id LIMIT 10 OFFSET 20;',
+                  code: `-- Сортировка по возрастанию (по умолчанию)
+SELECT * FROM orders ORDER BY created_at;
+
+-- По убыванию
+SELECT * FROM orders ORDER BY created_at DESC;
+
+-- По нескольким полям: сначала статус, потом дата
+SELECT * FROM orders ORDER BY status, created_at DESC;
+
+-- Топ-10 последних заказов
+SELECT * FROM orders ORDER BY created_at DESC LIMIT 10;
+
+-- Пропустить 20, взять 10 (пагинация)
+SELECT * FROM orders ORDER BY id LIMIT 10 OFFSET 20;`,
                 },
                 {
                   type: 'code',
                   lang: 'sql',
                   caption: 'DISTINCT — уникальные значения',
-                  code: '-- Уникальные статусы заказов (какие вообще бывают)\nSELECT DISTINCT status FROM orders;\n\n-- Уникальные категории товаров\nSELECT DISTINCT category FROM products;\n\n-- Уникальные пары (для проверки дублей)\nSELECT DISTINCT user_id, status FROM orders;',
+                  code: `-- Уникальные статусы заказов (какие вообще бывают)
+SELECT DISTINCT status FROM orders;
+
+-- Уникальные категории товаров
+SELECT DISTINCT category FROM products;
+
+-- Уникальные пары (для проверки дублей)
+SELECT DISTINCT user_id, status FROM orders;`,
                 },
-                {
-                  type: 'note',
-                  text: 'ORDER BY — критичен для LIMIT. Без него СУБД может вернуть любые 10 строк, и результат будет «плавать» между запусками. Всегда сортируйте, если ограничиваете.',
-                },
+                { type: 'note', text: 'ORDER BY — критичен для LIMIT. Без него СУБД может вернуть любые 10 строк, и результат будет «плавать» между запусками. Всегда сортируйте, если ограничиваете.' },
               ],
             },
             {
@@ -1319,6 +1803,23 @@ export const qaAutomationCourse: Course = {
                   'WHERE user_id IS NULL. Через = NULL сравнивать нельзя: user_id = NULL вернёт NULL, а не true. IS NULL и IS NOT NULL — единственный корректный способ.',
               },
             },
+            {
+              id: 'qa-l30-s5',
+              title: 'Проверь себя: операторы WHERE',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте оператор и его назначение',
+                pairs: [
+                  { left: 'IN (1, 2, 3)', right: 'Значение равно одному из списка' },
+                  { left: 'BETWEEN 10 AND 20', right: 'Значение в диапазоне включительно' },
+                  { left: "LIKE 'Ан%'", right: 'Начинается на «Ан»' },
+                  { left: 'IS NULL', right: 'Значение отсутствует (NULL)' },
+                ],
+                explanation:
+                  'IN — список, BETWEEN — диапазон, LIKE — шаблон, IS NULL — проверка на NULL. Ещё: NOT IN — исключить список, IS NOT NULL — значение есть, LIKE \'%x\' — содержит x в конце.',
+              },
+            },
           ],
         },
         {
@@ -1331,20 +1832,37 @@ export const qaAutomationCourse: Course = {
               title: 'Пять агрегатных функций',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'Агрегаты сворачивают много строк в одно значение. Это половина всех запросов тестировщика: «сколько», «сумма», «среднее», «максимум».',
-                },
+                { type: 'p', text: 'Агрегаты сворачивают много строк в одно значение. Это половина всех запросов тестировщика: «сколько», «сумма», «среднее», «максимум».' },
                 {
                   type: 'code',
                   lang: 'sql',
                   caption: 'COUNT, SUM, AVG, MIN, MAX',
-                  code: '-- Сколько всего пользователей\nSELECT COUNT(*) FROM users;\n\n-- Сколько заказов в статусе paid\nSELECT COUNT(*) FROM orders WHERE status = \'paid\';\n\n-- Сумма всех оплаченных заказов\nSELECT SUM(total) FROM orders WHERE status = \'paid\';\n\n-- Средний чек\nSELECT AVG(total) FROM orders WHERE status = \'paid\';\n\n-- Самый дорогой и самый дешёвый заказ\nSELECT MIN(total), MAX(total) FROM orders;\n\n-- Всё вместе в одном запросе\nSELECT\n    COUNT(*)      AS orders_count,\n    SUM(total)    AS total_revenue,\n    AVG(total)    AS avg_check,\n    MIN(total)    AS min_order,\n    MAX(total)    AS max_order\nFROM orders\nWHERE status = \'paid\';',
+                  code: `-- Сколько всего пользователей
+SELECT COUNT(*) FROM users;
+
+-- Сколько заказов в статусе paid
+SELECT COUNT(*) FROM orders WHERE status = 'paid';
+
+-- Сумма всех оплаченных заказов
+SELECT SUM(total) FROM orders WHERE status = 'paid';
+
+-- Средний чек
+SELECT AVG(total) FROM orders WHERE status = 'paid';
+
+-- Самый дорогой и самый дешёвый заказ
+SELECT MIN(total), MAX(total) FROM orders;
+
+-- Всё вместе в одном запросе
+SELECT
+    COUNT(*)      AS orders_count,
+    SUM(total)    AS total_revenue,
+    AVG(total)    AS avg_check,
+    MIN(total)    AS min_order,
+    MAX(total)    AS max_order
+FROM orders
+WHERE status = 'paid';`,
                 },
-                {
-                  type: 'note',
-                  text: 'COUNT(*) считает все строки. COUNT(column) — только не-NULL значения этого столбца. COUNT(DISTINCT column) — уникальные. Разница критична: COUNT(email) не посчитает пользователей без email.',
-                },
+                { type: 'note', text: 'COUNT(*) считает все строки. COUNT(column) — только не-NULL значения этого столбца. COUNT(DISTINCT column) — уникальные. Разница критична: COUNT(email) не посчитает пользователей без email.' },
               ],
             },
             {
@@ -1352,31 +1870,39 @@ export const qaAutomationCourse: Course = {
               title: 'GROUP BY: агрегаты по группам',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'GROUP BY группирует строки по значению колонки и применяет агрегат к каждой группе. «Сколько заказов у каждого пользователя», «выручка по месяцам», «средний чек по статусам».',
-                },
+                { type: 'p', text: 'GROUP BY группирует строки по значению колонки и применяет агрегат к каждой группе. «Сколько заказов у каждого пользователя», «выручка по месяцам», «средний чек по статусам».' },
                 {
                   type: 'code',
                   lang: 'sql',
                   caption: 'Сколько заказов у каждого пользователя',
-                  code: 'SELECT user_id, COUNT(*) AS order_count\nFROM orders\nGROUP BY user_id\nORDER BY order_count DESC;',
+                  code: `SELECT user_id, COUNT(*) AS order_count
+FROM orders
+GROUP BY user_id
+ORDER BY order_count DESC;`,
                 },
-                {
-                  type: 'p',
-                  text: 'Правило: в SELECT при GROUP BY можно указывать только колонки из GROUP BY и агрегаты. Всё остальное — ошибка (или неопределённость в зависимости от СУБД).',
-                },
+                { type: 'p', text: 'Правило: в SELECT при GROUP BY можно указывать только колонки из GROUP BY и агрегаты. Всё остальное — ошибка (или неопределённость в зависимости от СУБД).' },
                 {
                   type: 'code',
                   lang: 'sql',
                   caption: 'Сложнее: выручка и средний чек по статусам',
-                  code: 'SELECT\n    status,\n    COUNT(*)         AS orders_count,\n    SUM(total)       AS revenue,\n    ROUND(AVG(total), 2) AS avg_check\nFROM orders\nGROUP BY status\nORDER BY revenue DESC;',
+                  code: `SELECT
+    status,
+    COUNT(*)         AS orders_count,
+    SUM(total)       AS revenue,
+    ROUND(AVG(total), 2) AS avg_check
+FROM orders
+GROUP BY status
+ORDER BY revenue DESC;`,
                 },
                 {
                   type: 'code',
                   lang: 'sql',
                   caption: 'Группировка по двум полям',
-                  code: '-- Сколько заказов по каждой паре (status, user_id)\nSELECT status, user_id, COUNT(*)\nFROM orders\nGROUP BY status, user_id\nORDER BY status, user_id;',
+                  code: `-- Сколько заказов по каждой паре (status, user_id)
+SELECT status, user_id, COUNT(*)
+FROM orders
+GROUP BY status, user_id
+ORDER BY status, user_id;`,
                 },
               ],
             },
@@ -1385,26 +1911,30 @@ export const qaAutomationCourse: Course = {
               title: 'HAVING: фильтр после группировки',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'WHERE фильтрует строки ДО группировки. HAVING — ПОСЛЕ. Если условие содержит агрегат (COUNT, SUM, AVG), его место — в HAVING.',
-                },
+                { type: 'p', text: 'WHERE фильтрует строки ДО группировки. HAVING — ПОСЛЕ. Если условие содержит агрегат (COUNT, SUM, AVG), его место — в HAVING.' },
                 {
                   type: 'code',
                   lang: 'sql',
                   caption: 'Пользователи с 5+ заказами',
-                  code: 'SELECT user_id, COUNT(*) AS order_count\nFROM orders\nGROUP BY user_id\nHAVING COUNT(*) >= 5\nORDER BY order_count DESC;',
+                  code: `SELECT user_id, COUNT(*) AS order_count
+FROM orders
+GROUP BY user_id
+HAVING COUNT(*) >= 5
+ORDER BY order_count DESC;`,
                 },
                 {
                   type: 'code',
                   lang: 'sql',
                   caption: 'WHERE и HAVING в одном запросе',
-                  code: '-- Пользователи с 3+ оплаченными заказами\nSELECT user_id, COUNT(*) AS paid_orders\nFROM orders\nWHERE status = \'paid\'      -- сначала фильтр строк\nGROUP BY user_id\nHAVING COUNT(*) >= 3      -- потом фильтр групп\nORDER BY paid_orders DESC;',
+                  code: `-- Пользователи с 3+ оплаченными заказами
+SELECT user_id, COUNT(*) AS paid_orders
+FROM orders
+WHERE status = 'paid'      -- сначала фильтр строк
+GROUP BY user_id
+HAVING COUNT(*) >= 3      -- потом фильтр групп
+ORDER BY paid_orders DESC;`,
                 },
-                {
-                  type: 'note',
-                  text: 'Порядок выполнения: FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT. Если попытаться использовать агрегат в WHERE — ошибка. Если колонку без агрегата в HAVING — тоже ошибка.',
-                },
+                { type: 'note', text: 'Порядок выполнения: FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT. Если попытаться использовать агрегат в WHERE — ошибка. Если колонку без агрегата в HAVING — тоже ошибка.' },
               ],
             },
             {
@@ -1425,6 +1955,39 @@ export const qaAutomationCourse: Course = {
                   'Порядок: FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT. Именно поэтому HAVING может содержать агрегаты (они уже вычислены), а WHERE — нет (агрегатов ещё нет).',
               },
             },
+            {
+              id: 'qa-l31-s5',
+              title: 'Практика: GROUP BY + COUNT',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Группировка — стандартная задача тестировщика: «сколько заказов в каждом статусе», «сколько пользователей с каждым типом подписки». Проверьте на практике.' },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE orders (id INTEGER, status TEXT, total INTEGER);
+INSERT INTO orders VALUES
+  (1, 'paid', 1000),
+  (2, 'paid', 2000),
+  (3, 'new', 500),
+  (4, 'cancelled', 300),
+  (5, 'paid', 1500);`,
+                    task: 'Для каждого статуса посчитайте количество заказов (колонка `cnt`). Отсортируйте по `status`.',
+                    solution: 'SELECT status, COUNT(*) AS cnt FROM orders GROUP BY status ORDER BY status;',
+                    expected: {
+                      columns: ['status', 'cnt'],
+                      rows: [
+                        ['cancelled', 1],
+                        ['new', 1],
+                        ['paid', 3],
+                      ],
+                      order: 'order',
+                    },
+                    hint: 'SELECT status, COUNT(*) AS cnt FROM orders GROUP BY status ORDER BY status',
+                  },
+                },
+                { type: 'note', text: 'Для «суммы по группе» — SUM(total) вместо COUNT(*). Для «среднего» — AVG(total). Все агрегаты работают одинаково: разбить на группы через GROUP BY, потом посчитать.' },
+              ],
+            },
           ],
         },
         {
@@ -1437,15 +2000,18 @@ export const qaAutomationCourse: Course = {
               title: 'INNER JOIN: только совпадения',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'JOIN соединяет строки двух таблиц по условию. INNER JOIN оставляет только те строки, где есть совпадение с обеих сторон. Пользователь без заказов не попадёт в результат; заказ без пользователя — тоже.',
-                },
+                { type: 'p', text: 'JOIN соединяет строки двух таблиц по условию. INNER JOIN оставляет только те строки, где есть совпадение с обеих сторон. Пользователь без заказов не попадёт в результат; заказ без пользователя — тоже.' },
                 {
                   type: 'code',
                   lang: 'sql',
                   caption: 'INNER JOIN: заказы с email пользователей',
-                  code: 'SELECT\n    o.id        AS order_id,\n    o.total,\n    u.email     AS user_email\nFROM orders o\nJOIN users u ON u.id = o.user_id\nWHERE o.status = \'paid\';',
+                  code: `SELECT
+    o.id        AS order_id,
+    o.total,
+    u.email     AS user_email
+FROM orders o
+JOIN users u ON u.id = o.user_id
+WHERE o.status = 'paid';`,
                 },
                 {
                   type: 'list',
@@ -1463,30 +2029,31 @@ export const qaAutomationCourse: Course = {
               title: 'LEFT JOIN: все из левой + совпадения из правой',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'LEFT JOIN сохраняет все строки левой (первой) таблицы. Если в правой нет совпадения — правая часть заполняется NULL. Это главный способ найти «чего не хватает»: пользователей без заказов, заказов без позиций, товаров без продаж.',
-                },
+                { type: 'p', text: 'LEFT JOIN сохраняет все строки левой (первой) таблицы. Если в правой нет совпадения — правая часть заполняется NULL. Это главный способ найти «чего не хватает»: пользователей без заказов, заказов без позиций, товаров без продаж.' },
                 {
                   type: 'code',
                   lang: 'sql',
                   caption: 'Пользователи без единого заказа',
-                  code: 'SELECT u.id, u.email\nFROM users u\nLEFT JOIN orders o ON o.user_id = u.id\nWHERE o.id IS NULL;',
+                  code: `SELECT u.id, u.email
+FROM users u
+LEFT JOIN orders o ON o.user_id = u.id
+WHERE o.id IS NULL;`,
                 },
-                {
-                  type: 'p',
-                  text: 'Логика: LEFT JOIN даёт всем пользователям хотя бы одну строку (даже без заказов). Если заказа нет, o.id = NULL. WHERE o.id IS NULL оставляет только таких. Это классический «anti-join».',
-                },
+                { type: 'p', text: 'Логика: LEFT JOIN даёт всем пользователям хотя бы одну строку (даже без заказов). Если заказа нет, o.id = NULL. WHERE o.id IS NULL оставляет только таких. Это классический «anti-join».' },
                 {
                   type: 'code',
                   lang: 'sql',
                   caption: 'Заказы с количеством позиций (включая заказы без позиций)',
-                  code: 'SELECT\n    o.id,\n    o.total,\n    COUNT(oi.id) AS items_count\nFROM orders o\nLEFT JOIN order_items oi ON oi.order_id = o.id\nGROUP BY o.id, o.total\nORDER BY items_count ASC;',
+                  code: `SELECT
+    o.id,
+    o.total,
+    COUNT(oi.id) AS items_count
+FROM orders o
+LEFT JOIN order_items oi ON oi.order_id = o.id
+GROUP BY o.id, o.total
+ORDER BY items_count ASC;`,
                 },
-                {
-                  type: 'note',
-                  text: 'COUNT(oi.id), а не COUNT(*). COUNT(*) посчитает и заказы без позиций как «1» (потому что строка есть). COUNT(oi.id) считает только не-NULL, то есть реальные позиции.',
-                },
+                { type: 'note', text: 'COUNT(oi.id), а не COUNT(*). COUNT(*) посчитает и заказы без позиций как «1» (потому что строка есть). COUNT(oi.id) считает только не-NULL, то есть реальные позиции.' },
               ],
             },
             {
@@ -1506,26 +2073,34 @@ export const qaAutomationCourse: Course = {
                     ['CROSS JOIN', 'Декартово произведение: каждая строка с каждой'],
                   ],
                 },
-                {
-                  type: 'p',
-                  text: 'RIGHT JOIN используют редко: он эквивалентен LEFT JOIN с переставленными таблицами. FULL — когда нужно найти разрывы в обе стороны. CROSS — для генерации всех комбинаций (например, всех пар «товар × размер»).',
-                },
+                { type: 'p', text: 'RIGHT JOIN используют редко: он эквивалентен LEFT JOIN с переставленными таблицами. FULL — когда нужно найти разрывы в обе стороны. CROSS — для генерации всех комбинаций (например, всех пар «товар × размер»).' },
                 {
                   type: 'code',
                   lang: 'sql',
                   caption: 'FULL OUTER: заказы без пользователей + пользователи без заказов',
-                  code: 'SELECT u.id AS user_id, o.id AS order_id\nFROM users u\nFULL OUTER JOIN orders o ON o.user_id = u.id\nWHERE u.id IS NULL OR o.id IS NULL;',
+                  code: `SELECT u.id AS user_id, o.id AS order_id
+FROM users u
+FULL OUTER JOIN orders o ON o.user_id = u.id
+WHERE u.id IS NULL OR o.id IS NULL;`,
                 },
                 {
                   type: 'code',
                   lang: 'sql',
                   caption: 'Три таблицы в одном запросе',
-                  code: 'SELECT\n    o.id            AS order_id,\n    u.email,\n    p.name          AS product,\n    oi.quantity,\n    oi.price\nFROM orders o\nJOIN users u        ON u.id = o.user_id\nJOIN order_items oi ON oi.order_id = o.id\nJOIN products p     ON p.id = oi.product_id\nWHERE o.status = \'paid\'\nORDER BY o.id;',
+                  code: `SELECT
+    o.id            AS order_id,
+    u.email,
+    p.name          AS product,
+    oi.quantity,
+    oi.price
+FROM orders o
+JOIN users u        ON u.id = o.user_id
+JOIN order_items oi ON oi.order_id = o.id
+JOIN products p     ON p.id = oi.product_id
+WHERE o.status = 'paid'
+ORDER BY o.id;`,
                 },
-                {
-                  type: 'note',
-                  text: 'Чем больше JOIN-ов, тем важнее индексы на полях связи (user_id, order_id, product_id). Для тестировщика это не критично — запросы обычно на маленьких выборках. Но если запрос на проде «висит» — это первое, что стоит проверить через EXPLAIN.',
-                },
+                { type: 'note', text: 'Чем больше JOIN-ов, тем важнее индексы на полях связи (user_id, order_id, product_id). Для тестировщика это не критично — запросы обычно на маленьких выборках. Но если запрос на проде «висит» — это первое, что стоит проверить через EXPLAIN.' },
               ],
             },
             {
@@ -1546,6 +2121,46 @@ export const qaAutomationCourse: Course = {
                   'LEFT JOIN сохраняет всех из левой таблицы. Отсюда три задачи: все пользователи + их заказы (b), найти без заказов через IS NULL (a), найти заказы с несуществующим user_id через перевёрнутый LEFT JOIN (d). Вариант C — это INNER JOIN.',
               },
             },
+            {
+              id: 'qa-l32-s5',
+              title: 'Практика: LEFT JOIN + COUNT',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Главная «фишка» LEFT JOIN в аналитике — посчитать что-то «включая нули». «Сколько заказов у каждого пользователя, включая тех, у кого их ноль». Ключевая деталь: `COUNT(o.id)`, а не `COUNT(*)`.' },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE users (id INTEGER, email TEXT);
+CREATE TABLE orders (id INTEGER, user_id INTEGER);
+INSERT INTO users VALUES
+  (1, 'a@x.com'),
+  (2, 'b@x.com'),
+  (3, 'c@x.com');
+INSERT INTO orders VALUES
+  (10, 1),
+  (11, 1),
+  (12, 2);`,
+                    task: 'Выведите `id`, `email` каждого пользователя и количество его заказов (колонка `order_count`), ВКЛЮЧАЯ пользователей без заказов (у них 0). Отсортируйте по `id`.',
+                    solution: `SELECT u.id, u.email, COUNT(o.id) AS order_count
+FROM users u
+LEFT JOIN orders o ON o.user_id = u.id
+GROUP BY u.id, u.email
+ORDER BY u.id;`,
+                    expected: {
+                      columns: ['id', 'email', 'order_count'],
+                      rows: [
+                        [1, 'a@x.com', 2],
+                        [2, 'b@x.com', 1],
+                        [3, 'c@x.com', 0],
+                      ],
+                      order: 'order',
+                    },
+                    hint: 'LEFT JOIN orders o ON o.user_id = u.id + COUNT(o.id) (НЕ COUNT(*)) + GROUP BY u.id, u.email',
+                  },
+                },
+                { type: 'note', text: 'Если сделать COUNT(*), у пользователя без заказов получится 1 (LEFT JOIN даёт одну строку с NULL в правой части). COUNT(o.id) считает только не-NULL — реальные заказы, поэтому 0.' },
+              ],
+            },
           ],
         },
         {
@@ -1558,24 +2173,21 @@ export const qaAutomationCourse: Course = {
               title: 'Почему NULL — это не пустая строка',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'NULL — это «значение неизвестно». Не ноль, не пустая строка, не false. Любая операция с NULL даёт NULL: NULL + 5 = NULL, NULL = NULL → NULL (не true!), NULL || \'текст\' = NULL.',
-                },
+                { type: 'p', text: 'NULL — это «значение неизвестно». Не ноль, не пустая строка, не false. Любая операция с NULL даёт NULL: NULL + 5 = NULL, NULL = NULL → NULL (не true!), NULL || \'текст\' = NULL.' },
                 {
                   type: 'code',
                   lang: 'sql',
                   caption: 'NULL отравляет арифметику',
-                  code: 'SELECT 100 + NULL;         -- NULL, а не 100\nSELECT NULL = NULL;        -- NULL (не true!)\nSELECT NULL != NULL;       -- NULL\nSELECT COALESCE(NULL, 0);  -- 0 (первое не-NULL)\n\n-- В таблице:\nSELECT id, total + bonus FROM orders;  -- если bonus IS NULL, total + bonus = NULL',
+                  code: `SELECT 100 + NULL;         -- NULL, а не 100
+SELECT NULL = NULL;        -- NULL (не true!)
+SELECT NULL != NULL;       -- NULL
+SELECT COALESCE(NULL, 0);  -- 0 (первое не-NULL)
+
+-- В таблице:
+SELECT id, total + bonus FROM orders;  -- если bonus IS NULL, total + bonus = NULL`,
                 },
-                {
-                  type: 'p',
-                  text: 'Это ловит тестировщиков и разработчиков на реальных багах: сумма заказа «исчезает», если у товара не указана скидка; средний чек занижается, потому что AVG игнорирует NULL-строки.',
-                },
-                {
-                  type: 'note',
-                  text: 'Агрегаты игнорируют NULL: SUM, AVG, MIN, MAX не считают NULL-строки. COUNT(*) считает все, COUNT(column) — только не-NULL. Это влияет на цифры в отчётах: AVG(total) при 100 строках с 20 NULL — это сумма / 80, а не / 100.',
-                },
+                { type: 'p', text: 'Это ловит тестировщиков и разработчиков на реальных багах: сумма заказа «исчезает», если у товара не указана скидка; средний чек занижается, потому что AVG игнорирует NULL-строки.' },
+                { type: 'note', text: 'Агрегаты игнорируют NULL: SUM, AVG, MIN, MAX не считают NULL-строки. COUNT(*) считает все, COUNT(column) — только не-NULL. Это влияет на цифры в отчётах: AVG(total) при 100 строках с 20 NULL — это сумма / 80, а не / 100.' },
               ],
             },
             {
@@ -1583,15 +2195,29 @@ export const qaAutomationCourse: Course = {
               title: 'COALESCE: первый не-NULL',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'COALESCE(a, b, c, ...) возвращает первое не-NULL значение из списка. Если все NULL — вернёт NULL. Это главный способ подставить «заглушку» вместо NULL.',
-                },
+                { type: 'p', text: 'COALESCE(a, b, c, ...) возвращает первое не-NULL значение из списка. Если все NULL — вернёт NULL. Это главный способ подставить «заглушку» вместо NULL.' },
                 {
                   type: 'code',
                   lang: 'sql',
                   caption: 'Типичные применения',
-                  code: '-- Заменить NULL на 0 в сумме\nSELECT id, COALESCE(total, 0) AS total FROM orders;\n\n-- Взять имя или email, если имени нет\nSELECT COALESCE(name, email, \'без имени\') AS display FROM users;\n\n-- С безопасной арифметикой\nSELECT total + COALESCE(bonus, 0) AS total_with_bonus\nFROM orders;\n\n-- Сложнее: приоритет источников\nSELECT COALESCE(\n    phone_mobile,\n    phone_home,\n    phone_work,\n    \'нет телефона\'\n) AS contact_phone\nFROM users;',
+                  code: `-- Заменить NULL на 0 в сумме
+SELECT id, COALESCE(total, 0) AS total FROM orders;
+
+-- Взять имя или email, если имени нет
+SELECT COALESCE(name, email, 'без имени') AS display FROM users;
+
+-- С безопасной арифметикой
+SELECT total + COALESCE(bonus, 0) AS total_with_bonus
+FROM orders;
+
+-- Сложнее: приоритет источников
+SELECT COALESCE(
+    phone_mobile,
+    phone_home,
+    phone_work,
+    'нет телефона'
+) AS contact_phone
+FROM users;`,
                 },
                 {
                   type: 'list',
@@ -1609,26 +2235,54 @@ export const qaAutomationCourse: Course = {
               title: 'Альтернативы и CASE',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'COALESCE — универсальный, но в разных СУБД есть свои функции с двумя аргументами. И для условной логики (не просто «замена NULL») используется CASE.',
-                },
+                { type: 'p', text: 'COALESCE — универсальный, но в разных СУБД есть свои функции с двумя аргументами. И для условной логики (не просто «замена NULL») используется CASE.' },
                 {
                   type: 'code',
                   lang: 'sql',
                   caption: 'COALESCE и его аналоги',
-                  code: '-- PostgreSQL, SQL Server, Oracle, SQLite\nCOALESCE(a, b)\n\n-- MySQL: IFNULL (только 2 аргумента)\nIFNULL(a, b)\n\n-- Oracle: NVL (только 2 аргумента)\nNVL(a, b)\n\n-- PostgreSQL: NVL нет, но есть COALESCE\n-- SQL Server: ISNULL (2 аргумента)\n-- SQLite: IFNULL (2 аргумента)\n\n-- Правило: если сомневаетесь — пишите COALESCE, он работает везде',
+                  code: `-- PostgreSQL, SQL Server, Oracle, SQLite
+COALESCE(a, b)
+
+-- MySQL: IFNULL (только 2 аргумента)
+IFNULL(a, b)
+
+-- Oracle: NVL (только 2 аргумента)
+NVL(a, b)
+
+-- PostgreSQL: NVL нет, но есть COALESCE
+-- SQL Server: ISNULL (2 аргумента)
+-- SQLite: IFNULL (2 аргумента)
+
+-- Правило: если сомневаетесь — пишите COALESCE, он работает везде`,
                 },
                 {
                   type: 'code',
                   lang: 'sql',
                   caption: 'CASE: условная логика (шире, чем NULL)',
-                  code: '-- Проверка статуса заказа\nSELECT\n    id,\n    CASE status\n        WHEN \'paid\'      THEN \'Оплачен\'\n        WHEN \'shipped\'   THEN \'Отправлен\'\n        WHEN \'cancelled\' THEN \'Отменён\'\n        ELSE \'Новый\'\n    END AS status_ru\nFROM orders;\n\n-- С условиями и агрегатами: сколько оплачено и отменено\nSELECT\n    COUNT(*) FILTER (WHERE status = \'paid\')      AS paid_count,\n    COUNT(*) FILTER (WHERE status = \'cancelled\') AS cancelled_count\nFROM orders;\n\n-- Универсально (без FILTER): через CASE\nSELECT\n    SUM(CASE WHEN status = \'paid\'      THEN 1 ELSE 0 END) AS paid_count,\n    SUM(CASE WHEN status = \'cancelled\' THEN 1 ELSE 0 END) AS cancelled_count\nFROM orders;',
+                  code: `-- Проверка статуса заказа
+SELECT
+    id,
+    CASE status
+        WHEN 'paid'      THEN 'Оплачен'
+        WHEN 'shipped'   THEN 'Отправлен'
+        WHEN 'cancelled' THEN 'Отменён'
+        ELSE 'Новый'
+    END AS status_ru
+FROM orders;
+
+-- С условиями и агрегатами: сколько оплачено и отменено
+SELECT
+    COUNT(*) FILTER (WHERE status = 'paid')      AS paid_count,
+    COUNT(*) FILTER (WHERE status = 'cancelled') AS cancelled_count
+FROM orders;
+
+-- Универсально (без FILTER): через CASE
+SELECT
+    SUM(CASE WHEN status = 'paid'      THEN 1 ELSE 0 END) AS paid_count,
+    SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_count
+FROM orders;`,
                 },
-                {
-                  type: 'note',
-                  text: 'COALESCE — только про NULL. CASE — про любое условие. Если задача «если А, то Б, иначе В» — это CASE. Если «если NULL, то заглушка» — это COALESCE.',
-                },
+                { type: 'note', text: 'COALESCE — только про NULL. CASE — про любое условие. Если задача «если А, то Б, иначе В» — это CASE. Если «если NULL, то заглушка» — это COALESCE.' },
               ],
             },
             {
@@ -1645,6 +2299,39 @@ export const qaAutomationCourse: Course = {
                   'COALESCE(a, b, c, ...) возвращает первое не-NULL. Это стандарт SQL, работает во всех СУБД. В отличие от IFNULL/NVL/ISNULL, принимает любое число аргументов.',
               },
             },
+            {
+              id: 'qa-l33-s5',
+              title: 'Практика: COALESCE',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Классическая проверка тестировщика: «не потерялась ли сумма заказа, если скидка не указана». COALESCE подставляет 0 вместо NULL, и арифметика работает.' },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE orders (id INTEGER, total INTEGER, bonus INTEGER);
+INSERT INTO orders VALUES
+  (1, 1000, 100),
+  (2, 2000, NULL),
+  (3, 500, 50),
+  (4, 300, NULL);`,
+                    task: 'Выведите `id` и итоговую сумму `total + bonus` (колонка `final_total`), при этом NULL в `bonus` должен считаться как 0. Отсортируйте по `id`.',
+                    solution: 'SELECT id, total + COALESCE(bonus, 0) AS final_total FROM orders ORDER BY id;',
+                    expected: {
+                      columns: ['id', 'final_total'],
+                      rows: [
+                        [1, 1100],
+                        [2, 2000],
+                        [3, 550],
+                        [4, 300],
+                      ],
+                      order: 'order',
+                    },
+                    hint: 'COALESCE(bonus, 0) — заменяет NULL на 0. Без этого total + bonus для NULL вернёт NULL.',
+                  },
+                },
+                { type: 'note', text: 'Это частая ошибка разработчика: «забыл COALESCE», и сумма заказа отображается как NULL в UI. Тестировщик через SQL быстро видит: «total + bonus = NULL, значит bonus IS NULL». Проверяйте такие поля в чек-листе.' },
+              ],
+            },
           ],
         },
         {
@@ -1654,113 +2341,69 @@ export const qaAutomationCourse: Course = {
           steps: [
             {
               id: 'qa-l34-s1',
-              title: 'Скалярный подзапрос',
+              title: 'Три вида подзапросов',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'Скалярный подзапрос возвращает одно значение (одна строка, одна колонка). Используется как обычное значение в SELECT, WHERE или HAVING.',
-                },
-                {
-                  type: 'code',
-                  lang: 'sql',
-                  caption: 'Заказы выше среднего чека',
-                  code: 'SELECT id, total\nFROM orders\nWHERE total > (SELECT AVG(total) FROM orders)\nORDER BY total DESC;',
-                },
-                {
-                  type: 'code',
-                  lang: 'sql',
-                  caption: 'В SELECT: добавить среднее к каждой строке',
-                  code: 'SELECT\n    id,\n    total,\n    (SELECT AVG(total) FROM orders) AS avg_total,\n    total - (SELECT AVG(total) FROM orders) AS diff\nFROM orders\nORDER BY diff DESC;',
-                },
-                {
-                  type: 'note',
-                  text: 'Скалярный подзапрос в SELECT выполняется для каждой строки — это может быть медленно. В WHERE — один раз (если не коррелированный). Для тестировщика это не критично, но знать полезно.',
-                },
+                { type: 'p', text: 'Подзапрос — это SELECT внутри другого запроса. Три вида: скалярный (возвращает одно значение), IN (проверка «есть ли во множестве»), EXISTS (проверка «есть ли хоть одна строка»).' },
+                { type: 'code', lang: 'sql', caption: 'Скалярный подзапрос (одно значение)', code: '-- Заказы выше среднего чека\nSELECT id, total\nFROM orders\nWHERE total > (SELECT AVG(total) FROM orders)\nORDER BY total DESC;' },
+                { type: 'code', lang: 'sql', caption: 'IN: значение в множестве', code: "-- Пользователи с хотя бы одним оплаченным заказом\nSELECT id, email\nFROM users\nWHERE id IN (\n    SELECT user_id FROM orders WHERE status = 'paid'\n);" },
+                { type: 'code', lang: 'sql', caption: 'EXISTS: проверка существования', code: '-- Пользователи без заказов (безопаснее NOT IN)\nSELECT u.id, u.email\nFROM users u\nWHERE NOT EXISTS (\n    SELECT 1 FROM orders o WHERE o.user_id = u.id\n);' },
+                { type: 'note', text: 'NOT IN с NULL — ловушка. Если в подзапросе есть хотя бы один NULL, NOT IN вернёт пустой результат (NULL ≠ NULL → NULL, весь AND → false). NOT EXISTS надёжнее. Или WHERE user_id IS NOT NULL в подзапросе.' },
               ],
             },
             {
               id: 'qa-l34-s2',
-              title: 'IN и NOT IN',
-              type: 'theory',
-              blocks: [
-                {
-                  type: 'p',
-                  text: 'IN принимает список или подзапрос. Подзапрос должен возвращать одну колонку. Логика: «значение есть во множестве». NOT IN — наоборот.',
-                },
-                {
-                  type: 'code',
-                  lang: 'sql',
-                  caption: 'Пользователи, у которых есть оплаченные заказы',
-                  code: 'SELECT id, email\nFROM users\nWHERE id IN (\n    SELECT user_id FROM orders WHERE status = \'paid\'\n);',
-                },
-                {
-                  type: 'code',
-                  lang: 'sql',
-                  caption: 'Пользователи, у которых НЕТ отменённых заказов',
-                  code: 'SELECT id, email\nFROM users\nWHERE id NOT IN (\n    SELECT user_id FROM orders WHERE status = \'cancelled\'\n);',
-                },
-                {
-                  type: 'note',
-                  text: 'ЛОВУШКА NOT IN с NULL. Если подзапрос вернёт хотя бы один NULL, NOT IN вернёт пустой результат. Пример: NOT IN (SELECT user_id FROM orders) — если есть заказ с user_id = NULL, то НИ ОДИН пользователь не попадёт в результат. Всегда проверяйте: либо WHERE user_id IS NOT NULL в подзапросе, либо используйте NOT EXISTS.',
-                },
-              ],
-            },
-            {
-              id: 'qa-l34-s3',
-              title: 'EXISTS и NOT EXISTS',
-              type: 'theory',
-              blocks: [
-                {
-                  type: 'p',
-                  text: 'EXISTS проверяет, что подзапрос возвращает хотя бы одну строку. Возвращает true/false. Это коррелированный подзапрос: он ссылается на текущую строку внешнего запроса.',
-                },
-                {
-                  type: 'code',
-                  lang: 'sql',
-                  caption: 'Пользователи с хотя бы одним заказом',
-                  code: 'SELECT u.id, u.email\nFROM users u\nWHERE EXISTS (\n    SELECT 1 FROM orders o WHERE o.user_id = u.id\n);',
-                },
-                {
-                  type: 'code',
-                  lang: 'sql',
-                  caption: 'Пользователи без заказов (анти-join через NOT EXISTS)',
-                  code: 'SELECT u.id, u.email\nFROM users u\nWHERE NOT EXISTS (\n    SELECT 1 FROM orders o WHERE o.user_id = u.id\n);',
-                },
-                {
-                  type: 'table',
-                  caption: 'IN vs EXISTS: что выбрать',
-                  head: ['Ситуация', 'Лучше'],
-                  rows: [
-                    ['Подзапрос возвращает мало строк', 'IN (проще читается)'],
-                    ['Подзапрос возвращает много строк', 'EXISTS (быстрее)'],
-                    ['Есть подозрение на NULL в подзапросе', 'EXISTS (безопаснее)'],
-                    ['Нужно проверить существование, а не значение', 'EXISTS (семантически точнее)'],
-                  ],
-                },
-                {
-                  type: 'note',
-                  text: 'SELECT 1 в EXISTS — не случайность. Значение не используется, важно только «есть ли строка». Можно писать SELECT * — результат тот же, но SELECT 1 явно показывает намерение.',
-                },
-              ],
-            },
-            {
-              id: 'qa-l34-s4',
               title: 'Проверь себя',
               type: 'quiz',
               quiz: {
                 kind: 'single',
-                question: 'Почему NOT IN (SELECT user_id FROM orders) может вернуть пустой результат, хотя заказы есть?',
+                question: 'Что вернёт `SELECT id FROM orders WHERE total > (SELECT AVG(total) FROM orders)`?',
                 options: [
-                  { id: 'a', text: 'NOT IN не работает с подзапросами' },
-                  { id: 'b', text: 'Потому что в подзапросе есть NULL: NOT IN с NULL всегда даёт пусто' },
-                  { id: 'c', text: 'Нужно использовать NOT EXISTS вместо NOT IN' },
-                  { id: 'd', text: 'Подзапрос должен быть в кавычках' },
+                  { id: 'a', text: 'Все заказы' },
+                  { id: 'b', text: 'Заказы, у которых total больше среднего по всем заказам' },
+                  { id: 'c', text: 'Средний чек' },
+                  { id: 'd', text: 'Ошибку' },
                 ],
                 correct: ['b'],
-                explanation:
-                  'NOT IN (1, 2, NULL) эквивалентно x != 1 AND x != 2 AND x != NULL. Последнее всегда NULL (не true), значит вся конъюнкция false → ни одна строка не пройдёт. Решение: NOT EXISTS или WHERE user_id IS NOT NULL в подзапросе.',
+                explanation: 'Скалярный подзапрос `(SELECT AVG(total) FROM orders)` возвращает одно число — средний чек. WHERE total > среднее — оставляет заказы выше среднего.',
               },
+            },
+            {
+              id: 'qa-l34-s3',
+              title: 'Проверь себя: EXISTS vs IN',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Почему NOT EXISTS предпочтительнее NOT IN?',
+                options: [
+                  { id: 'a', text: 'NOT EXISTS быстрее' },
+                  { id: 'b', text: 'NOT IN с NULL в подзапросе вернёт пустой результат — NOT EXISTS работает корректно' },
+                  { id: 'c', text: 'NOT IN не поддерживается в PostgreSQL' },
+                  { id: 'd', text: 'Это одно и то же' },
+                ],
+                correct: ['b'],
+                explanation: 'NOT IN (1, 2, NULL) = «x ≠ 1 AND x ≠ 2 AND x ≠ NULL». Последнее всегда NULL (не true), значит всё условие false → 0 строк. NOT EXISTS такой проблемы не имеет.',
+              },
+            },
+            {
+              id: 'qa-l34-s4',
+              title: 'Коррелированные подзапросы',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Коррелированный подзапрос ссылается на строку внешнего запроса. Он выполняется для каждой строки внешнего запроса (или оптимизируется планировщиком в JOIN). Классика: «найти заказы, у которых сумма выше средней по этому пользователю».' },
+                { type: 'code', lang: 'sql', caption: 'Коррелированный подзапрос', code: '-- Заказы выше среднего чека КАЖДОГО пользователя\nSELECT o.id, o.user_id, o.total\nFROM orders o\nWHERE o.total > (\n    SELECT AVG(o2.total)\n    FROM orders o2\n    WHERE o2.user_id = o.user_id   -- корреляция: o.user_id\n);' },
+                { type: 'list', items: ['Коррелированный: ссылается на внешний запрос (o.user_id)', 'Некоррелированный: независимый (AVG(total) по всей таблице)', 'Коррелированный может быть медленным: выполняется для каждой строки', 'Планировщик часто переписывает в JOIN/LATERAL', 'Для «топ-1 по группе» обычно лучше ROW_NUMBER (см. оконные функции)'] },
+                { type: 'note', text: 'На собеседовании: «чем коррелированный подзапрос отличается от обычного?» — «коррелированный ссылается на внешний запрос и выполняется для каждой строки (или переписывается в JOIN)». Это база для понимания оконных функций.' },
+              ],
+            },
+            {
+              id: 'qa-l34-s5',
+              title: 'Практика: подзапрос',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Разница между IN и EXISTS на практике: результат один, но семантика разная. EXISTS останавливается на первой найденной строке — быстрее, если строк много.' },
+                { type: 'sandbox', sandbox: { schema: "CREATE TABLE users (id INTEGER, email TEXT);\nCREATE TABLE orders (id INTEGER, user_id INTEGER, total INTEGER, status TEXT);\nINSERT INTO users VALUES (1, 'a@x.com'), (2, 'b@x.com'), (3, 'c@x.com');\nINSERT INTO orders VALUES\n  (10, 1, 1000, 'paid'),\n  (11, 1, 500, 'paid'),\n  (12, 2, 2000, 'cancelled'),\n  (13, 3, 300, 'new');", task: 'Через подзапрос найдите email пользователей, у которых есть хотя бы один оплаченный заказ. Колонка: email. Отсортируйте по email.', solution: "SELECT email FROM users\nWHERE id IN (\n    SELECT user_id FROM orders WHERE status = 'paid'\n)\nORDER BY email;", expected: { columns: ['email'], rows: [['a@x.com']], order: 'order' }, hint: 'SELECT email FROM users WHERE id IN (SELECT user_id FROM orders WHERE status = ...)' } },
+              ],
             },
           ],
         },
@@ -1883,6 +2526,24 @@ export const qaAutomationCourse: Course = {
                   'Четыре классических паттерна: группировка+HAVING для дублей, LEFT JOIN + IS NULL для «сирот», SUM + HAVING для сверки итогов, анти-join для «кого нет». Эти четыре конструкции покрывают 80% проверок данных.',
               },
             },
+            {
+              id: 'qa-l35-s5',
+              title: 'Проверь себя: SQL-паттерны',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие задачи решает `LEFT JOIN ... WHERE right_table.id IS NULL`?',
+                options: [
+                  { id: 'a', text: 'Поиск «сирот»: строк, у которых нет пары в другой таблице' },
+                  { id: 'b', text: 'Поиск пользователей без заказов' },
+                  { id: 'c', text: 'Поиск заказов без позиций' },
+                  { id: 'd', text: 'Поиск пользователей с заказами' },
+                ],
+                correct: ['a', 'b', 'c'],
+                explanation:
+                  '`LEFT JOIN ... IS NULL` — классический anti-join: «кого нет в правой таблице». Это и пользователи без заказов (b), и заказы без позиций (c). А (d) — наоборот, INNER JOIN. На собеседовании QA: «как найти заказы без позиций?» — «LEFT JOIN + IS NULL».',
+              },
+            },
           ],
         },
       ],
@@ -1917,7 +2578,7 @@ export const qaAutomationCourse: Course = {
                     Stress["Stress<br/>растём до предела"]
                     Spike["Spike<br/>0→1000 за 10 сек"]
                     Soak["Soak<br/>8–24 часа"]
-                    Smoke["Smoke<br/>10–50 users, 5 мин"]`
+                    Smoke["Smoke<br/>10–50 users, 5 мин"]`,
                 },
                 {
                   type: 'p',
@@ -1956,6 +2617,30 @@ export const qaAutomationCourse: Course = {
             },
             {
               id: 'qa-l36-s3',
+              title: 'SLA, SLO и error budget',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Нагрузочный тест бессмысленен без целевых цифр. Эти цифры формализуются в SLA/SLO — и именно они становятся критерием «прошёл / не прошёл» тест.',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'SLA (Service Level Agreement) — юридическое обещание клиенту: «99.9% доступности, иначе штраф».',
+                    'SLO (Service Level Objective) — внутренняя цель: «p95 latency < 500 мс, error rate < 1%».',
+                    'SLI (Service Level Indicator) — метрика, которой измеряем: latency, error rate, RPS.',
+                    'Error budget — «сколько можно ломать»: 100% − SLO. При SLO 99.9% бюджет = 43 минуты недоступности в месяц.',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Правило: нагрузочный тест «проходит», если SLI укладываются в SLO. «Просто посмотреть, что получится» — не тест, а прогулка. Всегда задавайте целевые цифры до запуска.',
+                },
+              ],
+            },
+            {
+              id: 'qa-l36-s4',
               title: 'Проверь себя',
               type: 'quiz',
               quiz: {
@@ -1972,11 +2657,28 @@ export const qaAutomationCourse: Course = {
                   'Stress и spike важны не только «выдержит ли», но и «как падает и восстанавливается». Хорошая система после перегрузки возвращается в норму за секунды, плохая — остаётся в деградации. Smoke и soak проверяют другое.',
               },
             },
+            {
+              id: 'qa-l36-s5',
+              title: 'Проверь себя: SLA и SLO',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте термин и его назначение',
+                pairs: [
+                  { left: 'SLA', right: 'Юридическое обещание клиенту (штраф за нарушение)' },
+                  { left: 'SLO', right: 'Внутренняя цель: p95 latency < 500 мс, error < 1%' },
+                  { left: 'SLI', right: 'Метрика: latency, error rate, RPS' },
+                  { left: 'Error budget', right: '100% − SLO: сколько можно ломать' },
+                ],
+                explanation:
+                  'SLA — обещание клиенту (с деньгами). SLO — цель внутри (к чему стремимся). SLI — метрика, которой измеряем. Error budget — сколько «можно потратить» на инциденты. Нагрузочный тест проверяет SLO, а не SLA (SLA — итог месяца).',
+              },
+            },
           ],
         },
         {
           id: 'qa-l37',
-          title: 'Метрики: RPS, latency, p95/p99, Little\u2019s Law',
+          title: 'Метрики: RPS, latency, p95/p99, Little’s Law',
           minutes: 35,
           steps: [
             {
@@ -2053,19 +2755,6 @@ export const qaAutomationCourse: Course = {
                   code: 'Система обрабатывает 100 RPS, latency = 200 мс (0.2 сек):\n  L = 100 × 0.2 = 20 одновременных пользователей\n\nМы хотим 1000 RPS при той же latency 200 мс:\n  L = 1000 × 0.2 = 200 одновременных пользователей\n  (нужны ресурсы на 200, а не на 20)\n\nЕсли RPS = 50, а latency выросла до 1 сек:\n  L = 50 × 1 = 50 пользователей одновременно\n  (latency выросла — значит, стало больше «в полёте»)',
                 },
                 {
-                  type: 'p',
-                  text: 'Из закона следуют выводы, которые спасают на собеседованиях:',
-                },
-                {
-                  type: 'list',
-                  items: [
-                    'Хотите удвоить RPS при той же latency — нужно вдвое больше «пользователей в полёте» и вдвое больше ресурсов',
-                    'Упала latency — при том же числе пользователей вырастет RPS',
-                    'Нагрузочный тест задаёт concurrent users, а RPS получается сам — не наоборот',
-                    '«Добавили 1000 пользователей, RPS не вырос» = упёрлись в bottleneck (БД, CPU, диск)',
-                  ],
-                },
-                {
                   type: 'note',
                   text: 'Формула Литтла работает для стабильной системы. Если система в деградации — очередь растёт нелинейно, и формула перестаёт предсказывать. Именно поэтому стресс-тест «ломает» систему резко, а не плавно.',
                 },
@@ -2084,6 +2773,31 @@ export const qaAutomationCourse: Course = {
                 explanation:
                   'L = 200 × 0.5 = 100. То есть при 200 запросах в секунду и полусекундном ответе «в полёте» одновременно находится 100 запросов. Это и есть concurrent users.',
               },
+            },
+            {
+              id: 'qa-l37-s5',
+              title: 'Практика: Little\u2019s Law в коде',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Формула Литтла позволяет быстро посчитать ресурсы для целевого RPS. Практическая задача из жизни: «сколько одновременных пользователей выдержит система, если мы хотим 500 RPS при latency 100 мс».',
+                },
+                {
+                  type: 'python',
+                  python: {
+                    starterCode: 'rps = 500           # целевой RPS\nlatency_sec = 0.1   # средняя latency, секунды\n\n# Задача: посчитать concurrent users по Little\u2019s Law.\n# Формула: L = rps * latency_sec\n\nconcurrent = None  # TODO\nprint(concurrent)\n',
+                    task: 'Посчитайте `concurrent = rps * latency_sec` и выведите. Для 500 RPS и 0.1 сек — ожидается 50.',
+                    solution: 'rps = 500\nlatency_sec = 0.1\n\nconcurrent = rps * latency_sec\nprint(concurrent)',
+                    expected: { type: 'stdout', value: '50.0' },
+                    hint: 'concurrent = rps * latency_sec; print(concurrent)',
+                  },
+                },
+                {
+                  type: 'note',
+                  text: 'По этой цифре (50 concurrent) считают пул потоков, размер connection pool к БД, число воркеров приложения. Если добавить пользователей сверх этого — не вырастет RPS, вырастет latency (Little\'s Law: λ фиксирован, W растёт → L растёт).',
+                },
+              ],
             },
           ],
         },
@@ -2163,6 +2877,52 @@ export const qaAutomationCourse: Course = {
                 correct: ['b'],
                 explanation:
                   'p95 показывает, что 5% пользователей медленнее указанного значения. Среднее прячет хвост: 100 мс среднее при 1% запросов по 10 сек — это «всё хорошо» по среднему и «катастрофа» для тех 1%.',
+              },
+            },
+            {
+              id: 'qa-l38-s4',
+              title: 'Error rate: когда 5xx — это провал',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'RPS и latency — половина картины. Вторая — error rate. Нагрузочный тест, где 100% запросов успешны, но RPS в 10 раз ниже цели — провал. И наоборот: RPS высокий, но 30% запросов отдают 500 — тоже провал, только другой.',
+                },
+                {
+                  type: 'table',
+                  caption: 'Что считать ошибкой в нагрузочном тесте',
+                  head: ['Код', 'Ошибка?', 'Почему'],
+                  rows: [
+                    ['200, 201, 204', 'Нет', 'Успех'],
+                    ['400, 422 (валидация)', 'По сценарию', 'Если нагрузка шлёт невалидные данные — это норма; если валидные — баг'],
+                    ['401, 403', 'Да', 'Проблема с авторизацией — либо токен, либо права'],
+                    ['404', 'Зависит', 'Если ресурс должен быть — баг; если проверяем «нет такого» — норма'],
+                    ['429 (rate limit)', 'Да', 'Сервер не справляется с потоком — реальная деградация'],
+                    ['500, 502, 503, 504', 'Да', 'Сервер упал или не успел — критично'],
+                    ['timeout', 'Да', 'Запрос дольше таймаута — деградация'],
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Правило: error rate > 1% — уже проблема. В SLO обычно закладывают 0.1–1%. Если 5xx больше — нагрузочный тест провален, даже если RPS «красивый». На собеседовании: «какой error rate нормален?» — «зависит от SLO, обычно < 1%».',
+                },
+              ],
+            },
+            {
+              id: 'qa-l38-s5',
+              title: 'Проверь себя: инструменты',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте инструмент и его ключевую особенность',
+                pairs: [
+                  { left: 'JMeter', right: 'GUI, плагины, стандарт индустрии' },
+                  { left: 'k6', right: 'JS, CLI-first, отличные отчёты' },
+                  { left: 'Locust', right: 'Python-код, распределённый из коробки' },
+                  { left: 'Gatling', right: 'Scala, красивый HTML-отчёт' },
+                ],
+                explanation:
+                  'JMeter — старый стандарт с GUI. k6 — современный CLI-first на JS. Locust — Python-код. Gatling — Scala, самый быстрый. Для Python-команды в 2025 — Locust или k6. На собеседовании называйте 1–2 и объясняйте выбор.',
               },
             },
           ],
@@ -2252,6 +3012,54 @@ export const qaAutomationCourse: Course = {
                   'При резком старте 500 пользователей — это spike: система не успевает прогреться (JIT, connection pool, кэши), получаете «ломается сразу». Ramp-up даёт системе прогреться и измеряет поведение на плато, а не переход.',
               },
             },
+            {
+              id: 'qa-l39-s4',
+              title: 'Распределённая нагрузка',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Один ноутбук не «нагрузит» прод: упрётесь в CPU клиента (генерация запросов) и в сеть. Для больших нагрузок Locust поддерживает распределённый режим: мастер-воркер, нагрузка генерируется с N машин одновременно.',
+                },
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'Master + workers',
+                  code: '# На машине-мастере\nlocust -f locustfile.py --master --host=https://staging.example.com\n\n# На каждой машине-воркере\nlocust -f locustfile.py --worker --master-host=10.0.0.1\n\n# Или в Docker\ndocker run -d --name locust-worker locustio/locust \\\n  -f locustfile.py --worker --master-host=10.0.0.1',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Мастер управляет нагрузкой, не генерирует её',
+                    'Воркеры генерируют нагрузку, каждый — свой пул виртуальных пользователей',
+                    'RPS в отчёте — суммарный по всем воркерам',
+                    'Альтернатива: Locust в Kubernetes (Helm chart) — автоскейл воркеров',
+                    'Для 10k+ RPS нужны либо распределённые воркеры, либо k6 с его эффективной генерацией',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Правило: если один Locust-процесс упирается в 100% CPU, а система не нагружена — это клиент-боттлнек. Не «система справляется», а «мы не можем её нагрузить». Лечится распределённым режимом или более эффективным инструментом (k6 на Go).',
+                },
+              ],
+            },
+            {
+              id: 'qa-l39-s5',
+              title: 'Проверь себя: параметры Locust',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте параметр Locust и его назначение',
+                pairs: [
+                  { left: '--users', right: 'Количество виртуальных пользователей' },
+                  { left: '--spawn-rate', right: 'Скорость создания пользователей (ramp-up)' },
+                  { left: '--run-time', right: 'Длительность теста' },
+                  { left: '--headless', right: 'Без веб-интерфейса (для CI)' },
+                ],
+                explanation:
+                  '--users — сколько всего. --spawn-rate — по сколько в секунду. --run-time — сколько длится. --headless — без UI для CI. Ещё: --csv для экспорта отчёта. В CI всегда --headless.',
+              },
+            },
           ],
         },
         {
@@ -2321,13 +3129,7 @@ export const qaAutomationCourse: Course = {
                     IO -->|"Да"| IOWait["I/O wait:<br/>БД, диск, API"]
                     IO -->|"Нет"| OK["Всё в норме"]
                     CPU --> Fix1["Профилировать,<br/>кэшировать"]
-                    IOWait --> Fix2["Оптимизировать<br/>SQL, добавить индекс"]`
-                },
-                {
-                  type: 'code',
-                  lang: 'text',
-                  caption: 'Инструменты для поиска bottleneck (тестировщику достаточно знать, что они есть)',
-                  code: 'app-сервер:   top, htop, vmstat, iostat, dstat\nБД:           pg_stat_statements (PostgreSQL), slow query log (MySQL)\nAPM:          New Relic, Datadog, Grafana + Prometheus\nПрофилировщик: py-spy (Python), async-profiler (Java)\nСеть:         iftop, nethogs',
+                    IOWait --> Fix2["Оптимизировать<br/>SQL, добавить индекс"]`,
                 },
                 {
                   type: 'note',
@@ -2337,36 +3139,6 @@ export const qaAutomationCourse: Course = {
             },
             {
               id: 'qa-l40-s3',
-              title: 'Нагрузочный тест в CI',
-              type: 'theory',
-              blocks: [
-                {
-                  type: 'code',
-                  lang: 'yaml',
-                  caption: 'GitHub Actions: нагрузочный тест перед релизом',
-                  code: 'name: load-test\non:\n  workflow_dispatch:\n  schedule:\n    - cron: \'0 2 * * *\'   # каждую ночь\n\njobs:\n  load:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: pip install locust\n      - name: Run load test\n        run: |\n          locust -f locustfile.py \\\n            --host=${{ secrets.STAGING_URL }} \\\n            --users=500 --spawn-rate=10 --run-time=15m \\\n            --headless --csv=report --html=report.html\n      - uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: load-report\n          path: report.*\n      - name: Check SLO\n        run: |\n          python scripts/check_slo.py report_stats.csv \\\n            --max-p95 500 --max-error-rate 0.01',
-                },
-                {
-                  type: 'p',
-                  text: 'Ключевой шаг — «Check SLO». Load-тест должен не просто отработать, а упасть с exit code ≠ 0, если p95 или error rate превысили порог. Иначе он превращается в «красивый отчёт, который никто не читает».',
-                },
-                {
-                  type: 'list',
-                  items: [
-                    'SLO (Service Level Objective) — численный порог: p95 ≤ 500 мс, error rate ≤ 1%',
-                    'Скрипт check_slo.py парсит CSV и падает с exit code 1 при превышении',
-                    'Только так нагрузочный тест реально защищает прод',
-                    'Ночной прогон — стандарт: не мешает разработке, отчёт утром',
-                  ],
-                },
-                {
-                  type: 'note',
-                  text: 'Не запускайте полноценный нагрузочный тест на каждый PR — это дорого и медленно. Для PR — smoke (10 пользователей, 1 минута). Полный load — nightly или перед релизом. На собеседовании это тоже спрашивают.',
-                },
-              ],
-            },
-            {
-              id: 'qa-l40-s4',
               title: 'Проверь себя',
               type: 'quiz',
               quiz: {
@@ -2381,6 +3153,54 @@ export const qaAutomationCourse: Course = {
                 correct: ['b'],
                 explanation:
                   'CPU низкая, но latency растёт — классический признак I/O wait. Приложение ждёт БД, диск или внешний API. Если бы упирались в CPU — было бы 100%. Это первое, что проверяют при анализе bottleneck.',
+              },
+            },
+            {
+              id: 'qa-l40-s4',
+              title: 'SLO-пороги: как не превратить тест в отчёт',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Нагрузочный тест без порогов — это «красивый отчёт, который никто не читает». Чтобы тест реально защищал прод, он должен валиться с exit code ≠ 0, если SLO нарушены. Так же, как обычные автотесты.',
+                },
+                {
+                  type: 'code',
+                  lang: 'python',
+                  caption: 'check_slo.py — упасть, если SLO нарушен',
+                  code: 'import csv, sys\n\ndef check(csv_path, max_p95, max_error_rate):\n    with open(csv_path) as f:\n        reader = csv.DictReader(f)\n        for row in reader:\n            if row["Name"].startswith("Aggregated"):\n                continue\n            p95 = int(row["95%"])\n            fails = int(row["# fails"])\n            reqs = int(row["# reqs"])\n            err = fails / max(reqs, 1)\n            if p95 > max_p95:\n                print(f"FAIL: {row[\'Name\']} p95={p95} > {max_p95}")\n                sys.exit(1)\n            if err > max_error_rate:\n                print(f"FAIL: {row[\'Name\']} error={err:.1%} > {max_error_rate:.1%}")\n                sys.exit(1)\n    print("PASS")\n\nif __name__ == "__main__":\n    check(sys.argv[1], max_p95=500, max_error_rate=0.01)',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'SLO пороги задаются ДО теста: p95 ≤ 500 мс, error rate ≤ 1%',
+                    'Скрипт парсит CSV (или JSON) и падает с exit code 1 при превышении',
+                    'В CI такой шаг — обязательный; иначе тест не защищает прод',
+                    'Пороги должны быть реалистичны: не «p95 < 10 мс», если система реально 200 мс',
+                    'Один и тот же скрипт для всех эндпоинтов: разные пороги — в конфиге',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Идея — как SLO для нагрузочного теста: «если p95 > 500 мс или error > 1% — тест красный». Без этого «нагрузочный тест прошёл» ничего не значит. С этим — реальный индикатор, что система держит нагрузку в рамках SLO.',
+                },
+              ],
+            },
+            {
+              id: 'qa-l40-s5',
+              title: 'Проверь себя: инструменты диагностики',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте инструмент и что он показывает',
+                pairs: [
+                  { left: 'top / htop', right: 'CPU, память, процессы на сервере' },
+                  { left: 'iostat', right: 'Диск: IOPS, latency, очередь' },
+                  { left: 'pg_stat_statements', right: 'Топ тяжёлых SQL-запросов' },
+                  { left: 'APM (Grafana/Prometheus)', right: 'Latency, RPS, error rate по сервисам' },
+                ],
+                explanation:
+                  'top — CPU/RAM. iostat — диск. pg_stat_statements — SQL. APM — картина целиком. Тестировщику не надо чинить, но надо уметь снять метрики с каждого уровня и передать разработчику с доказательствами.',
               },
             },
           ],
@@ -2469,6 +3289,48 @@ export const qaAutomationCourse: Course = {
                   'Broken Access Control. Это изменение относительно 2017 года, когда инъекции были #1. Авторизация — самая частая дыра: пользователи получают доступ к чужим данным через смену ID, обход проверок и т.д.',
               },
             },
+            {
+              id: 'qa-l41-s4',
+              title: 'Как использовать OWASP Top 10 в работе',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'OWASP Top 10 — не «для галочки на собеседовании». Это практический чек-лист: с него начинают security-ревью новой фичи, его используют при найме пентеста, по нему строят безопасный SDLC.',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'При проектировании: A04 Insecure Design — есть ли rate limiting, anti-automation, модель угроз',
+                    'На код-ревью: A01 (права), A03 (инъекции), A02 (секреты/шифрование)',
+                    'В CI: A06 (зависимости) — SCA-сканер (Dependabot, Trivy)',
+                    'При релизе: A05 (конфигурация) — отключены ли debug-эндпоинты, дефолтные пароли',
+                    'В проде: A09 (логирование) — логируются ли подозрительные действия',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Не пытайтесь «пройти все 10 пунктов» в одном PR — это невозможно. На каждый релиз выбирайте 2–3 категории, наиболее релевантные фиче, и проверяйте их глубоко. За год покроете всё.',
+                },
+              ],
+            },
+            {
+              id: 'qa-l41-s5',
+              title: 'Проверь себя: категории OWASP',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте категорию OWASP Top 10 и типичный пример',
+                pairs: [
+                  { left: 'A01 Broken Access Control', right: 'Пользователь открывает /admin и видит чужую панель' },
+                  { left: 'A03 Injection', right: "Запрос ' OR '1'='1 возвращает всех пользователей" },
+                  { left: 'A05 Security Misconfiguration', right: 'Открыт /debug с переменными окружения' },
+                  { left: 'A06 Vulnerable Components', right: 'В библиотеке найдена CVE-2024-XXXX' },
+                ],
+                explanation:
+                  'A01 — про доступ. A03 — про инъекции. A05 — про конфигурацию (открытые эндпоинты, дефолтные пароли). A06 — про устаревшие зависимости. На собеседовании QA middle спросят 2–3 категории с примерами — это база.',
+              },
+            },
           ],
         },
         {
@@ -2554,6 +3416,54 @@ export const qaAutomationCourse: Course = {
                 correct: ['b'],
                 explanation:
                   'Параметризованные запросы передают ввод как данные, а не как часть SQL-кода — это единственная надёжная защита. Скрытие ошибок и ограничение длины помогают, но не решают. Ручное экранирование — источник багов.',
+              },
+            },
+            {
+              id: 'qa-l42-s4',
+              title: 'Практические нагрузки и где их проверять',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Проверять SQLi «на глаз» — плохо. Нужны конкретные нагрузки и конкретные места, куда их вставлять. Пять типичных точек входа и три уровня нагрузки, которые дают результат.',
+                },
+                {
+                  type: 'code',
+                  lang: 'text',
+                  caption: 'Три уровня нагрузки',
+                  code: '# Уровень 1: проверка на «дырку»\n\' OR \'1\'=\'1\' --\n" OR 1=1 --\n\' OR \'a\'=\'a\n\n# Уровень 2: проверка слепой инъекции (blind)\n\' AND 1=1 --        (должно вернуть то же, что без нагрузки)\n\' AND 1=2 --        (должно вернуть пусто — если да, есть SQLi)\n\n# Уровень 3: time-based (медленный ответ = инъекция)\n\'; SELECT pg_sleep(5); --\n\' AND SLEEP(5) --        (MySQL)\n\' WAITFOR DELAY \'0:0:5\' --  (MSSQL)',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Точки входа: логин, регистрация, поиск, фильтры, сортировка (?sort=), id в URL',
+                    'Blind-проверка: 1=1 и 1=2 дают разные ответы → инъекция есть',
+                    'Time-based: если сервер отвечает через 5+ секунд — точно SQLi',
+                    'Ищите 500-е с SQL-текстом: «syntax error at or near» — критично',
+                    'Автоматизация — SQLMap (урок 47), ручная проверка — только для подтверждения',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Не запускайте time-based нагрузки на прод-БД в часы пик — 5-секундные задержки в нагрузке от нескольких «вбросов» могут положить прод. Лучше — на staging, а в проде — только blind 1=1/1=2 (быстрые).',
+                },
+              ],
+            },
+            {
+              id: 'qa-l42-s5',
+              title: 'Проверь себя: нагрузки',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте нагрузку и что она проверяет',
+                pairs: [
+                  { left: "\\' OR \\'1\\'=\\'1\\' --", right: 'Классическая инъекция: возвращает все строки' },
+                  { left: "\\' AND 1=1 --", right: 'Blind: ответ как без нагрузки' },
+                  { left: "\\' AND 1=2 --", right: 'Blind: пусто → инъекция есть' },
+                  { left: "\\'; SELECT pg_sleep(5); --", right: 'Time-based: сервер отвечает через 5 сек' },
+                ],
+                explanation:
+                  'OR 1=1 — классика. AND 1=1 / 1=2 — blind (разные ответы). SLEEP — time-based (по задержке). Три уровня нагрузки покрывают все виды SQLi, от классической до слепой и временной.',
               },
             },
           ],
@@ -2644,6 +3554,61 @@ export const qaAutomationCourse: Course = {
                   'Экранирование — главное. CSP и HttpOnly — оборона в глубину. Запрет JS сломает всё приложение — это не вариант. XSS может эксплуатировать не только <script>, но и <img onerror>, <svg onload> и т.д.',
               },
             },
+            {
+              id: 'qa-l43-s4',
+              title: 'Контексты вывода: почему «одна нагрузка» не работает',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Правильная защита от XSS зависит от контекста, в котором ввод попадает в HTML. Одна и та же нагрузка работает в одном контексте и не работает в другом. Поэтому проверять XSS нужно в конкретных местах, а не «в поле ввода вообще».',
+                },
+                {
+                  type: 'table',
+                  caption: 'Контексты вывода и нагрузки',
+                  head: ['Контекст', 'Пример HTML', 'Нагрузка'],
+                  rows: [
+                    ['Текст элемента', '<div>USER_INPUT</div>', '<script>alert(1)</script>'],
+                    ['Атрибут', '<a href="USER_INPUT">', 'javascript:alert(1)'],
+                    ['Обработчик события', '<div onclick="USER_INPUT">', 'alert(1)'],
+                    ['Внутри <script>', '<script>var x = "USER_INPUT"</script>', '";alert(1);//'],
+                    ['SVG', '<svg>USER_INPUT</svg>', '<svg onload=alert(1)>'],
+                    ['CSS / style', '<div style="USER_INPUT">', 'expression(alert(1)) (старые IE)'],
+                  ],
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Одна нагрузка не покрывает все контексты — нужен набор',
+                    'Самые частые: <script>alert(1)</script>, <img src=x onerror=alert(1)>, javascript:alert(1)',
+                    'Нагрузка в URL: ?q=... — проверяйте отражение в HTML',
+                    'Проверяйте через DOM после выполнения JS: элементы, добавленные из JS — тоже вектор',
+                    'Инструмент для проверки: Burp Intruder с набором XSS-нагрузок (PayloadAllTheThings)',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Классическая ошибка: тестировщик вставил <script>alert(1)</script> в поле комментария — не сработало, «XSS нет». Но вставил <img src=x onerror=alert(1)> — сработало. Всегда проверяйте несколько контекстов, а не один.',
+                },
+              ],
+            },
+            {
+              id: 'qa-l43-s5',
+              title: 'Проверь себя: контексты',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте контекст вывода и подходящую нагрузку',
+                pairs: [
+                  { left: 'Текст элемента (<div>)', right: '<script>alert(1)</script>' },
+                  { left: 'Атрибут href (<a href="...">)', right: 'javascript:alert(1)' },
+                  { left: 'Внутри <script>', right: '\'; alert(1); //' },
+                  { left: 'SVG', right: '<svg onload=alert(1)>' },
+                ],
+                explanation:
+                  'Каждый контекст — своя нагрузка. Скрипт в href не выполнится, javascript: в тексте — тоже. Поэтому проверяют набором нагрузок, а не одной. PayloadAllTheThings — стандартный справочник.',
+              },
+            },
           ],
         },
         {
@@ -2721,6 +3686,63 @@ export const qaAutomationCourse: Course = {
                   'IDOR проверяется подменой идентификатора в запросе. UI может не показывать чужие заказы, но API может их отдавать. Правильно — менять id через Burp/curl/Postman и смотреть, что вернётся.',
               },
             },
+            {
+              id: 'qa-l44-s4',
+              title: 'Горизонтальная vs вертикальная эскалация',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Access control ломается двумя способами, и проверять надо оба. Это разные уязвимости, хотя выглядят похоже.',
+                },
+                {
+                  type: 'table',
+                  caption: 'Два вида эскалации',
+                  head: ['Вид', 'Что делает', 'Пример'],
+                  rows: [
+                    ['Горизонтальная', 'Пользователь получает доступ к данным другого пользователя того же уровня', 'IDOR: /users/100 → /users/101'],
+                    ['Вертикальная', 'Пользователь получает доступ к функциям более высокого уровня (admin)', 'Обычный юзер вызывает /api/admin/users'],
+                  ],
+                },
+                {
+                  type: 'code',
+                  lang: 'text',
+                  caption: 'Как проверить обе',
+                  code: 'Горизонтальная:\n  1. Логин под пользователем А, токен A\n  2. Логин под пользователем Б, токен B\n  3. Запрос А: GET /orders (id=A)   → 200 с заказом A\n  4. Запрос Б: GET /orders (id=A)   → 200? IDOR\n\nВертикальная:\n  1. Логин под обычным юзером → токен user\n  2. Из админки берём запрос GET /api/admin/users\n  3. Шлём с токеном user\n  4. Ответ 200? Вертикальная эскалация',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Горизонтальная — «свой уровень, чужие данные»',
+                    'Вертикальная — «чужой уровень, чужие функции»',
+                    'Проверяйте обе: это разные дыры, часто одна защищена, а другая нет',
+                    'Для вертикальной — изучите админку и попробуйте её запросы с обычным токеном',
+                    'Для горизонтальной — всегда два аккаунта и перекрёстные запросы',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'На собеседовании спросят: «чем горизонтальная эскалация отличается от вертикальной?». Ответ: горизонтальная — доступ к данным равного пользователя (IDOR), вертикальная — повышение прав (юзер → админ). Обе — Broken Access Control, но чинятся по-разному.',
+                },
+              ],
+            },
+            {
+              id: 'qa-l44-s5',
+              title: 'Проверь себя: эскалации',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте ситуацию и вид эскалации',
+                pairs: [
+                  { left: '/users/100 → /users/101', right: 'Горизонтальная (IDOR, профиль)' },
+                  { left: 'Обычный юзер вызывает /api/admin/*', right: 'Вертикальная (повышение прав)' },
+                  { left: 'Подмена ?role=admin в запросе', right: 'Вертикальная (через параметр)' },
+                  { left: 'Чужой заказ по прямому id', right: 'Горизонтальная (IDOR, заказ)' },
+                ],
+                explanation:
+                  'Горизонтальная — «мой уровень, чужие данные» (IDOR). Вертикальная — «чужой уровень» (админ-функции, роль в токене/параметре). Обе — Broken Access Control, обе проверяются вручную через API с двумя токенами.',
+              },
+            },
           ],
         },
         {
@@ -2776,7 +3798,7 @@ export const qaAutomationCourse: Course = {
                     Note over V: Браузер автоматически<br/>отправляет запрос на bank.com<br/>с cookie
                     V->>B: POST /transfer (to=evil, amount=10000)<br/>Cookie: session=...
                     B-->>V: 200 OK — перевод выполнен
-                    Note over B: Без CSRF-токена сервер<br/>не отличит запрос жертвы<br/>от запроса злоумышленника`
+                    Note over B: Без CSRF-токена сервер<br/>не отличит запрос жертвы<br/>от запроса злоумышленника`,
                 },
                 {
                   type: 'code',
@@ -2816,6 +3838,66 @@ export const qaAutomationCourse: Course = {
                 correct: ['a', 'b', 'd'],
                 explanation:
                   'CSRF-токен, SameSite cookies и проверка Origin — три стандартные защиты. Запрет JS сломает приложение и не защитит от form-based CSRF (форму можно отправить без JS).',
+              },
+            },
+            {
+              id: 'qa-l45-s4',
+              title: 'JWT: три атаки, которые надо проверить',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Большинство современных API используют JWT для аутентификации. JWT — это не «безопасная сессия по умолчанию». Три классические атаки, которые ловят даже на собеседовании middle QA.',
+                },
+                {
+                  type: 'code',
+                  lang: 'text',
+                  caption: 'Атака 1: algorithm=none',
+                  code: 'Заголовок JWT: {"alg": "none", "typ": "JWT"}\nPayload: {"sub": "admin", "role": "admin"}\nПодпись: (пустая)\n\nНекоторые библиотеки принимают такой токен как валидный —\nпроверка подписи «отключена» заголовком.\n\nПроверка: меняем alg на "none" и убираем подпись. API примет? — дыра.',
+                },
+                {
+                  type: 'code',
+                  lang: 'text',
+                  caption: 'Атака 2: подмена данных в payload',
+                  code: 'Оригинальный: {"sub": "user1", "role": "user"}   + подпись\nИзменённый:  {"sub": "user1", "role": "admin"}  + подпись?\n\nЕсли API не проверяет подпись (или использует слабый секрет) —\nпринимает изменённый токен. Проверка: заменить role, попробовать\nснова с той же подписью. Приняло? — дыра.',
+                },
+                {
+                  type: 'code',
+                  lang: 'text',
+                  caption: 'Атака 3: слабый секрет (brute-force)',
+                  code: 'JWT подписывается секретом. Если секрет "secret" или "123456" —\nего можно подобрать за секунды через hashcat или jwt-cracker.\n\nПроверка:\n  jwt_tool <token> -C -d wordlist.txt\n  # если подобрался — скомпрометирован, любой может подписывать токены',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'algorithm=none — старые уязвимости, но всё ещё встречаются',
+                    'Подмена role/sub в payload — проверяет, что API действительно валидирует подпись',
+                    'Слабый секрет — подбирается hashcat / jwt_tool за минуты',
+                    'Срок жизни токена: если access живёт сутками — при утечке катастрофа',
+                    'Refresh-токен должен быть одноразовым или ротироваться',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Инструмент jwt_tool (Python) делает все три атаки автоматически. Но понимание, что именно ломается, важнее — иначе не объяснить разработчику, как чинить. На собеседовании senior QA: «как проверить JWT на безопасность?» — три пункта выше.',
+                },
+              ],
+            },
+            {
+              id: 'qa-l45-s5',
+              title: 'Проверь себя: JWT и сессии',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте атаку на JWT и её суть',
+                pairs: [
+                  { left: 'algorithm=none', right: 'Подпись отключена заголовком токена' },
+                  { left: 'Подмена payload', right: 'Изменение role/sub без пересчёта подписи' },
+                  { left: 'Слабый секрет', right: 'Секрет подбирается hashcat за минуты' },
+                  { left: 'Долгий срок жизни', right: 'Утекший access-токен работает сутками' },
+                ],
+                explanation:
+                  'none — отключённая подпись. Подмена payload — проверка, что API реально валидирует. Слабый секрет — brute-force. Долгий срок — риск утечки. Четыре классические проблемы JWT, которые проверяет QA.',
               },
             },
           ],
@@ -2902,6 +3984,54 @@ export const qaAutomationCourse: Course = {
                 correct: ['b'],
                 explanation:
                   'Repeater — «отправить запрос ещё раз с изменениями». С его помощью проверяют IDOR, SQLi, XSS вручную: меняют id, вставляют нагрузки, смотрят ответ. Scanner только в Pro, Decoder и Comparer — вспомогательные.',
+              },
+            },
+            {
+              id: 'qa-l46-s4',
+              title: 'Практический workflow с Repeater',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Repeater — главный инструмент ручной проверки. Разберём типичный workflow на примере проверки IDOR в API заказов.',
+                },
+                {
+                  type: 'code',
+                  lang: 'text',
+                  caption: 'Пошаговый workflow',
+                  code: '1. Proxy: включить перехват (Intercept is on)\n2. В браузере открыть /orders — Burp ловит GET /api/orders/123\n3. Правый клик → Send to Repeater (Ctrl+R)\n4. В Repeater: изменить id 123 → 124 → Send\n5. Смотрим ответ:\n     - 200 + чужой заказ → IDOR\n     - 403 → защита работает\n     - 404 → тоже приемлемо\n6. Если 200 — сохранить запрос (Save item) → приложить к баг-репорту',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Перехват запроса — Proxy с включённым Intercept',
+                    'Send to Repeater — Ctrl+R (или правый клик)',
+                    'В Repeater — изменить параметр и Send, смотреть ответ',
+                    'История запросов в Repeater сохраняется — удобно возвращаться',
+                    'Не забывать выключать Intercept после — иначе все запросы «висят»',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Не «жмите всё подряд» в Burp — меняйте по одному параметру. Если изменить id и роль одновременно, потом не понять, что именно сработало. На собеседовании middle QA: «как проверить IDOR через Burp?» — это workflow.',
+                },
+              ],
+            },
+            {
+              id: 'qa-l46-s5',
+              title: 'Проверь себя: инструменты',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте модуль Burp и его назначение',
+                pairs: [
+                  { left: 'Proxy', right: 'Перехват всех запросов браузера' },
+                  { left: 'Repeater', right: 'Повторная отправка запроса с изменениями' },
+                  { left: 'Intruder', right: 'Автоматический перебор (id, токены, пароли)' },
+                  { left: 'Decoder', right: 'base64, url-encode, hex' },
+                ],
+                explanation:
+                  'Proxy — «поймать». Repeater — «повторить с изменением». Intruder — «перебрать». Decoder — «раскодировать». Это четыре самых используемых модуля. Scanner — только Pro.',
               },
             },
           ],
@@ -3006,6 +4136,54 @@ export const qaAutomationCourse: Course = {
                   'Правильный шаг — responsible disclosure: сообщить владельцам. Публикация без предупреждения — безответственно (и может быть незаконно). Использование — преступление. Если контакта нет, можно обратиться через security@ или форму bug bounty.',
               },
             },
+            {
+              id: 'qa-l47-s4',
+              title: 'Responsible disclosure: как сообщать об уязвимости',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Нашли уязвимость — не «просто написали в чат». Правильное сообщение помогает владельцу быстро исправить, а вам — не быть обвинённым в шантаже. Три шага: сообщить приватно, дать время на фикс, согласовать публикацию.',
+                },
+                {
+                  type: 'code',
+                  lang: 'text',
+                  caption: 'Структура отчёта об уязвимости',
+                  code: '1. Заголовок: коротко, что за дыра\n   «IDOR в /api/orders: любой пользователь читает чужие заказы»\n\n2. Классификация (CVSS):\n   CVSS 8.1 (High) — доступ к данным без авторизации\n\n3. Воспроизведение:\n   - Шаги, curl-команда, скриншоты\n   - Тестовые аккаунты A и B\n\n4. Влияние:\n   «Утечка ПДн, штраф по 152-ФЗ, репутационный ущерб»\n\n5. Рекомендация по фиксу:\n   «Проверять ownership ресурса перед возвратом»\n\n6. Срок: 90 дней до публикации (стандарт Google Project Zero)',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Приватный канал: security@company.com, форма bug bounty, PGP-шифрование',
+                    'Не публиковать в открытых трекерах/соцсетях до исправления',
+                    'Дать время: 30–90 дней — стандарт для серьёзных уязвимостей',
+                    'Если компания игнорирует 90+ дней — можно публиковать (это норма индустрии)',
+                    'Запросить «спасибо» в release notes (не деньги, если это не bug bounty)',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Классический конфликт: «я нашёл, хочу $5000». Если программа bug bounty — да, это законно. Если нет — попытка монетизировать уязвимость без программы называется «шантаж», и это уголовная статья. Разница — в контракте.',
+                },
+              ],
+            },
+            {
+              id: 'qa-l47-s5',
+              title: 'Проверь себя: этика',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте действие и его этическую оценку',
+                pairs: [
+                  { left: 'Сообщить security@company.com о найденной уязвимости', right: 'Правильно: responsible disclosure' },
+                  { left: 'Опубликовать PoC в Twitter до фикса', right: 'Плохо: раскрывает уязвимость злоумышленникам' },
+                  { left: 'Тестировать свой staging без разрешения', right: 'Ок: это ваша система' },
+                  { left: 'Тестировать сайт конкурента без разрешения', right: 'Преступление (ст. 272 УК РФ)' },
+                ],
+                explanation:
+                  'Сообщить приватно — правильно. Опубликовать до фикса — безответственно. Свой staging — всегда ок. Чужой сайт без разрешения — преступление. Запомните: «исследовательская» мотивация не оправдывает неправомерный доступ.',
+              },
+            },
           ],
         },
       ],
@@ -3096,6 +4274,62 @@ export const qaAutomationCourse: Course = {
                   'Жесты, прерывания, разрешения — мобильная специфика. Адаптивная вёрстка есть и в вебе. На собеседовании mobile QA ответ на этот вопрос отделяет «читал про тестирование» от «тестировал реально».',
               },
             },
+            {
+              id: 'qa-l48-s4',
+              title: 'Эмулятор vs реальное устройство',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Начинающие тестировщики часто думают: «эмулятор = устройство, зачем покупать телефоны». Это не так. Есть класс багов, которые воспроизводятся только на реальном железе — и наоборот, есть то, что удобнее проверять на эмуляторе.',
+                },
+                {
+                  type: 'table',
+                  caption: 'Когда эмулятор, когда устройство',
+                  head: ['Ситуация', 'Эмулятор', 'Реальное устройство'],
+                  rows: [
+                    ['Быстрый смоук после деплоя', '✅', '—'],
+                    ['Проверка вёрстки на 5 моделях', '✅ (быстро)', '—'],
+                    ['Camera, GPS, биометрия', '⚠️ ограниченно', '✅'],
+                    ['Производительность, нагрев', '❌', '✅'],
+                    ['Push-уведомления', '⚠️ эмуляция', '✅'],
+                    ['Сеть: переключение Wi-Fi → 4G', '⚠️ вручную', '✅ естественно'],
+                    ['Реальные баги пользователей', '❌', '✅'],
+                  ],
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Эмулятор — 80% функциональных проверок и вёрстка',
+                    'Реальное устройство — всё, что связано с железом: камера, GPS, батарея, нагрев, биометрия',
+                    'Эмулятор не покажет реальную производительность — он на CPU компьютера',
+                    'Минимум для тестировщика: 1 iPhone + 1 Android-флагман + 1 бюджетный Android',
+                    'Облачные фермы (BrowserStack, Sauce Labs) — для широкой матрицы устройств',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Классическая ошибка: «работает на эмуляторе — значит, работает у пользователя». Push-уведомление может не приходить, камера — не открываться, батарея — садиться за час. Эмулятор — для скорости, устройство — для реальности.',
+                },
+              ],
+            },
+            {
+              id: 'qa-l48-s5',
+              title: 'Проверь себя: где что',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте проверку и оптимальную среду',
+                pairs: [
+                  { left: 'Вёрстка на 5 размерах экрана', right: 'Эмулятор (быстро)' },
+                  { left: 'Camera и GPS', right: 'Реальное устройство (железо)' },
+                  { left: 'Производительность и нагрев', right: 'Реальное устройство (нагрузка)' },
+                  { left: 'Быстрый смоук после деплоя', right: 'Эмулятор (5 минут)' },
+                ],
+                explanation:
+                  'Вёрстка и смоук — эмулятор (быстро, дёшево). Камера, GPS, производительность — только реальное устройство. Без реального устройства вы не увидите настоящих багов пользователей.',
+              },
+            },
           ],
         },
         {
@@ -3149,22 +4383,8 @@ export const qaAutomationCourse: Course = {
                   ],
                 },
                 {
-                  type: 'table',
-                  caption: 'Когда эмулятор vs реальное устройство',
-                  head: ['Ситуация', 'Эмулятор', 'Реальное устройство'],
-                  rows: [
-                    ['Быстрый смоук после деплоя', '✅', '—'],
-                    ['Проверка вёрстки на 5 моделях', '✅ (быстро)', '—'],
-                    ['Camera, GPS, биометрия', '⚠️ ограниченно', '✅'],
-                    ['Производительность, нагрев', '❌', '✅'],
-                    ['Push-уведомления', '⚠️ эмуляция', '✅'],
-                    ['Сеть: переключение Wi-Fi → 4G', '⚠️ вручную', '✅ естественно'],
-                    ['Реальные баги пользователей', '❌', '✅'],
-                  ],
-                },
-                {
                   type: 'note',
-                  text: 'Эмулятор — для 80% проверок: функциональность, вёрстка, базовая логика. Реальное устройство — для специфичного: камера, производительность, батарея, push, биометрия (Face ID, Touch ID), специфичные жесты. Эмулятор НЕ заменит телефон в критичных сценариях.',
+                  text: 'Без Mac тестировать iOS-приложение локально невозможно. Варианты: удалённый Mac (MacStadium, MacinCloud), облачные фермы (BrowserStack, Sauce Labs), или «одолжить Mac у коллеги». Xcode на виртуалке — работает, но медленно и нестабильно.',
                 },
               ],
             },
@@ -3214,6 +4434,23 @@ export const qaAutomationCourse: Course = {
                 correct: ['b'],
                 explanation:
                   'Эмулятор работает на железе компьютера, а не телефона. Он не покажет реальную производительность, нагрев, расход батареи. Это можно проверить только на реальном устройстве. Вёрстка и навигация — можно и на эмуляторе.',
+              },
+            },
+            {
+              id: 'qa-l49-s5',
+              title: 'Проверь себя: инструменты',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте инструмент и его назначение',
+                pairs: [
+                  { left: 'Android Studio + AVD', right: 'Эмулятор Android-устройства' },
+                  { left: 'Xcode + Simulator', right: 'Эмулятор iOS-устройства' },
+                  { left: 'BrowserStack / Sauce Labs', right: 'Облачная ферма реальных устройств' },
+                  { left: 'adb', right: 'CLI для управления Android-устройством и эмулятором' },
+                ],
+                explanation:
+                  'Android Studio — эмулятор Android. Xcode — эмулятор iOS. Облачные фермы — реальные устройства через браузер. adb — CLI для установки APK, логов, shell. На собеседовании junior mobile QA — это база.',
               },
             },
           ],
@@ -3329,6 +4566,23 @@ export const qaAutomationCourse: Course = {
                   'logcat — стандартный инструмент для Android. Console.app и Xcode — для iOS/macOS. DevTools — для веба. На собеседовании проверяют, знаете ли вы стандартный инструмент для каждой платформы.',
               },
             },
+            {
+              id: 'qa-l50-s5',
+              title: 'Проверь себя: команды logcat',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте команду adb logcat и её назначение',
+                pairs: [
+                  { left: 'adb logcat -c', right: 'Очистить буфер логов перед воспроизведением' },
+                  { left: 'adb logcat -d > log.txt', right: 'Сохранить все накопленные логи в файл' },
+                  { left: 'adb logcat *:E', right: 'Только ошибки (Error)' },
+                  { left: 'adb logcat --pid=<PID>', right: 'Логи только одного приложения' },
+                ],
+                explanation:
+                  '-c — очистить, -d — сбросить в файл, *:E — только ошибки, --pid — по конкретному процессу. Четыре команды покрывают 90% работы с logcat для тестировщика.',
+              },
+            },
           ],
         },
         {
@@ -3341,30 +4595,9 @@ export const qaAutomationCourse: Course = {
               title: 'Функциональность и жесты',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'Кроме обычных кнопок и полей — мобильные жесты. Они ведут себя по-разному на iOS и Android, и это классический источник багов «у меня работает, у тебя нет».',
-                },
-                {
-                  type: 'list',
-                  items: [
-                    'Тап (короткое касание) — обычный клик',
-                    'Долгое нажатие (long press) — контекстное меню, выделение',
-                    'Свайп влево/вправо — навигация назад на iOS, удаление элементов',
-                    'Свайп вниз — обновление списка (pull-to-refresh)',
-                    'Скролл — инерционный, не должен «залипать»',
-                    'Пинч (pinch-to-zoom) — увеличение картинки, карты',
-                    'Двойной тап — zoom, лайк',
-                    'Drag-and-drop — перетаскивание элементов',
-                    'Жест «назад» (Android, с края экрана) — должен работать системно',
-                  ],
-                },
-                {
-                  type: 'code',
-                  lang: 'text',
-                  caption: 'Что проверять в формах и полях',
-                  code: '✓ Клавиатура не перекрывает поле ввода\n✓ Автокоррекция не ломает ввод (email, пароль)\n✓ Emoji и юникод не ломают вёрстку\n✓ Копирование/вставка из буфера обмена работает\n✓ Поле не теряет фокус при скролле\n✓ Кнопка «Далее» на клавиатуре работает\n✓ Ввод в портрете и ландшафте',
-                },
+                { type: 'p', text: 'Кроме обычных кнопок и полей — мобильные жесты. Они ведут себя по-разному на iOS и Android, и это классический источник багов «у меня работает, у тебя нет».' },
+                { type: 'list', items: ['Тап (короткое касание) — обычный клик', 'Долгое нажатие (long press) — контекстное меню, выделение', 'Свайп влево/вправо — навигация назад на iOS, удаление элементов', 'Свайп вниз — обновление списка (pull-to-refresh)', 'Скролл — инерционный, не должен «залипать»', 'Пинч (pinch-to-zoom) — увеличение картинки, карты', 'Двойной тап — zoom, лайк', 'Drag-and-drop — перетаскивание элементов', 'Жест «назад» (Android, с края экрана) — должен работать системно'] },
+                { type: 'code', lang: 'text', caption: 'Что проверять в формах и полях', code: '✓ Клавиатура не перекрывает поле ввода\n✓ Автокоррекция не ломает ввод (email, пароль)\n✓ Emoji и юникод не ломают вёрстку\n✓ Копирование/вставка из буфера обмена работает\n✓ Поле не теряет фокус при скролле\n✓ Кнопка «Далее» на клавиатуре работает\n✓ Ввод в портрете и ландшафте' },
               ],
             },
             {
@@ -3372,26 +4605,9 @@ export const qaAutomationCourse: Course = {
               title: 'Разрешения и приватность',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'Разрешения — обязательная проверка. Пользователь может отклонить любое: камеру, геолокацию, контакты, уведомления. Приложение должно работать (или корректно объяснять, что без разрешения нельзя).',
-                },
-                {
-                  type: 'table',
-                  caption: 'Что проверять по разрешениям',
-                  head: ['Сценарий', 'Ожидание'],
-                  rows: [
-                    ['Разрешение выдано', 'Функция работает нормально'],
-                    ['Разрешение отклонено', 'Приложение объясняет, как включить, не крашится'],
-                    ['Разрешение отозвано после выдачи', 'Приложение замечает и обрабатывает'],
-                    ['Разрешение только «при использовании»', 'В фоне не работает, но не падает'],
-                    ['Запрос повторно после «Больше не спрашивать»', 'Настройки: ссылка в системные настройки'],
-                  ],
-                },
-                {
-                  type: 'note',
-                  text: 'iOS: разрешения спрашивают по одному, в контексте («Приложению нужна камера, чтобы сделать фото»). Android: часто спрашивают пачкой при старте (с Android 13 — по одному). Проверяйте оба сценария: если пользователь отклонил — не должно быть бесконечного цикла запросов или краша.',
-                },
+                { type: 'p', text: 'Разрешения — обязательная проверка. Пользователь может отклонить любое: камеру, геолокацию, контакты, уведомления. Приложение должно работать (или корректно объяснять, что без разрешения нельзя).' },
+                { type: 'table', caption: 'Что проверять по разрешениям', head: ['Сценарий', 'Ожидание'], rows: [['Разрешение выдано', 'Функция работает нормально'], ['Разрешение отклонено', 'Приложение объясняет, как включить, не крашится'], ['Разрешение отозвано после выдачи', 'Приложение замечает и обрабатывает'], ['Разрешение только «при использовании»', 'В фоне не работает, но не падает'], ['Запрос повторно после «Больше не спрашивать»', 'Настройки: ссылка в системные настройки']] },
+                { type: 'note', text: 'iOS: разрешения спрашивают по одному, в контексте («Приложению нужна камера, чтобы сделать фото»). Android: часто спрашивают пачкой при старте (с Android 13 — по одному). Проверяйте оба сценария: если пользователь отклонил — не должно быть бесконечного цикла запросов или краша.' },
               ],
             },
             {
@@ -3399,29 +4615,9 @@ export const qaAutomationCourse: Course = {
               title: 'Прерывания, сеть, установка',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'Мобильное приложение живёт в среде, полной прерываний. Звонок, SMS, уведомление, будильник — всё это может произойти в любой момент. И сеть пропадает регулярно: лифт, метро, самолёт.',
-                },
-                {
-                  type: 'list',
-                  items: [
-                    'Звонок во время работы — приложение должно вернуться в то же состояние',
-                    'SMS/уведомление — верхний баннер не должен ломать ввод',
-                    'Свернуть приложение → открыть через 10 минут → состояние сохранилось?',
-                    'Заблокировать экран → разблокировать → сессия жива?',
-                    'Wi-Fi → 4G → Wi-Fi: приложение не падает, данные догружаются',
-                    'Airplane mode во время запроса: показывается ошибка, можно повторить',
-                    'Очень медленная сеть (throttling в эмуляторе): не зависает ли UI, есть ли индикатор',
-                    'Потеря соединения → восстановление: переподключается автоматически?',
-                  ],
-                },
-                {
-                  type: 'code',
-                  lang: 'text',
-                  caption: 'Установка / обновление / удаление',
-                  code: '✓ Установка на чистое устройство\n✓ Обновление поверх старой версии — данные сохраняются\n✓ Обновление с 3 версий назад — миграция данных работает\n✓ Удаление — данные приложения стираются (если так задумано)\n✓ Переустановка — чистое состояние, не «мусор» в кэше\n✓ Установка с недостатком места — понятная ошибка, не краш\n✓ Установка на старую версию ОС — понятная ошибка (если минимальная выше)',
-                },
+                { type: 'p', text: 'Мобильное приложение живёт в среде, полной прерываний. Звонок, SMS, уведомление, будильник — всё это может произойти в любой момент. И сеть пропадает регулярно: лифт, метро, самолёт.' },
+                { type: 'list', items: ['Звонок во время работы — приложение должно вернуться в то же состояние', 'SMS/уведомление — верхний баннер не должен ломать ввод', 'Свернуть приложение → открыть через 10 минут → состояние сохранилось?', 'Заблокировать экран → разблокировать → сессия жива?', 'Wi-Fi → 4G → Wi-Fi: приложение не падает, данные догружаются', 'Airplane mode во время запроса: показывается ошибка, можно повторить', 'Очень медленная сеть (throttling в эмуляторе): не зависает ли UI, есть ли индикатор', 'Потеря соединения → восстановление: переподключается автоматически?'] },
+                { type: 'code', lang: 'text', caption: 'Установка / обновление / удаление', code: '✓ Установка на чистое устройство\n✓ Обновление поверх старой версии — данные сохраняются\n✓ Обновление с 3 версий назад — миграция данных работает\n✓ Удаление — данные приложения стираются (если так задумано)\n✓ Переустановка — чистое состояние, не «мусор» в кэше\n✓ Установка с недостатком места — понятная ошибка, не краш\n✓ Установка на старую версию ОС — понятная ошибка (если минимальная выше)' },
               ],
             },
             {
@@ -3438,9 +4634,18 @@ export const qaAutomationCourse: Course = {
                   { id: 'd', text: 'Сценарий, когда разрешение выдано' },
                 ],
                 correct: ['a', 'b', 'd'],
-                explanation:
-                  'Разрешения — это три сценария: выдано, отклонено, отозвано. Отключение интернета — отдельная проверка (сеть), не про разрешения. На собеседовании проверяют, знаете ли вы про все три состояния.',
+                explanation: 'Разрешения — это три сценария: выдано, отклонено, отозвано. Отключение интернета — отдельная проверка (сеть), не про разрешения. На собеседовании проверяют, знаете ли вы про все три состояния.',
               },
+            },
+            {
+              id: 'qa-l51-s5',
+              title: 'Push-уведомления и deep links',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Две вещи, которые есть только в мобильных приложениях и которые чаще всего ломаются при релизах: push-уведомления и deep links. Их обязательно проверять в чек-листе.' },
+                { type: 'list', items: ['Push приходит, когда приложение открыто? В фоне? Закрыто?', 'Тап по push открывает нужный экран или просто запускает приложение?', 'Deep link из браузера: myapp://profile/123 открывает профиль или «не найдено»?', 'Universal links (iOS) / App Links (Android) из https://example.com → приложение', 'Push с картинкой, кнопками, звуком — всё отображается?', 'Несколько push подряд — не теряются, стекируются?'] },
+                { type: 'note', text: 'Push и deep links чаще всего ломаются, потому что их не проверяют на релизе. Если приложение не открывает нужный экран по тапу из push — пользователь уходит. Отдельный тест-кейс на каждый тип push — стандарт в мобильном QA.' },
+              ],
             },
           ],
         },
@@ -3454,20 +4659,9 @@ export const qaAutomationCourse: Course = {
               title: 'Как выбрать устройства',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: '20 000 моделей Android и 30 моделей iPhone — протестировать всё невозможно. Задача — выбрать 5–15 устройств, которые покрывают 80% реальных пользователей. Это называется test matrix.',
-                },
-                {
-                  type: 'code',
-                  lang: 'text',
-                  caption: 'Принцип выбора',
-                  code: '1. Топ-5 устройств по вашей аналитике (Google Analytics, Firebase)\n   — то, что реально у пользователей\n\n2. Старейшая поддерживаемая ОС (minSdk / min iOS)\n   — «дно» вашей поддержки\n\n3. Новейшая ОС (только вышла — а совместимость?)\n\n4. Маленький экран (iPhone SE, старые Android)\n   — вёрстка ломается тут\n\n5. Большой экран / планшет\n   — если поддерживаете\n\n6. Флагман и бюджетник\n   — производительность и память отличаются в разы\n\n7. Специфичный вендор (Samsung, Xiaomi, Huawei)\n   — они меняют систему',
-                },
-                {
-                  type: 'note',
-                  text: 'Спросите аналитику: какие 5 устройств реально у вас в топе? Что-то может удивить: «все на iPhone 15» или «40% на Xiaomi». Матрица строится по данным, а не по интуиции. Если аналитики нет — берите Pixel (эталон Android), iPhone последний, iPhone SE, Samsung среднего класса.',
-                },
+                { type: 'p', text: '20 000 моделей Android и 30 моделей iPhone — протестировать всё невозможно. Задача — выбрать 5–15 устройств, которые покрывают 80% реальных пользователей. Это называется test matrix.' },
+                { type: 'code', lang: 'text', caption: 'Принцип выбора', code: '1. Топ-5 устройств по вашей аналитике (Google Analytics, Firebase)\n   — то, что реально у пользователей\n\n2. Старейшая поддерживаемая ОС (minSdk / min iOS)\n   — «дно» вашей поддержки\n\n3. Новейшая ОС (только вышла — а совместимость?)\n\n4. Маленький экран (iPhone SE, старые Android)\n   — вёрстка ломается тут\n\n5. Большой экран / планшет\n   — если поддерживаете\n\n6. Флагман и бюджетник\n   — производительность и память отличаются в разы\n\n7. Специфичный вендор (Samsung, Xiaomi, Huawei)\n   — они меняют систему' },
+                { type: 'note', text: 'Спросите аналитику: какие 5 устройств реально у вас в топе? Что-то может удивить: «все на iPhone 15» или «40% на Xiaomi». Матрица строится по данным, а не по интуиции. Если аналитики нет — берите Pixel (эталон Android), iPhone последний, iPhone SE, Samsung среднего класса.' },
               ],
             },
             {
@@ -3475,28 +4669,9 @@ export const qaAutomationCourse: Course = {
               title: 'Приоритизация проверок',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'На 15 устройствах невозможно прогнать все 500 тест-кейсов. Приоритизация — не «что важнее», а «что на каком устройстве». На каждом релизе — ротация, чтобы за квартал покрыть всё.',
-                },
-                {
-                  type: 'table',
-                  caption: 'Что тестировать на каком устройстве',
-                  head: ['Тип проверки', 'Где'],
-                  rows: [
-                    ['Smoke (критичные пути)', 'Каждое устройство в матрице'],
-                    ['Полная регрессия', 'Одно устройство (эталон) + эмулятор'],
-                    ['Вёрстка / UI', 'Маленький экран, большой экран, планшет'],
-                    ['Производительность', 'Бюджетный телефон (медленный) и флагман'],
-                    ['Специфика ОС', 'Старая ОС (minSdk) и новая'],
-                    ['Специфика вендора', 'Samsung, Xiaomi — отдельно'],
-                    ['Биометрия, камера, NFC', 'Реальные устройства (эмулятор не покажет)'],
-                  ],
-                },
-                {
-                  type: 'p',
-                  text: 'Правило ротации: на каждом релизе критичные проверки — везде, полную регрессию — на «эталоне» (одно стабильное устройство), а специфичные — по одному новому устройству в ротации. За 4–6 релизов — полная матрица покрыта.',
-                },
+                { type: 'p', text: 'На 15 устройствах невозможно прогнать все 500 тест-кейсов. Приоритизация — не «что важнее», а «что на каком устройстве». На каждом релизе — ротация, чтобы за квартал покрыть всё.' },
+                { type: 'table', caption: 'Что тестировать на каком устройстве', head: ['Тип проверки', 'Где'], rows: [['Smoke (критичные пути)', 'Каждое устройство в матрице'], ['Полная регрессия', 'Одно устройство (эталон) + эмулятор'], ['Вёрстка / UI', 'Маленький экран, большой экран, планшет'], ['Производительность', 'Бюджетный телефон (медленный) и флагман'], ['Специфика ОС', 'Старая ОС (minSdk) и новая'], ['Специфика вендора', 'Samsung, Xiaomi — отдельно'], ['Биометрия, камера, NFC', 'Реальные устройства (эмулятор не покажет)']] },
+                { type: 'p', text: 'Правило ротации: на каждом релизе критичные проверки — везде, полную регрессию — на «эталоне» (одно стабильное устройство), а специфичные — по одному новому устройству в ротации. За 4–6 релизов — полная матрица покрыта.' },
               ],
             },
             {
@@ -3513,8 +4688,33 @@ export const qaAutomationCourse: Course = {
                   { id: 'd', text: 'На устройствах разработчиков' },
                 ],
                 correct: ['b'],
-                explanation:
-                  'Данные аналитики (GA, Firebase) показывают, что реально у пользователей. Плюс крайние версии ОС (minSdk и последняя) и разные размеры экранов. «Что есть в офисе» — не стратегия.',
+                explanation: 'Данные аналитики (GA, Firebase) показывают, что реально у пользователей. Плюс крайние версии ОС (minSdk и последняя) и разные размеры экранов. «Что есть в офисе» — не стратегия.',
+              },
+            },
+            {
+              id: 'qa-l52-s4',
+              title: 'Как выглядит матрица устройств',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Матрица — это таблица «устройство × тип проверки». В строках — устройства, в столбцах — уровни (smoke, регресс, специфика). Сразу видно, что где проверяется, и что не покрыто.' },
+                { type: 'table', caption: 'Пример матрицы для интернет-магазина', head: ['Устройство', 'Smoke', 'Регресс', 'Camera', 'Push'], rows: [['iPhone 15 (iOS 17)', '✅', '✅', '✅', '✅'], ['iPhone SE (iOS 15)', '✅', '✅', '—', '—'], ['Samsung Galaxy S23', '✅', '✅', '—', '✅'], ['Xiaomi Redmi 9 (бюджет)', '✅', '—', '—', '—'], ['Pixel 7 (эталон Android)', '✅', '✅', '✅', '✅']] },
+                { type: 'note', text: 'Правило: smoke — везде (5–10 минут). Регресс — на 2 эталонах (iOS + Android). Специфика (камера, push, биометрия) — на 1–2 устройствах, где это реально проверить. Пустая клетка — это осознанное решение, а не «забыли».' },
+              ],
+            },
+            {
+              id: 'qa-l52-s5',
+              title: 'Проверь себя: матрица и ротация',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте уровень проверки и частоту его запуска',
+                pairs: [
+                  { left: 'Smoke (логин, главный экран)', right: 'Каждый релиз, на всех устройствах матрицы' },
+                  { left: 'Регресс (полный набор)', right: 'Раз в спринт, на одном эталоне iOS + одном Android' },
+                  { left: 'Специфика (камера, NFC, биометрия)', right: 'Перед релизом, на 1 реальном устройстве с нужным железом' },
+                  { left: 'Ротация устройств', right: 'Каждый релиз — 1–2 новых устройства из матрицы' },
+                ],
+                explanation: 'Smoke везде, регресс на эталонах, специфика на 1 устройстве — так вы не тратите время на 15 полных регрессов. Ротация за 4–6 релизов покрывает всю матрицу без единого «полного прогона на всех».',
               },
             },
           ],
@@ -3529,26 +4729,9 @@ export const qaAutomationCourse: Course = {
               title: 'Четыре подхода к автоматизации',
               type: 'theory',
               blocks: [
-                {
-                  type: 'table',
-                  caption: 'Инструменты мобильной автоматизации',
-                  head: ['Инструмент', 'Платформа', 'Плюсы', 'Минусы'],
-                  rows: [
-                    ['Appium', 'iOS + Android + Windows', 'Один код на обе платформы, любой язык', 'Медленнее нативных, требует настройки'],
-                    ['Espresso', 'Android', 'Быстрый, нативный, стабильный', 'Только Android, только Kotlin/Java'],
-                    ['XCUITest', 'iOS', 'Быстрый, нативный', 'Только iOS, только Swift/Objective-C'],
-                    ['Detox', 'React Native', 'Для RN-приложений, быстрый', 'Только React Native'],
-                    ['Maestro', 'iOS + Android', 'Очень простой YAML, для смоук-тестов', 'Меньше возможностей, молодой'],
-                  ],
-                },
-                {
-                  type: 'p',
-                  text: 'Appium — «мобильный Selenium»: один тест на Python/Java/JS работает и на iOS, и на Android. Это главный выбор, если у вас кроссплатформенная команда или хочется один фреймворк. Espresso и XCUITest — если нужна максимальная скорость и нативность (обычно их пишут сами разработчики).',
-                },
-                {
-                  type: 'note',
-                  text: 'В 2025 растёт Maestro: YAML-описание тестов, работает без компиляции, отлично для смоук-тестов и UI. Порог входа — минимальный. Для «проверить, что приложение открывается и логин работает» Maestro часто быстрее Appium. Но для сложных сценариев — Appium или нативные.',
-                },
+                { type: 'table', caption: 'Инструменты мобильной автоматизации', head: ['Инструмент', 'Платформа', 'Плюсы', 'Минусы'], rows: [['Appium', 'iOS + Android + Windows', 'Один код на обе платформы, любой язык', 'Медленнее нативных, требует настройки'], ['Espresso', 'Android', 'Быстрый, нативный, стабильный', 'Только Android, только Kotlin/Java'], ['XCUITest', 'iOS', 'Быстрый, нативный', 'Только iOS, только Swift/Objective-C'], ['Detox', 'React Native', 'Для RN-приложений, быстрый', 'Только React Native'], ['Maestro', 'iOS + Android', 'Очень простой YAML, для смоук-тестов', 'Меньше возможностей, молодой']] },
+                { type: 'p', text: 'Appium — «мобильный Selenium»: один тест на Python/Java/JS работает и на iOS, и на Android. Это главный выбор, если у вас кроссплатформенная команда или хочется один фреймворк. Espresso и XCUITest — если нужна максимальная скорость и нативность (обычно их пишут сами разработчики).' },
+                { type: 'note', text: 'В 2025 растёт Maestro: YAML-описание тестов, работает без компиляции, отлично для смоук-тестов и UI. Порог входа — минимальный. Для «проверить, что приложение открывается и логин работает» Maestro часто быстрее Appium. Но для сложных сценариев — Appium или нативные.' },
               ],
             },
             {
@@ -3556,32 +4739,10 @@ export const qaAutomationCourse: Course = {
               title: 'Appium: основы',
               type: 'theory',
               blocks: [
-                {
-                  type: 'code',
-                  lang: 'python',
-                  caption: 'Установка и первый тест',
-                  code: 'pip install Appium-Python-Client\nnpm install -g appium\nappium driver install uiautomator2      # Android\nappium driver install xcuitest          # iOS (только на Mac)\n\n# Запуск сервера Appium\nappium',
-                },
-                {
-                  type: 'code',
-                  lang: 'python',
-                  caption: 'Тест на Python',
-                  code: 'from appium import webdriver\nfrom appium.options.android import UiAutomator2Options\nfrom appium.webdriver.common.appiumby import AppiumBy\n\noptions = UiAutomator2Options()\noptions.platform_name = "Android"\noptions.device_name = "Pixel_7"\noptions.app = "/path/to/app.apk"\noptions.automation_name = "UiAutomator2"\n\ndriver = webdriver.Remote("http://localhost:4723", options=options)\n\n# Локаторы — по accessibility id, id, xpath\ndriver.find_element(AppiumBy.ID, "com.example.app:id/login").click()\ndriver.find_element(AppiumBy.ACCESSIBILITY_ID, "Email").send_keys("test@x.com")\n\ndriver.quit()',
-                },
-                {
-                  type: 'list',
-                  items: [
-                    'AppiumBy.ID — по resource-id (Android) или name (iOS)',
-                    'AppiumBy.ACCESSIBILITY_ID — по accessibility label (лучший, кроссплатформенный)',
-                    'AppiumBy.XPATH — медленный, хрупкий, но работает везде',
-                    'Appium Inspector — визуальный инструмент для поиска локаторов (аналог DevTools)',
-                    'driver.start_recording_screen() — запись видео для отладки',
-                  ],
-                },
-                {
-                  type: 'note',
-                  text: 'Главная боль Appium — скорость: каждый шаг = HTTP-запрос к серверу Appium → команда → устройство. Один тест может идти 30–60 сек. Это медленнее Espresso в 5–10 раз. Поэтому в CI Appium-тесты обычно на smoke-уровне (5–20 сценариев), а не на полный регресс.',
-                },
+                { type: 'code', lang: 'python', caption: 'Установка и первый тест', code: 'pip install Appium-Python-Client\nnpm install -g appium\nappium driver install uiautomator2      # Android\nappium driver install xcuitest          # iOS (только на Mac)\n\n# Запуск сервера Appium\nappium' },
+                { type: 'code', lang: 'python', caption: 'Тест на Python', code: 'from appium import webdriver\nfrom appium.options.android import UiAutomator2Options\nfrom appium.webdriver.common.appiumby import AppiumBy\n\noptions = UiAutomator2Options()\noptions.platform_name = "Android"\noptions.device_name = "Pixel_7"\noptions.app = "/path/to/app.apk"\noptions.automation_name = "UiAutomator2"\n\ndriver = webdriver.Remote("http://localhost:4723", options=options)\n\n# Локаторы — по accessibility id, id, xpath\ndriver.find_element(AppiumBy.ID, "com.example.app:id/login").click()\ndriver.find_element(AppiumBy.ACCESSIBILITY_ID, "Email").send_keys("test@x.com")\n\ndriver.quit()' },
+                { type: 'list', items: ['AppiumBy.ID — по resource-id (Android) или name (iOS)', 'AppiumBy.ACCESSIBILITY_ID — по accessibility label (лучший, кроссплатформенный)', 'AppiumBy.XPATH — медленный, хрупкий, но работает везде', 'Appium Inspector — визуальный инструмент для поиска локаторов (аналог DevTools)', 'driver.start_recording_screen() — запись видео для отладки'] },
+                { type: 'note', text: 'Главная боль Appium — скорость: каждый шаг = HTTP-запрос к серверу Appium → команда → устройство. Один тест может идти 30–60 сек. Это медленнее Espresso в 5–10 раз. Поэтому в CI Appium-тесты обычно на smoke-уровне (5–20 сценариев), а не на полный регресс.' },
               ],
             },
             {
@@ -3589,26 +4750,9 @@ export const qaAutomationCourse: Course = {
               title: 'Что автоматизировать, а что нет',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'Мобильная автоматизация хрупкая: эмуляторы долго стартуют, тесты падают из-за таймингов, разные устройства ломают локаторы. Есть смысл автоматизировать не всё подряд, а то, что даёт максимум пользы при минимуме хлопот.',
-                },
-                {
-                  type: 'list',
-                  items: [
-                    '✅ Smoke (логин, главный экран, ключевые действия) — на каждом релизе, на 2–3 устройствах',
-                    '✅ Критичные регрессии (оплата, заказ) — раз в сутки, на эталоне',
-                    '✅ Интеграционные сценарии (регистрация → покупка) — если долго и нудно руками',
-                    '❌ Проверка вёрстки на 20 моделях — визуальные тесты или ручная ротация',
-                    '❌ Специфика устройства (камера, биометрия, NFC) — ручной тест на реальном устройстве',
-                    '❌ Одноразовые проверки — не надо тратить время на автотест, если проверка нужна раз в квартал',
-                    '❌ Push-уведомления — сложно автоматизировать, обычно вручную',
-                  ],
-                },
-                {
-                  type: 'note',
-                  text: 'Правило: если сценарий выполняется на каждом релизе и занимает > 2 минут руками — автоматизируйте. Если раз в квартал — ручной чек-лист проще и дешевле в поддержке. Мобильная автоматизация — самая дорогая в поддержке из всех видов.',
-                },
+                { type: 'p', text: 'Мобильная автоматизация хрупкая: эмуляторы долго стартуют, тесты падают из-за таймингов, разные устройства ломают локаторы. Есть смысл автоматизировать не всё подряд, а то, что даёт максимум пользы при минимуме хлопот.' },
+                { type: 'list', items: ['✅ Smoke (логин, главный экран, ключевые действия) — на каждом релизе, на 2–3 устройствах', '✅ Критичные регрессии (оплата, заказ) — раз в сутки, на эталоне', '✅ Интеграционные сценарии (регистрация → покупка) — если долго и нудно руками', '❌ Проверка вёрстки на 20 моделях — визуальные тесты или ручная ротация', '❌ Специфика устройства (камера, биометрия, NFC) — ручной тест на реальном устройстве', '❌ Одноразовые проверки — не надо тратить время на автотест, если проверка нужна раз в квартал', '❌ Push-уведомления — сложно автоматизировать, обычно вручную'] },
+                { type: 'note', text: 'Правило: если сценарий выполняется на каждом релизе и занимает > 2 минут руками — автоматизируйте. Если раз в квартал — ручной чек-лист проще и дешевле в поддержке. Мобильная автоматизация — самая дорогая в поддержке из всех видов.' },
               ],
             },
             {
@@ -3625,8 +4769,23 @@ export const qaAutomationCourse: Course = {
                   { id: 'd', text: 'Detox' },
                 ],
                 correct: ['c'],
-                explanation:
-                  'Appium — единственный в списке, который работает и на iOS, и на Android, и поддерживает Python. Espresso — только Android/Kotlin, XCUITest — только iOS/Swift, Detox — только React Native.',
+                explanation: 'Appium — единственный в списке, который работает и на iOS, и на Android, и поддерживает Python. Espresso — только Android/Kotlin, XCUITest — только iOS/Swift, Detox — только React Native.',
+              },
+            },
+            {
+              id: 'qa-l53-s5',
+              title: 'Проверь себя: выбор инструмента',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте ситуацию и оптимальный инструмент',
+                pairs: [
+                  { left: 'Команда пишет на Swift, только iOS', right: 'XCUITest' },
+                  { left: 'Команда на Kotlin, только Android', right: 'Espresso' },
+                  { left: 'Python-команда, iOS + Android', right: 'Appium' },
+                  { left: 'React Native-приложение', right: 'Detox' },
+                ],
+                explanation: 'Swift + iOS → XCUITest. Kotlin + Android → Espresso. Python + обе платформы → Appium. React Native → Detox. На собеседовании mobile QA: «какой инструмент выбрали бы для X?» — это ответ.',
               },
             },
           ],
@@ -3651,26 +4810,10 @@ export const qaAutomationCourse: Course = {
               title: 'Доступность для всех',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: `Accessibility (a11y — от англ. accessibility, где 11 букв между a и y) — это практика создания продуктов, которыми могут пользоваться люди с ограниченными возможностями. Это не только про слепых (скринридеры), но и про людей с моторными нарушениями (навигация только клавиатурой), когнитивными особенностями, временными травмами (сломанная рука) и даже про ситуативные ограничения (яркое солнце на экране, нет звука в метро).`,
-                },
-                {
-                  type: 'p',
-                  text: `Стандарт **WCAG** (Web Content Accessibility Guidelines) описывает, как делать доступные интерфейсы. Уровни: A (минимум), AA (стандарт для большинства стран/законов), AAA (максимум).`,
-                },
-                {
-                  type: 'list',
-                  items: [
-                    'A — базовый уровень (есть alt-тексты, работает клавиатура)',
-                    'AA — обязательный по закону во многих странах (контраст 4.5:1, субтитры)',
-                    'AAA — экспертный уровень (контраст 7:1, язык жестов)',
-                  ],
-                },
-                {
-                  type: 'note',
-                  text: 'Принципы POUR: Perceivable (воспринимаемо), Operable (управляемо), Understandable (понятно), Robust (надёжно — работает со скринридерами). На собеседовании QA вопрос «что такое a11y» и «какие принципы» — частый.',
-                },
+                { type: 'p', text: 'Accessibility (a11y — от англ. accessibility, где 11 букв между a и y) — это практика создания продуктов, которыми могут пользоваться люди с ограниченными возможностями. Это не только про слепых (скринридеры), но и про людей с моторными нарушениями (навигация только клавиатурой), когнитивными особенностями, временными травмами (сломанная рука) и даже про ситуативные ограничения (яркое солнце на экране, нет звука в метро).' },
+                { type: 'p', text: 'Стандарт **WCAG** (Web Content Accessibility Guidelines) описывает, как делать доступные интерфейсы. Уровни: A (минимум), AA (стандарт для большинства стран/законов), AAA (максимум).' },
+                { type: 'list', items: ['A — базовый уровень (есть alt-тексты, работает клавиатура)', 'AA — обязательный по закону во многих странах (контраст 4.5:1, субтитры)', 'AAA — экспертный уровень (контраст 7:1, язык жестов)'] },
+                { type: 'note', text: 'Принципы POUR: Perceivable (воспринимаемо), Operable (управляемо), Understandable (понятно), Robust (надёжно — работает со скринридерами). На собеседовании QA вопрос «что такое a11y» и «какие принципы» — частый.' },
               ],
             },
             {
@@ -3678,21 +4821,8 @@ export const qaAutomationCourse: Course = {
               title: 'Что проверять в первую очередь',
               type: 'theory',
               blocks: [
-                {
-                  type: 'list',
-                  items: [
-                    'Клавиатура: можно ли пройти весь сценарий без мыши? Виден ли фокус (outline)?',
-                    'Семантика: используются ли правильные теги (button вместо div onClick, label для input)?',
-                    'Изображения: есть ли alt-текст? Декоративные картинки — alt=""?',
-                    'Контраст: читается ли текст на фоне? (минимум 4.5:1 для текста)',
-                    'Формы: связаны ли ошибки с полями? Понятны ли сообщения?',
-                    'Видео: есть ли субтитры и расшифровка?',
-                  ],
-                },
-                {
-                  type: 'note',
-                  text: 'Самый быстрый тест: отключите мышь и попробуйте пройти сценарий только с Tab/Enter/Space. Если не получается — это a11y-баг. Следующий шаг — включить скринридер (NVDA на Windows, VoiceOver на Mac).',
-                },
+                { type: 'list', items: ['Клавиатура: можно ли пройти весь сценарий без мыши? Виден ли фокус (outline)?', 'Семантика: используются ли правильные теги (button вместо div onClick, label для input)?', 'Изображения: есть ли alt-текст? Декоративные картинки — alt=""?', 'Контраст: читается ли текст на фоне? (минимум 4.5:1 для текста)', 'Формы: связаны ли ошибки с полями? Понятны ли сообщения?', 'Видео: есть ли субтитры и расшифровка?'] },
+                { type: 'note', text: 'Самый быстрый тест: отключите мышь и попробуйте пройти сценарий только с Tab/Enter/Space. Если не получается — это a11y-баг. Следующий шаг — включить скринридер (NVDA на Windows, VoiceOver на Mac).' },
               ],
             },
             {
@@ -3712,6 +4842,32 @@ export const qaAutomationCourse: Course = {
                 explanation: 'AA — стандарт для законодательства (ADA в США, European Accessibility Act). A — недостаточно (только база). AAA — слишком строго для массового внедрения (контраст 7:1, язык жестов).',
               },
             },
+            {
+              id: 'qa-l54-s4',
+              title: 'Как проверять a11y на практике',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Проверять a11y — не «прочитать WCAG и согласиться». Это конкретные действия, которые можно выполнить за 15 минут на любой странице.' },
+                { type: 'list', items: ['Отключите мышь. Пройдите весь сценарий только Tab / Enter / Space. Если не получается — баг.', 'Включите скринридер (NVDA / VoiceOver). Закройте глаза. Попробуйте пройти сценарий на слух.', 'Увеличьте масштаб до 200%. Вёрстка не должна разваливаться.', 'Включите high contrast mode (Windows) — текст не должен исчезнуть.', 'Отключите изображения в браузере. Alt-тексты должны читаться.', 'Проверьте контраст через axe DevTools — красный текст на розовом фоне, скорее всего, не пройдёт AA.'] },
+                { type: 'note', text: '15 минут на страницу: Tab-навигация + скринридер + axe DevTools. Это ловит 60–70% проблем. Полный аудит — отдельная задача, но 80% багов находятся на этом минимуме.' },
+              ],
+            },
+            {
+              id: 'qa-l54-s5',
+              title: 'Проверь себя: POUR',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте принцип POUR и пример проверки',
+                pairs: [
+                  { left: 'Perceivable (воспринимаемо)', right: 'У изображения есть alt-текст' },
+                  { left: 'Operable (управляемо)', right: 'Сценарий проходится только с клавиатуры' },
+                  { left: 'Understandable (понятно)', right: 'Сообщения об ошибках объясняют, как исправить' },
+                  { left: 'Robust (надёжно)', right: 'Работает со скринридером NVDA / VoiceOver' },
+                ],
+                explanation: 'POUR — четыре принципа WCAG. Perceivable — можно воспринять (alt). Operable — можно управлять (клавиатура). Understandable — понятно (ошибки). Robust — работает с assistive tech. На собеседовании senior QA: «что такое POUR?» — четыре из этого списка.',
+              },
+            },
           ],
         },
         {
@@ -3724,23 +4880,9 @@ export const qaAutomationCourse: Course = {
               title: 'Автоматические инструменты',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'Автоматика находит около 30–40% проблем (контраст, alt, aria-атрибуты). Остальное — ручной тест со скринридером.',
-                },
-                {
-                  type: 'list',
-                  items: [
-                    'Lighthouse (вкладка в Chrome DevTools) — общий аудит, есть блок Accessibility',
-                    'axe DevTools (расширение для Chrome) — самый мощный автоматический сканер',
-                    'WAVE (расширение) — визуализация проблем прямо на странице',
-                    'Playwright + axe-core — интеграция в автотесты (@axe-core/playwright)',
-                  ],
-                },
-                {
-                  type: 'note',
-                  text: 'Для CI/CD: @axe-core/playwright или pa11y — запускают a11y-проверку на каждом PR. Падение a11y-теста = блокировка мержа (если настроить).',
-                },
+                { type: 'p', text: 'Автоматика находит около 30–40% проблем (контраст, alt, aria-атрибуты). Остальное — ручной тест со скринридером.' },
+                { type: 'list', items: ['Lighthouse (вкладка в Chrome DevTools) — общий аудит, есть блок Accessibility', 'axe DevTools (расширение для Chrome) — самый мощный автоматический сканер', 'WAVE (расширение) — визуализация проблем прямо на странице', 'Playwright + axe-core — интеграция в автотесты (@axe-core/playwright)'] },
+                { type: 'note', text: 'Для CI/CD: @axe-core/playwright или pa11y — запускают a11y-проверку на каждом PR. Падение a11y-теста = блокировка мержа (если настроить).' },
               ],
             },
             {
@@ -3748,20 +4890,9 @@ export const qaAutomationCourse: Course = {
               title: 'Скринридеры',
               type: 'theory',
               blocks: [
-                {
-                  type: 'code',
-                  lang: 'text',
-                  caption: 'Чем тестировать',
-                  code: 'NVDA (Windows) — бесплатный, самый популярный\nJAWS (Windows) — платный, корпоративный стандарт\nVoiceOver (macOS/iOS) — встроен, Command+F5\nTalkBack (Android) — встроен\nNarrator (Windows) — встроен, но менее популярен',
-                },
-                {
-                  type: 'p',
-                  text: `Начинать лучше с NVDA (Windows) или VoiceOver (Mac). Включите, закройте глаза (или монитор) и попробуйте пройти сценарий на слух. Если не получается — это баг.`,
-                },
-                {
-                  type: 'note',
-                  text: 'Частые баги: кнопка без имени (скринридер читает «button»), изображение без alt (читает «image» или путь к файлу), модальное окно без focus trap (Tab уходит за его пределы).',
-                },
+                { type: 'code', lang: 'text', caption: 'Чем тестировать', code: 'NVDA (Windows) — бесплатный, самый популярный\nJAWS (Windows) — платный, корпоративный стандарт\nVoiceOver (macOS/iOS) — встроен, Command+F5\nTalkBack (Android) — встроен\nNarrator (Windows) — встроен, но менее популярен' },
+                { type: 'p', text: 'Начинать лучше с NVDA (Windows) или VoiceOver (Mac). Включите, закройте глаза (или монитор) и попробуйте пройти сценарий на слух. Если не получается — это баг.' },
+                { type: 'note', text: 'Частые баги: кнопка без имени (скринридер читает «button»), изображение без alt (читает «image» или путь к файлу), модальное окно без focus trap (Tab уходит за его пределы).' },
               ],
             },
             {
@@ -3796,6 +4927,17 @@ export const qaAutomationCourse: Course = {
                 ],
                 explanation: 'Lighthouse — общий аудит. axe — точечный поиск ошибок. NVDA — «глаза» для скринридера. axe-core в Playwright — автоматизация a11y в CI.',
               },
+            },
+            {
+              id: 'qa-l55-s5',
+              title: 'a11y в CI: Playwright + axe-core',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Ручная проверка a11y на каждом PR — не реально. Решение — автоматическая проверка в CI через @axe-core/playwright: тот же движок, что в расширении, но в автотестах.' },
+                { type: 'code', lang: 'python', caption: 'pytest + playwright + axe (через JS-injection)', code: 'from playwright.sync_api import Page\n\ndef test_a11y_homepage(page: Page):\n    page.goto("/")\n    # инжектим axe-core и запускаем аудит\n    page.add_script_tag(url="https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.10.0/axe.min.js")\n    result = page.evaluate("axe.run()")\n    violations = result["violations"]\n    assert violations == [], [\n        f"{v[\'id\']}: {v[\'description\']}" for v in violations\n    ]' },
+                { type: 'list', items: ['axe-core — движок внутри расширения и автотестов (одинаковые правила)', 'В CI — 3–5 ключевых страниц с axe, не весь сайт (быстро)', 'Автоматика ловит 30–40% проблем (контраст, alt, ARIA)', 'Остальное — ручной тест (Tab-навигация, скринридер)', 'Падение a11y-теста = блокировка мержа (если настроено)'] },
+                { type: 'note', text: 'На собеседовании senior QA: «как встроить a11y в CI?» — «Playwright + axe-core на ключевых страницах, падение при critical/high. Ручной аудит — раз в спринт». Ответ «только вручную» — устарел.' },
+              ],
             },
           ],
         },

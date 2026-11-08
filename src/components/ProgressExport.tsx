@@ -21,9 +21,13 @@ export function ProgressExport() {
 
   const totalDone = Object.keys(state.done).length;
   const totalQuizzes = Object.keys(state.quizResults).length;
+  const totalBookmarks = Object.keys(state.bookmarks).length;
+  const totalNotes = Object.keys(state.notes).length;
   const isEmpty =
     totalDone === 0 &&
     totalQuizzes === 0 &&
+    totalBookmarks === 0 &&
+    totalNotes === 0 &&
     Object.keys(state.lastVisited).length === 0;
 
   const onExport = () => {
@@ -58,18 +62,15 @@ export function ProgressExport() {
 
     setBusy(true);
     try {
-      // 1. Прочитать и провалидировать ДО подтверждения
       const raw = await file.text();
       const parsed = parseProgressFile(raw);
       const when = formatExportedAt(parsed.exported_at);
 
-      // 2. Спросить подтверждение — с датой из файла
       const ok = window.confirm(
         `Файл от ${when}.\nТекущий прогресс будет заменён. Продолжить?`,
       );
       if (!ok) return;
 
-      // 3. Применить
       replaceState(parsed.progress);
       toast.success(`Прогресс загружен (файл от ${when})`);
     } catch (err) {
@@ -98,6 +99,18 @@ export function ProgressExport() {
             <span className="font-semibold text-primary">{totalQuizzes}</span>{' '}
             <span className="text-muted-foreground">квизов решено</span>
           </span>
+          {totalBookmarks > 0 && (
+            <span>
+              <span className="font-semibold text-primary">{totalBookmarks}</span>{' '}
+              <span className="text-muted-foreground">закладок</span>
+            </span>
+          )}
+          {totalNotes > 0 && (
+            <span>
+              <span className="font-semibold text-primary">{totalNotes}</span>{' '}
+              <span className="text-muted-foreground">заметок</span>
+            </span>
+          )}
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">

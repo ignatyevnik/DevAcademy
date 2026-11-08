@@ -141,7 +141,6 @@ export default function EditorPage() {
     }
   };
 
-  // Эффект автосохранения
   useEffect(() => {
     if (skipAutoSave.current) {
       skipAutoSave.current = false;
@@ -150,11 +149,11 @@ export default function EditorPage() {
 
     setSaveStatus('saving');
     const timer = setTimeout(() => {
-      saveToLocal(true); // true = тихий режим (без тостов)
+      saveToLocal(true);
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, [course]); // Срабатывает при любом изменении course
+  }, [course]);
 
   const restoreOriginal = () => {
     if (!confirm(`Удалить локальную версию курса «${course.title}» и вернуть оригинал?`)) return;
@@ -182,7 +181,6 @@ export default function EditorPage() {
     const original = newModules[mIdx].lessons[lIdx];
     const clone = JSON.parse(JSON.stringify(original));
     
-    // Генерируем новые ID для урока и всех его шагов
     clone.id = generateId('les');
     clone.title = `${original.title} (копия)`;
     clone.steps = clone.steps.map((s: any) => ({ ...s, id: generateId('step') }));
@@ -302,7 +300,6 @@ export default function EditorPage() {
                         <Input type="number" min={1} value={les.minutes} onChange={(e) => { const n = [...course.modules]; n[mIdx].lessons[lIdx].minutes = Number(e.target.value); setCourse({ ...course, modules: n }); }} className="w-32 pl-8 pr-12 text-sm" aria-label="Время прохождения в минутах" />
                         <span className="absolute right-2.5 text-xs font-medium text-muted-foreground pointer-events-none">мин</span>
                       </div>
-                      {/* НОВАЯ КНОПКА ДУБЛИРОВАНИЯ УРОКА */}
                       <Button variant="ghost" size="sm" onClick={() => duplicateLesson(mIdx, lIdx)} title="Дублировать урок">
                         <Copy className="h-4 w-4" />
                       </Button>
@@ -331,7 +328,6 @@ export default function EditorPage() {
                             {step.type === 'theory' ? 'Теория' : 'Тест'}
                           </span>
                           <Input value={step.title} onChange={(e) => { const n = [...course.modules]; n[mIdx].lessons[lIdx].steps[sIdx].title = e.target.value; setCourse({ ...course, modules: n }); }} className="flex-1 h-8 text-sm font-medium" />
-                          {/* НОВАЯ КНОПКА ДУБЛИРОВАНИЯ ШАГА */}
                           <Button variant="ghost" size="sm" onClick={() => duplicateStep(mIdx, lIdx, sIdx)} title="Дублировать шаг">
                             <Copy className="h-3.5 w-3.5" />
                           </Button>
@@ -351,14 +347,17 @@ export default function EditorPage() {
                               />
                             ))}
                             <div className="flex flex-wrap gap-1">
-{(['p', 'h3', 'list', 'code', 'note', 'table', 'image', 'mermaid', 'sandbox'] as const).map((t) => (
+{(['p', 'h3', 'list', 'code', 'note', 'table', 'image', 'mermaid', 'sandbox', 'python'] as const).map((t) => (
   <Button key={t} variant="outline" size="sm" onClick={() => {
     const newBlock: any = { type: t };
     if (t === 'p' || t === 'h3' || t === 'note') newBlock.text = '';
     else if (t === 'list') newBlock.items = [''];
     else if (t === 'code') { newBlock.lang = 'text'; newBlock.code = ''; }
     else if (t === 'table') { newBlock.head = ['A', 'B']; newBlock.rows = [['', '']]; }
-    else if (t === 'image') { newBlock.src = ''; newBlock.alt = ''; }
+    else if (t === 'image') {
+      newBlock.src = 'https://placehold.co/600x400?text=Image';
+      newBlock.alt = 'Описание изображения';
+    }
     else if (t === 'mermaid') { newBlock.code = 'graph TD\n  A --> B'; }
     else if (t === 'sandbox') {
       newBlock.sandbox = {

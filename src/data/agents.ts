@@ -2100,10 +2100,7 @@ export const agentsCourse: Course = {
                     'Все они показывают: промпты, токены, время, ошибки, цепочки вызовов',
                   ],
                 },
-                {
-                  type: 'note',
-                  text: 'Трейсинг — не «nice to have», а обязательное условие продакшена. В проде агент падает в 3 часа ночи. Без трейса вы не знаете, что ушло в LLM и что вернулось. С трейсом — видите каждый шаг и чините за минуты. LangSmith/Langfuse — стандарт.',
-                },
+                { type: 'note', text: 'Трейсинг — не «nice to have», а обязательное условие продакшена. В проде агент падает в 3 часа ночи. Без трейса вы не знаете, что ушло в LLM и что вернулось. С трейсом — видите каждый шаг и чините за минуты. LangSmith/Langfuse — стандарт.' },
               ],
             },
             {
@@ -2131,10 +2128,7 @@ export const agentsCourse: Course = {
                   caption: 'Логирование метрик',
                   code: 'import time\nfrom langfuse.decorators import observe, langfuse_context\n\n@observe()\ndef agent_with_metrics(query: str):\n    start = time.perf_counter()\n    try:\n        result = run_agent(query)\n        langfuse_context.update_current_observation(\n            metadata={\n                "latency_ms": (time.perf_counter() - start) * 1000,\n                "success": True,\n                "tokens_total": result["usage"]["total_tokens"],\n                "cost_usd": result["usage"]["cost"],\n            },\n        )\n        return result\n    except Exception as e:\n        langfuse_context.update_current_observation(\n            level="ERROR",\n            status_message=str(e),\n        )\n        raise',
                 },
-                {
-                  type: 'note',
-                  text: 'Алерты настраиваются на аномалии: «latency p95 вырос в 2 раза за час», «error rate > 5%», «cost per request > $0.10». Это сигналы, что что-то сломалось (модель тормозит, промпт сломался, инструмент упал) — раньше, чем пользователи начнут жаловаться.',
-                },
+                { type: 'note', text: 'Алерты настраиваются на аномалии: «latency p95 вырос в 2 раза за час», «error rate > 5%», «cost per request > $0.10». Это сигналы, что что-то сломалось (модель тормозит, промпт сломался, инструмент упал) — раньше, чем пользователи начнут жаловаться.' },
               ],
             },
             {
@@ -2155,22 +2149,62 @@ export const agentsCourse: Course = {
                   'Агент — цепочка вызовов. Когда что-то падает, надо видеть, что ушло в LLM и что вернулось. Без трейсинга — только print и перезапуск. С LangSmith/Langfuse — видно каждый шаг, токены, время, ошибки.',
               },
             },
+            {
+              id: 'ai-l19-s4',
+              title: 'Cost tracking: где утекают деньги',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Трейсинг — это ещё и про деньги. Агент с 5 шагами тратит токены на каждом шаге, и стоимость растёт нелинейно. Без трейсинга вы узнаете о «$500 за ночь» из счёта OpenAI, а не из алерта.' },
+                {
+                  type: 'code',
+                  lang: 'python',
+                  caption: 'Расчёт стоимости в трейсе',
+                  code: '# Пример: разные модели — разные тарифы\nCOST_PER_1K = {\n    "gpt-4o":       {"in": 0.0025,  "out": 0.01},\n    "gpt-4o-mini":  {"in": 0.00015, "out": 0.0006},\n    "claude-sonnet": {"in": 0.003,  "out": 0.015},\n}\n\ndef log_cost(model: str, usage):\n    in_cost = usage.prompt_tokens * COST_PER_1K[model]["in"] / 1000\n    out_cost = usage.completion_tokens * COST_PER_1K[model]["out"] / 1000\n    total = in_cost + out_cost\n\n    langfuse_context.update_current_observation(\n        metadata={\n            "model": model,\n            "cost_input_usd": in_cost,\n            "cost_output_usd": out_cost,\n            "cost_total_usd": total,\n        },\n    )\n    return total',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Считайте стоимость per request — не «общий счёт в конце месяца»',
+                    'Алерт: cost per request > $0.10 — что-то пошло не так',
+                    'Разбивка по шагам: какой шаг съел больше всего',
+                    'Разбивка по пользователю/сессии: кто генерирует больше всего',
+                    'Cost tracking в трейсе — стандарт: Langfuse, Helicone умеют из коробки',
+                  ],
+                },
+                { type: 'note', text: 'Классический инцидент: агент зациклился, делал 50 tool calls на запрос, счёт за сутки — $3000. С трейсингом и cost per request вы бы поймали это через час. Без — по факту счёта. Cost tracking — не «nice to have», а часть observability.' },
+              ],
+            },
+            {
+              id: 'ai-l19-s5',
+              title: 'Проверь себя: стоимость',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие метрики стоимости стоит отслеживать в трейсинге?',
+                options: [
+                  { id: 'a', text: 'Cost per request (стоимость одного запроса)' },
+                  { id: 'b', text: 'Разбивка по шагам (какой шаг съел больше)' },
+                  { id: 'c', text: 'Разбивка по пользователю/сессии' },
+                  { id: 'd', text: 'Цвет дашборда' },
+                ],
+                correct: ['a', 'b', 'c'],
+                explanation:
+                  'Cost per request, разбивка по шагам и пользователям — три уровня. Цвет дашборда — не метрика. С этими тремя вы видите, кто, где и на каком шаге сжигает бюджет.',
+              },
+            },
           ],
         },
         {
           id: 'ai-l20',
           title: 'Streaming и UX',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'ai-l20-s1',
               title: 'Streaming ответа',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'LLM генерирует токены по одному. Без streaming пользователь ждёт 5–10 секунд, потом видит весь ответ сразу. Со streaming — первый токен через 0.5 секунды, дальше «печатается» как в ChatGPT. Ощущение скорости в 5–10 раз лучше, хотя общее время то же.',
-                },
+                { type: 'p', text: 'LLM генерирует токены по одному. Без streaming пользователь ждёт 5–10 секунд, потом видит весь ответ сразу. Со streaming — первый токен через 0.5 секунды, дальше «печатается» как в ChatGPT. Ощущение скорости в 5–10 раз лучше, хотя общее время то же.' },
                 {
                   type: 'code',
                   lang: 'python',
@@ -2183,10 +2217,7 @@ export const agentsCourse: Course = {
                   caption: 'Streaming с tool calls (сложнее)',
                   code: 'stream = client.chat.completions.create(\n    model="gpt-4o-mini",\n    messages=messages,\n    tools=tools,\n    stream=True,\n)\n\n# Tool calls приходят частями: сначала имя, потом аргументы по кусочкам\ntool_calls_buffer = {}\nfor chunk in stream:\n    delta = chunk.choices[0].delta\n    if delta.content:\n        print(delta.content, end="", flush=True)\n    if delta.tool_calls:\n        for tc in delta.tool_calls:\n            idx = tc.index\n            if idx not in tool_calls_buffer:\n                tool_calls_buffer[idx] = {"name": "", "arguments": ""}\n            tool_calls_buffer[idx]["name"] += tc.function.name or ""\n            tool_calls_buffer[idx]["arguments"] += tc.function.arguments or ""\n\n# После завершения — выполнить tool calls\nfor idx, call in tool_calls_buffer.items():\n    result = execute_tool(call["name"], json.loads(call["arguments"]))',
                 },
-                {
-                  type: 'note',
-                  text: 'Streaming с tool calls — нетривиально: имя и аргументы приходят по кусочкам. Обычно используют фреймворки (LangChain astream_events, LangGraph astream). Писать парсер tool_calls вручную — только если действительно нужно. На собеседовании ценят понимание, а не «я всегда парсю руками».',
-                },
+                { type: 'note', text: 'Streaming с tool calls — нетривиально: имя и аргументы приходят по кусочкам. Обычно используют фреймворки (LangChain astream_events, LangGraph astream). Писать парсер tool_calls вручную — только если действительно нужно. На собеседовании ценят понимание, а не «я всегда парсю руками».' },
               ],
             },
             {
@@ -2212,10 +2243,7 @@ export const agentsCourse: Course = {
                   caption: 'FastAPI + streaming SSE',
                   code: 'from fastapi import FastAPI\nfrom fastapi.responses import StreamingResponse\nfrom openai import OpenAI\n\napp = FastAPI()\nclient = OpenAI()\n\n@app.get("/chat")\nasync def chat(query: str):\n    async def generate():\n        stream = client.chat.completions.create(\n            model="gpt-4o-mini",\n            messages=[{"role": "user", "content": query}],\n            stream=True,\n        )\n        for chunk in stream:\n            if chunk.choices[0].delta.content:\n                content = chunk.choices[0].delta.content\n                yield f"data: {json.dumps({\\"content\\": content})}\\n\\n"\n        yield "data: [DONE]\\n\\n"\n\n    return StreamingResponse(generate(), media_type="text/event-stream")',
                 },
-                {
-                  type: 'note',
-                  text: 'SSE (Server-Sent Events) — стандарт для streaming в веб. Проще WebSocket (односторонний, HTTP-based), работает через nginx с proxy_buffering off. Для чата — идеально. WebSocket — если нужен двусторонний real-time (редко для LLM).',
-                },
+                { type: 'note', text: 'SSE (Server-Sent Events) — стандарт для streaming в веб. Проще WebSocket (односторонний, HTTP-based), работает через nginx с proxy_buffering off. Для чата — идеально. WebSocket — если нужен двусторонний real-time (редко для LLM).' },
               ],
             },
             {
@@ -2236,12 +2264,52 @@ export const agentsCourse: Course = {
                   'Streaming, показ действий и отмена — обязательные для UX. Скрывать ошибки — плохо: пользователь не поймёт, что что-то сломалось. Лучше «не удалось, повторите» с понятной причиной.',
               },
             },
+            {
+              id: 'ai-l20-s4',
+              title: 'Long-running задачи: очередь и polling',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Агент может работать 2–5 минут (research, code agent). Держать HTTP-соединение всё это время — плохо: таймауты, обрывы, «потерянные» результаты. Правильный паттерн: задача в очередь → клиент получает ID → polling или webhook.' },
+                {
+                  type: 'mermaid',
+                  caption: 'Async-задача: очередь → polling',
+                  code: 'sequenceDiagram\n    participant C as Клиент\n    participant API as API\n    participant Q as Очередь\n    participant W as Worker\n\n    C->>API: POST /tasks {query}\n    API->>Q: enqueue(task_id, query)\n    API-->>C: 202 Accepted {task_id}\n\n    loop каждые 2 сек\n        C->>API: GET /tasks/123\n        API-->>C: status: running (progress 40%)\n    end\n\n    W->>Q: pop task\n    W->>W: run agent (2-5 мин)\n    W->>API: save result\n\n    C->>API: GET /tasks/123\n    API-->>C: status: done {result}\n    C->>API: GET /tasks/123/stream (SSE)',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'POST /tasks → 202 Accepted + task_id (не блокирующий)',
+                    'GET /tasks/{id} → статус (pending, running, done, failed)',
+                    'GET /tasks/{id}/stream → SSE для прогресса',
+                    'Webhook — альтернатива polling: worker сам «дёргает» клиента',
+                    'TTL на результат — 24 часа, потом удаляется',
+                  ],
+                },
+                { type: 'note', text: 'Правило: если задача может идти > 30 секунд — очередь + polling/SSE. Не держите HTTP-соединение минутами: nginx закроет через 60 сек, браузер — через 5 минут, а вы потеряете результат. На собеседовании senior AI: «как деплоите долгие агентные задачи?» — «Celery/RQ + polling + SSE».' },
+              ],
+            },
+            {
+              id: 'ai-l20-s5',
+              title: 'Проверь себя: long-running',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте паттерн и его назначение',
+                pairs: [
+                  { left: 'Очередь (Celery/RQ)', right: 'Выполнить долгую задачу в фоне' },
+                  { left: 'Polling (GET /tasks/{id})', right: 'Клиент проверяет статус каждые N сек' },
+                  { left: 'SSE', right: 'Сервер пушит прогресс клиенту' },
+                  { left: 'Webhook', right: 'Worker сам уведомляет клиента о готовности' },
+                ],
+                explanation: 'Очередь — фон. Polling — проверка статуса. SSE — прогресс в реальном времени. Webhook — push-уведомление. Выбор — по задаче: 30 сек–2 мин — SSE; >2 мин — очередь + polling/webhook.',
+              },
+            },
           ],
         },
         {
           id: 'ai-l21',
           title: 'Деплой и масштабирование',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'ai-l21-s1',
@@ -2265,10 +2333,7 @@ export const agentsCourse: Course = {
                     'Rate limiting — на API gateway',
                   ],
                 },
-                {
-                  type: 'note',
-                  text: 'Не «оборачивайте LLM в Django» — берите FastAPI: async из коробки, лёгкий, быстрый. Для долгих задач (агент думает 2 минуты) — очередь + polling или webhook. Пользователь не должен держать соединение 2 минуты.',
-                },
+                { type: 'note', text: 'Не «оборачивайте LLM в Django» — берите FastAPI: async из коробки, лёгкий, быстрый. Для долгих задач (агент думает 2 минуты) — очередь + polling или webhook. Пользователь не должен держать соединение 2 минуты.' },
               ],
             },
             {
@@ -2295,10 +2360,7 @@ export const agentsCourse: Course = {
                   caption: 'Промпт-кэш через Anthropic',
                   code: 'from anthropic import Anthropic\n\nclient = Anthropic()\n\nresponse = client.messages.create(\n    model="claude-sonnet-4-5",\n    max_tokens=1024,\n    system=[\n        {\n            "type": "text",\n            "text": "Ты — ассистент поддержки. Длинная инструкция на 5000 токенов...",\n            "cache_control": {"type": "ephemeral"},   # ← кэшировать\n        }\n    ],\n    messages=[{"role": "user", "content": "Сколько дней на возврат?"}],\n)\n\n# Первый запрос — полная цена\n# Второй (в течение 5 минут) — кэш-хит, экономия до 90%\nprint(response.usage.cache_read_input_tokens)\nprint(response.usage.cache_creation_input_tokens)',
                 },
-                {
-                  type: 'note',
-                  text: 'Промпт-кэш работает по префиксу: system + tools + статические документы кэшируются. Если в начале промпта стоит today_date — кэш не сработает. Динамику — в конец. Экономия на повторяющихся запросах — 50–90%. На собеседовании «как снизить стоимость агента?» — ответ №1.',
-                },
+                { type: 'note', text: 'Промпт-кэш работает по префиксу: system + tools + статические документы кэшируются. Если в начале промпта стоит today_date — кэш не сработает. Динамику — в конец. Экономия на повторяющихся запросах — 50–90%. На собеседовании «как снизить стоимость агента?» — ответ №1.' },
               ],
             },
             {
@@ -2319,32 +2381,68 @@ export const agentsCourse: Course = {
                   'Промпт-кэш, меньшая модель, кэш результатов — три главных приёма. «Отправлять всю историю» — наоборот, увеличивает стоимость: каждый запрос платит за все токены. Суммаризируйте историю, обрезайте лишнее.',
               },
             },
+            {
+              id: 'ai-l21-s4',
+              title: 'Fallback между провайдерами',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: '«OpenAI лежит» — не гипотетическая ситуация, а регулярный инцидент. Если ваш агент зависит только от одного провайдера, вы лежите вместе с ним. Решение — fallback: primary (OpenAI), secondary (Anthropic), tertiary (Ollama).' },
+                {
+                  type: 'code',
+                  lang: 'python',
+                  caption: 'Fallback через try/except',
+                  code: 'from openai import OpenAI, APIError\nfrom anthropic import Anthropic\n\nopenai_client = OpenAI()\nanthropic_client = Anthropic()\n\ndef chat_with_fallback(messages):\n    try:\n        return openai_client.chat.completions.create(\n            model="gpt-4o-mini",\n            messages=messages,\n        )\n    except (APIError, TimeoutError) as e:\n        print(f"OpenAI failed: {e}. Fallback to Anthropic")\n        return anthropic_client.messages.create(\n            model="claude-haiku-4-5",\n            max_tokens=1024,\n            messages=messages,\n        )',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Primary: OpenAI (или тот, с кем договор)',
+                    'Secondary: Anthropic / Google (другой провайдер)',
+                    'Tertiary: self-hosted (Ollama, vLLM) — если совсем прижало',
+                    'Circuit breaker: после N ошибок — не пытаться OpenAI 5 минут',
+                    'Метрика: сколько запросов ушло в fallback — индикатор проблем провайдера',
+                  ],
+                },
+                { type: 'note', text: 'Fallback — не «silver bullet»: модели разные, ответы тоже. Промпт, оптимизированный под GPT-4o, может хуже работать на Claude. Но лучше «чуть хуже качество» в инцидент, чем «полный простой». На собеседовании senior AI: «что делать, если OpenAI упал?» — «fallback на Anthropic + circuit breaker».' },
+              ],
+            },
+            {
+              id: 'ai-l21-s5',
+              title: 'Проверь себя: fallback',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Зачем нужен fallback между LLM-провайдерами?',
+                options: [
+                  { id: 'a', text: 'Ускоряет ответы' },
+                  { id: 'b', text: 'Если primary-провайдер лежит, агент продолжает работать через secondary' },
+                  { id: 'c', text: 'Уменьшает стоимость' },
+                  { id: 'd', text: 'Улучшает качество' },
+                ],
+                correct: ['b'],
+                explanation: 'Fallback — про надёжность: OpenAI/Anthropic регулярно лежат. Без fallback ваш агент лежит вместе с провайдером. С fallback — переключается на второго и продолжает работать (хоть иногда хуже). Надёжность важнее идеального качества.',
+              },
+            },
           ],
         },
         {
           id: 'ai-l22',
           title: 'Мониторинг качества: LLM-as-judge',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'ai-l22-s1',
               title: 'Как измерять качество ответов',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: '«Мне кажется, стало лучше» — не метрика. Нужен набор из 50–200 реальных задач с эталонными ответами (или рубрикой) и автоматический прогон при каждом изменении промпта, модели, инструментов. Это ваш regression-тест для LLM.',
-                },
+                { type: 'p', text: '«Мне кажется, стало лучше» — не метрика. Нужен набор из 50–200 реальных задач с эталонными ответами (или рубрикой) и автоматический прогон при каждом изменении промпта, модели, инструментов. Это ваш regression-тест для LLM.' },
                 {
                   type: 'code',
                   lang: 'python',
                   caption: 'LLM-as-judge: оценка по рубрике',
                   code: 'from openai import OpenAI\n\nclient = OpenAI()\n\ndef judge(question: str, answer: str, reference: str) -> dict:\n    """Оценивает ответ по трём критериям (0-2 каждый)"""\n    rubric = f"""Оцени ответ агента по трём критериям. Каждый — 0, 1 или 2.\n\nВопрос: {question}\nЭталонный ответ: {reference}\nОтвет агента: {answer}\n\nКритерии:\n1. Корректность (0 — неверно, 1 — частично, 2 — верно)\n2. Полнота (0 — пропущено важное, 1 — частично, 2 — всё)\n3. Отсутствие галлюцинаций (0 — выдумки, 1 — сомнительно, 2 — только факты)\n\nВерни JSON: {{\\"correctness\\": 0-2, \\"completeness\\": 0-2, \\"no_hallucinations\\": 0-2, \\"reason\\": \\"краткое обоснование\\"}}"""\n\n    response = client.chat.completions.create(\n        model="gpt-4o",   # для judge — сильная модель\n        messages=[{"role": "user", "content": rubric}],\n        response_format={"type": "json_object"},\n        temperature=0,\n    )\n    return json.loads(response.choices[0].message.content)\n\n# Прогон на наборе\nscores = [judge(q, a, r) for q, a, r in test_set]\navg = sum(s["correctness"] for s in scores) / len(scores)\nprint(f"Средняя корректность: {avg:.2f} / 2.0")',
                 },
-                {
-                  type: 'note',
-                  text: 'LLM-as-judge — не идеален: судья тоже ошибается. Поэтому: (1) калибруйте на 20–30 примерах с ручной разметкой, (2) используйте сильную модель (GPT-4o, Claude Sonnet) как судью, (3) не полагайтесь только на judge — комбинируйте с ручной проверкой еженедельно.',
-                },
+                { type: 'note', text: 'LLM-as-judge — не идеален: судья тоже ошибается. Поэтому: (1) калибруйте на 20–30 примерах с ручной разметкой, (2) используйте сильную модель (GPT-4o, Claude Sonnet) как судью, (3) не полагайтесь только на judge — комбинируйте с ручной проверкой еженедельно.' },
               ],
             },
             {
@@ -2368,10 +2466,7 @@ export const agentsCourse: Course = {
                     'Результаты — артефакт для разбора',
                   ],
                 },
-                {
-                  type: 'note',
-                  text: 'Идея — как нагрузочное тестирование: не просто «прогнать и посмотреть», а «упасть с exit code 1, если стало хуже». Тогда любое изменение промпта проверяется автоматически — и «стало лучше» превращается в «correctness выросла с 1.6 до 1.8».',
-                },
+                { type: 'note', text: 'Идея — как нагрузочное тестирование: не просто «прогнать и посмотреть», а «упасть с exit code 1, если стало хуже». Тогда любое изменение промпта проверяется автоматически — и «стало лучше» превращается в «correctness выросла с 1.6 до 1.8».' },
               ],
             },
             {
@@ -2392,6 +2487,47 @@ export const agentsCourse: Course = {
                   'LLM-judge ошибается, но масштабируется: 200 задач × 20 PR в день = 4000 проверок вручную невозможно. Judge ловит регрессии автоматически. Ручная проверка — еженедельно для калибровки. Комбинация, не замена.',
               },
             },
+            {
+              id: 'ai-l22-s4',
+              title: 'Production feedback loop',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'CI-прогон ловит регрессии на синтетическом датасете. Но реальные пользователи задают вопросы, которых нет в датасете. Production feedback loop замыкает цикл: реальные диалоги → разметка → датасет → CI.' },
+                {
+                  type: 'mermaid',
+                  caption: 'Feedback loop: прод → датасет → CI',
+                  code: 'graph LR\n  Prod["Прод: диалоги<br/>(Langfuse)"] --> Filter["Фильтр:<br/>негативный feedback,<br/>ошибки,<br/>низкий confidence"]\n  Filter --> Label["Разметка:<br/>эталонный ответ"]\n  Label --> Dataset[("Eval-датасет<br/>+N примеров")]\n  Dataset --> CI["CI: прогон<br/>на каждом PR"]\n  CI --> Prod',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Собирайте реальные диалоги в трейсе (Langfuse, LangSmith)',
+                    'Фильтруйте: thumbs-down, ошибки, «не знаю», низкая уверенность',
+                    'Размечайте: эталонный ответ от эксперта (не LLM!)',
+                    'Добавляйте в датасет — теперь CI ловит этот кейс',
+                    'Ежемесячно: пересматривайте датасет, убирайте устаревшие',
+                  ],
+                },
+                { type: 'note', text: 'Классическая ошибка: датасет статичный, написали раз и забыли. Через полгода CI зелёный, а прод горит — потому что реальные вопросы изменились. Production feedback loop — обязателен. На собеседовании senior AI: «как обновляете eval-датасет?» — это ключевой вопрос.' },
+              ],
+            },
+            {
+              id: 'ai-l22-s5',
+              title: 'Проверь себя: feedback loop',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте этап и его назначение',
+                pairs: [
+                  { left: 'Langfuse/LangSmith', right: 'Сбор реальных диалогов из прода' },
+                  { left: 'Thumbs-down фильтр', right: 'Отобрать неудачные ответы для разметки' },
+                  { left: 'Ручная разметка', right: 'Создать эталонный ответ для датасета' },
+                  { left: 'Eval-датасет', right: 'Набор задач для CI-прогона' },
+                ],
+                explanation:
+                  'Трейсинг → фильтр негатива → разметка → датасет. Замкнутый цикл: прод учит CI, CI защищает прод. Без этого датасет устаревает, а CI показывает «всё ок», пока прод горит.',
+              },
+            },
           ],
         },
       ],
@@ -2400,7 +2536,7 @@ export const agentsCourse: Course = {
       id: 'ai-m8',
       title: 'Мультиагентные фреймворки',
       lessons: [
-        {
+       {
           id: 'ai-l23',
           title: 'CrewAI: ролевые агенты',
           minutes: 25,
@@ -2441,6 +2577,39 @@ export const agentsCourse: Course = {
                 ],
                 correct: ['b'],
                 explanation: 'Роль (role) — "Senior Researcher", "Content Writer" — задаёт контекст для LLM. Модель задаётся отдельно через llm=ChatOpenAI(...). Роль влияет на то, как агент рассуждает и отвечает.',
+              },
+            },
+            {
+              id: 'ai-l23-s3',
+              title: 'Process: sequential и hierarchical',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'В CrewAI процесс (process) определяет, как задачи выполняются. `Process.sequential` — задачи выполняются строго по порядку (task1 → task2). `Process.hierarchical` — появляется менеджер (менеджер-агент), который сам решает, кто и когда выполняет задачу.' },
+                { type: 'list', items: ['Sequential: предсказуемо, по порядку', 'Hierarchical: гибко, но менеджер — дополнительный LLM-вызов', 'Если порядок известен (сначала research, потом write) — sequential', 'Если задачи зависят друг от друга непредсказуемо — hierarchical'] },
+              ],
+            },
+            {
+              id: 'ai-l23-s4',
+              title: 'Плюсы и минусы CrewAI',
+              type: 'theory',
+              blocks: [
+                { type: 'table', caption: 'Когда CrewAI, когда нет', head: ['Сценарий', 'CrewAI', 'Альтернатива'], rows: [['Быстрый прототип "команды"', '✅ 20 строк', 'LangGraph (дольше)'], ['Сложные ветвления и состояние', '❌', 'LangGraph'], ['Контент-генерация, research', '✅', 'LangGraph, AutoGen'], ['Нужен полный контроль над каждым шагом', '❌', 'Свой цикл агента'],] },
+              ],
+            },
+            {
+              id: 'ai-l23-s5',
+              title: 'Проверь себя: CrewAI',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте понятие CrewAI и его суть',
+                pairs: [
+                  { left: 'Agent', right: 'Роль + цель + предыстория (кто и зачем)' },
+                  { left: 'Task', right: 'Задача с ожидаемым результатом' },
+                  { left: 'Crew', right: 'Команда агентов и задач' },
+                  { left: 'Process', right: 'Как выполняются задачи (sequential / hierarchical)' },
+                ],
+                explanation: 'Агенты (с ролями) выполняют задачи (с ожидаемым результатом) в рамках Crew. Process задаёт порядок. На собеседовании middle AI: «что такое CrewAI?» — «фреймворк для ролевых агентов».',
               },
             },
           ],
@@ -2511,6 +2680,33 @@ export const agentsCourse: Course = {
                   { left: 'LangChain', right: 'Базовые абстракции и инструменты' },
                 ],
                 explanation: 'LangGraph — граф. CrewAI — команда с ролями. AutoGen — диалог. LangChain — базовый набор для агентов и RAG. На собеседовании "какой фреймворк выбрать" — правильный ответ "зависит от задачи".',
+              },
+            },
+            {
+              id: 'ai-l24-s4',
+              title: 'GroupChat: больше двух агентов',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'AutoGen поддерживает не только диалог двух агентов, но и `GroupChat` — общий чат для трёх и более участников. Часто используется для имитации рабочей команды: Product Manager, Developer, QA. Они обсуждают задачу и приходят к результату.' },
+                { type: 'code', lang: 'python', caption: 'GroupChat: PM, Developer, QA', code: 'from autogen import AssistantAgent, GroupChat, GroupChatManager\n\npm = AssistantAgent(name="PM", system_message="Ты формулируешь требования", llm_config=config)\ndev = AssistantAgent(name="Dev", system_message="Ты пишешь код", llm_config=config)\nqa = AssistantAgent(name="QA", system_message="Ты ищешь баги", llm_config=config)\n\ngroupchat = GroupChat(agents=[pm, dev, qa], messages=[], max_round=10)\nmanager = GroupChatManager(groupchat=groupchat, llm_config=config)\n\npm.initiate_chat(manager, message="Нужен скрипт для очистки БД")' },
+                { type: 'note', text: '`max_round` — лимит сообщений, чтобы агенты не общались бесконечно. Групповой чат — мощный инструмент, но требует настройки ролей и правил остановки. На собеседовании senior AI: «как сделать команду агентов в AutoGen?» — «GroupChat + GroupChatManager».' },
+              ],
+            },
+            {
+              id: 'ai-l24-s5',
+              title: 'Проверь себя: GroupChat',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Зачем нужен параметр `max_round` в GroupChat?',
+                options: [
+                  { id: 'a', text: 'Чтобы агенты не общались бесконечно' },
+                  { id: 'b', text: 'Чтобы ограничить стоимость и время' },
+                  { id: 'c', text: 'Чтобы ускорить работу LLM' },
+                  { id: 'd', text: 'Чтобы задать количество токенов' },
+                ],
+                correct: ['a', 'b'],
+                explanation: '`max_round` — предохранитель: без него агенты могут зациклиться, тратя токены и время. Это про лимиты (как `max_steps` в обычном агенте), а не про ускорение или токены.',
               },
             },
           ],

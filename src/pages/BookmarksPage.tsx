@@ -2,22 +2,27 @@ import { Link, useNavigate } from 'react-router';
 import { ArrowLeft, Bookmark } from 'lucide-react';
 import { useProgress } from '@/lib/progress';
 import { getCourse, findLesson } from '@/data';
+import type { Course, Lesson } from '@/data';
 import { Header } from '@/components/Header';
+
+interface BookmarkItem {
+  course: Course;
+  lesson: Lesson;
+}
 
 export default function BookmarksPage() {
   const { state } = useProgress();
   const navigate = useNavigate();
 
-  const items = Object.keys(state.bookmarks)
-    .map((key) => {
-      const [slug, lessonId] = key.split(':');
-      const course = getCourse(slug);
-      if (!course) return null;
-      const found = findLesson(course, lessonId);
-      if (!found) return null;
-      return { course, lesson: found.lesson };
-    })
-    .filter(Boolean) as { course: any; lesson: any }[];
+  const items: BookmarkItem[] = [];
+  for (const key of Object.keys(state.bookmarks)) {
+    const [slug, lessonId] = key.split(':');
+    const course = getCourse(slug);
+    if (!course) continue;
+    const found = findLesson(course, lessonId);
+    if (!found) continue;
+    items.push({ course, lesson: found.lesson });
+  }
 
   return (
     <div className="min-h-dvh">

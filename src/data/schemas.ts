@@ -193,12 +193,25 @@ const sortingQuizSchema = z.object({
 const tableQuizSchema = z.object({
   kind: z.literal('table'),
   question: z.string().min(1),
-  columns: z.array(z.string().min(1)).min(2),
+  columns: z.array(z.string().min(1)).min(1, 'table: нужна хотя бы 1 колонка'),
   rows: z.array(z.object({
     label: z.string().min(1),
     correct: z.array(z.string()),
-  })).min(2),
+  })).min(1, 'table: нужна хотя бы 1 строка'),
   explanation: z.string().min(1),
+}).superRefine((q, ctx) => {
+  const colSet = new Set(q.columns);
+  for (let i = 0; i < q.rows.length; i++) {
+    for (const c of q.rows[i].correct) {
+      if (!colSet.has(c)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['rows', i, 'correct'],
+          message: `rows[${i}].correct содержит "${c}", которого нет в columns. Доступные: ${q.columns.join(', ')}`,
+        });
+      }
+    }
+  }
 });
 
 const numberQuizSchema = z.object({

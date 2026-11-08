@@ -20,7 +20,6 @@ function StepNotes({ slug, stepId }: { slug: string; stepId: string }) {
   const [text, setText] = useState(() => getNote(slug, stepId));
   const [saved, setSaved] = useState(false);
 
-  // Синхронизация при смене шага
   useEffect(() => {
     setText(getNote(slug, stepId));
     setSaved(false);
@@ -73,7 +72,6 @@ export default function LessonPage() {
   const stepIndex = Math.max(0, Math.min(safeIndex, totalSteps - 1));
   const step: Step | undefined = lesson?.steps[stepIndex];
 
-  // Если URL вышел за пределы — мягко исправляем
   useEffect(() => {
     if (!lesson) return;
     if (safeIndex !== stepIndex) {
@@ -83,17 +81,14 @@ export default function LessonPage() {
     }
   }, [safeIndex, stepIndex, lesson, params, setParams]);
 
-  // Визит для «Продолжить»
   useEffect(() => {
     if (course && lesson) visit(course.slug, lesson.id, stepIndex);
   }, [course?.slug, lesson?.id, stepIndex, visit]);
 
-  // Теория засчитывается при открытии
 const hasSandbox =
   step?.type === "theory" &&
   step.blocks.some((b) => b.type === "sandbox" || b.type === "python");
 
-// Теория засчитывается при открытии, но шаги с sandbox — только после проверки
 useEffect(() => {
   if (
     course &&
@@ -106,7 +101,6 @@ useEffect(() => {
   }
 }, [course?.slug, step?.id, step?.type, hasSandbox, isStepDone, completeStep, step]);
 
-  // Фокус на заголовке при смене шага (для скринридера и клавиатуры)
   useEffect(() => {
     if (step) h1Ref.current?.focus();
   }, [step?.id]);
@@ -126,10 +120,8 @@ useEffect(() => {
     return { prev, next, isLast: !next, isLastInCourse: !next };
   }, [course, lesson, stepIndex]);
 
-    // Горячие клавиши: ← / → для навигации
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Игнорируем, если фокус в инпуте/текстареа
       if (
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement ||
@@ -234,7 +226,6 @@ useEffect(() => {
               <Bookmark className="h-5 w-5 text-muted-foreground" />
             )}
           </button>
-          {/* НОВАЯ ССЫЛКА: Переход ко всем закладкам */}
           <Link
             to="/bookmarks"
             className="grid h-10 w-10 shrink-0 place-items-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -254,12 +245,6 @@ useEffect(() => {
             <FontSizeToggle />
           </div>
           <ThemeToggle />
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(true)}
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
-            aria-label="Открыть список шагов"
-          ></button>
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
@@ -307,7 +292,6 @@ useEffect(() => {
           
           <StepNotes slug={course.slug} stepId={step.id} />
           
-          {/* Кнопка сообщения об ошибке */}
           <ReportError 
             course={course} 
             lesson={lesson} 
