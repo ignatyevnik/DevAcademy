@@ -73,6 +73,9 @@ export function ProgressExport() {
 
       replaceState(parsed.progress);
       toast.success(`Прогресс загружен (файл от ${when})`);
+      
+      // Перезагружаем страницу, чтобы React-контекст обновился
+      setTimeout(() => window.location.reload(), 500);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'неизвестная ошибка';
       toast.error(`Не удалось загрузить: ${msg}`);

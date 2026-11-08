@@ -24,6 +24,18 @@ export default function BookmarksPage() {
     items.push({ course, lesson: found.lesson });
   }
 
+  // Сортируем закладки: недавно посещенные — сверху
+  items.sort((a, b) => {
+    const keyA = `${a.course.slug}:${a.lesson.id}`;
+    const keyB = `${b.course.slug}:${b.lesson.id}`;
+    
+    // lastVisited хранит объект, нам нужно достать из него время (ts)
+    const timeA = state.lastVisited[keyA]?.ts || 0;
+    const timeB = state.lastVisited[keyB]?.ts || 0;
+    
+    return timeB - timeA; // По убыванию (сначала новые)
+  });
+
   return (
     <div className="min-h-dvh">
       <Header />

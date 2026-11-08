@@ -5,6 +5,19 @@ import { searchContent } from '@/lib/search';
 import { useDeferredValue } from 'react';
 import { cn } from '@/lib/utils';
 
+function highlightMatch(text: string, query: string) {
+  if (!query.trim()) return text;
+  const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${safeQuery})`, 'gi');
+  const parts = text.split(regex);
+  
+  return parts.map((part, i) => 
+    regex.test(part) 
+      ? <mark key={i} className="bg-yellow-200/80 text-black rounded-sm px-0.5">{part}</mark> 
+      : part
+  );
+}
+
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -117,7 +130,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     </div>
                     <div className="text-sm font-medium">{r.stepTitle}</div>
                     <div className="text-xs text-muted-foreground line-clamp-2">
-                      {r.snippet}
+                      {highlightMatch(r.snippet, query)}
                     </div>
                   </button>
                 </li>

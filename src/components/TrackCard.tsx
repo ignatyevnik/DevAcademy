@@ -38,7 +38,7 @@ export function TrackCard({ track }: { track: Track }) {
       className="group flex flex-col rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/40 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="flex items-start justify-between gap-2">
-        <h3 className="text-base font-bold tracking-tight group-hover:text-primary transition-colors">
+        <h3 className="text-base font-bold tracking-tight group-hover:text-primary transition-colors line-clamp-2 break-words">
           {track.title}
           {completed && (
             <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded align-middle">

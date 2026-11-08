@@ -1,16 +1,32 @@
 import { Link, useLocation, useNavigate } from 'react-router';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Search, GraduationCap, Menu, X, Bookmark } from 'lucide-react';
 import { useSearch } from '@/components/SearchProvider';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useProgress } from '@/lib/progress';
+import { courses, allLessons } from '@/data';
 
 export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { openSearch } = useSearch();
-  const { state } = useProgress(); // если ещё не используется
+  const { state } = useProgress(); 
+
+  // Считаем общий прогресс по всем курсам
+  const globalPct = useMemo(() => {
+    let total = 0;
+    let done = 0;
+    for (const c of courses) {
+      for (const l of allLessons(c)) {
+        total += l.steps.length;
+        for (const s of l.steps) {
+          if (state.done[`${c.slug}:${s.id}`]) done++;
+        }
+      }
+    }
+    return total > 0 ? Math.round((done / total) * 100) : 0;
+  }, [state.done]);
   const bookmarksCount = Object.keys(state.bookmarks).length;
 
   const goMyCourses = () => {
@@ -35,9 +51,18 @@ export function Header() {
             <GraduationCap className="h-5 w-5 text-primary-foreground" aria-hidden="true" />
           </span>
           <span className="text-lg font-bold tracking-tight">
-            Дев<span className="text-primary">Академия</span>
+            Dev<span className="text-primary">Академия</span>
           </span>
         </Link>
+        
+        {globalPct > 0 && (
+          <div className="hidden md:flex items-center gap-2 ml-2 pl-4 border-l border-border/50">
+            <div className="w-16 h-1.5 bg-secondary rounded-full overflow-hidden">
+              <div className="h-full bg-primary transition-[width] duration-300" style={{ width: `${globalPct}%` }} />
+            </div>
+            <span className="text-xs font-semibold text-muted-foreground">{globalPct}%</span>
+          </div>
+        )}
 
         <button
           type="button"

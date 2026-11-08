@@ -1,7 +1,7 @@
 import { Link, useParams, useSearchParams, Navigate, useNavigate } from 'react-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ArrowLeft, ArrowRight, Check, CheckCircle2, CircleHelp, FileText, ListTree, X, Bookmark, BookmarkCheck, StickyNote, Library 
+  ArrowLeft, ArrowRight, Check, CheckCircle2, CircleHelp, FileText, ListTree, X, Bookmark, BookmarkCheck, StickyNote, Library, ChevronRight 
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getCourse, findLesson, allLessons } from '@/data';
@@ -209,9 +209,21 @@ useEffect(() => {
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-xs text-muted-foreground">{course.title}</p>
-            <p className="truncate text-sm font-bold tracking-tight">{lesson.title}</p>
+          <div className="flex items-center gap-1.5 min-w-0 flex-1 text-xs text-muted-foreground overflow-hidden">
+            <Link to="/" className="hover:text-primary transition-colors whitespace-nowrap hidden sm:block">
+              Каталог
+            </Link>
+            <ChevronRight className="h-3 w-3 shrink-0 hidden sm:block" />
+            
+            <Link to={`/course/${course.slug}`} className="hover:text-primary transition-colors truncate">
+              {course.title}
+            </Link>
+            <ChevronRight className="h-3 w-3 shrink-0" />
+            
+            <span className="truncate hidden md:block">{found.module.title}</span>
+            <ChevronRight className="h-3 w-3 shrink-0 hidden md:block" />
+            
+            <span className="truncate font-semibold text-foreground">{lesson.title}</span>
           </div>
           <button
             type="button"
