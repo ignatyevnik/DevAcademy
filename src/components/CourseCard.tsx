@@ -24,7 +24,7 @@ export function CourseCard({ course }: { course: Course }) {
         </Badge>
       </div>
 
-      <h3 className="mt-4 text-lg font-bold leading-snug tracking-tight group-hover:text-primary break-words">
+      <h3 className="mt-4 text-lg font-bold leading-snug tracking-tight group-hover:text-primary line-clamp-2 break-words">
         {course.title}
       </h3>
       <p className="mt-1.5 line-clamp-2 flex-1 text-sm leading-relaxed text-muted-foreground">

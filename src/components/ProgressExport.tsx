@@ -13,6 +13,7 @@ import {
   downloadText,
 } from '@/lib/progress-io';
 import { Button } from '@/components/ui/button';
+import { getCourse, findLesson } from '@/data';
 
 export function ProgressExport() {
   const { state, replaceState } = useProgress();
@@ -55,34 +56,44 @@ export function ProgressExport() {
     fileRef.current?.click();
   };
 
-  const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file) return;
+const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  e.target.value = '';
+  if (!file) return;
 
-    setBusy(true);
-    try {
-      const raw = await file.text();
-      const parsed = parseProgressFile(raw);
-      const when = formatExportedAt(parsed.exported_at);
+  setBusy(true);
+  try {
+    const raw = await file.text();
+    const parsed = parseProgressFile(raw);
+    const when = formatExportedAt(parsed.exported_at);
 
-      const ok = window.confirm(
-        `Файл от ${when}.\nТекущий прогресс будет заменён. Продолжить?`,
-      );
-      if (!ok) return;
+    const ok = window.confirm(
+      `Файл от ${when}.\nТекущий прогресс будет заменён. Продолжить?`,
+    );
+    if (!ok) return;
 
-      replaceState(parsed.progress);
-      toast.success(`Прогресс загружен (файл от ${when})`);
-      
-      // Перезагружаем страницу, чтобы React-контекст обновился
-      setTimeout(() => window.location.reload(), 500);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'неизвестная ошибка';
-      toast.error(`Не удалось загрузить: ${msg}`);
-    } finally {
-      setBusy(false);
+    // Чистим lastVisited: оставляем только записи, где курс и урок ещё существуют
+    const sanitized = { ...parsed.progress };
+    const cleanedLastVisited: typeof sanitized.lastVisited = {};
+    for (const [slug, v] of Object.entries(sanitized.lastVisited)) {
+      const c = getCourse(slug);
+      if (c && findLesson(c, v.lessonId)) {
+        cleanedLastVisited[slug] = v;
+      }
     }
-  };
+    sanitized.lastVisited = cleanedLastVisited;
+
+    replaceState(sanitized);
+    toast.success(`Прогресс загружен (файл от ${when})`);
+
+    setTimeout(() => window.location.reload(), 500);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'неизвестная ошибка';
+    toast.error(`Не удалось загрузить: ${msg}`);
+  } finally {
+    setBusy(false);
+  }
+};
 
   return (
     <section id="progress" className="mt-12 scroll-mt-20">

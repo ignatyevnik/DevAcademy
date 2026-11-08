@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router';
-import { Plus, Trash2, Download, Save, ArrowLeft, RotateCcw, Clock, Eye, Edit, Copy } from 'lucide-react';
+import { Plus, Trash2, Download, Save, ArrowLeft, RotateCcw, Clock, Eye, Edit, Copy, Upload, FileJson } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -201,6 +201,75 @@ export default function EditorPage() {
     setCourse({ ...course, modules: newModules });
   };
 
+  const importRef = useRef<HTMLInputElement>(null);
+
+  const downloadTemplate = () => {
+    const template = {
+      slug: 'my-new-course',
+      title: 'Мой новый курс',
+      subtitle: 'Краткое описание',
+      description: 'Подробное описание курса',
+      level: 'Новичок',
+      tags: ['Custom'],
+      accent: '#4a90d9',
+      icon: 'python',
+      outcomes: ['Чему-то научиться'],
+      requirements: ['Желание учиться'],
+      modules: [
+        {
+          id: 'mod-1',
+          title: 'Модуль 1',
+          lessons: [
+            {
+              id: 'les-1',
+              title: 'Урок 1',
+              minutes: 10,
+              steps: [
+                {
+                  id: 'step-1',
+                  title: 'Введение',
+                  type: 'theory',
+                  blocks: [{ type: 'p', text: 'Текст теории' }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'course-template.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Шаблон скачан');
+  };
+
+  const onImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const raw = await file.text();
+      const json = JSON.parse(raw);
+      const result = courseSchema.safeParse(json);
+      if (!result.success) {
+        const issue = result.error.issues[0];
+        const path = issue.path.length ? issue.path.join('.') : '(корень)';
+        toast.error(`Невалидный курс: ${path} — ${issue.message}`);
+        return;
+      }
+      const imported = result.data as Course;
+      setCourse(imported);
+      toast.success(`Курс «${imported.title}» загружен. Проверьте и сохраните.`);
+      // Автосейв сработает через 5 сек (useEffect на [course]) — попадёт в localStorage-черновик
+    } catch (err) {
+      toast.error(`Ошибка импорта: ${err instanceof Error ? err.message : 'неизвестная'}`);
+    }
+  };
+
   return (
     <div className="min-h-dvh bg-background">
       <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
@@ -237,7 +306,34 @@ export default function EditorPage() {
               </Button>
             )}
             {!previewMode && (
-              <>
+            <>
+              <Button
+                onClick={downloadTemplate}
+                variant="outline"
+                className="gap-2 hidden lg:flex"
+                title="Скачать шаблон JSON"
+              >
+                <FileJson className="h-4 w-4" />
+                <span className="hidden xl:inline">Шаблон</span>
+              </Button>
+              <Button
+                onClick={() => importRef.current?.click()}
+                variant="outline"
+                className="gap-2"
+                title="Импорт курса из JSON"
+              >
+                <Upload className="h-4 w-4" />
+                <span className="hidden sm:inline">Импорт</span>
+              </Button>
+              <input
+                ref={importRef}
+                type="file"
+                accept="application/json,.json"
+                onChange={onImportFile}
+                className="hidden"
+                aria-hidden="true"
+                tabIndex={-1}
+              />
             <Button onClick={() => saveToLocal()} variant="outline" className="gap-2 hidden sm:flex"><Save className="h-4 w-4" /> Сохранить</Button>
             <div className="w-24 text-xs text-right">
             {saveStatus === 'saving' && <span className="text-muted-foreground animate-pulse">Сохранение...</span>}

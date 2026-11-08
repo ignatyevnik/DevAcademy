@@ -339,12 +339,18 @@ export default function Home() {
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1.5">
             <p className="font-semibold text-foreground">
-              Дев<span className="text-primary">Академия</span>
+              Dev<span className="text-primary">Академия</span>
             </p>
             <p className="text-xs">Прогресс хранится локально на этом устройстве</p>
           </div>
           
           <div className="flex flex-wrap items-center gap-4">
+            <Link
+              to="/notes"
+              className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors hover:underline underline-offset-4"
+            >
+              Мои заметки
+            </Link>
             <Link 
               to="/editor" 
               className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors hover:underline underline-offset-4"

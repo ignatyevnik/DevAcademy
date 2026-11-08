@@ -12,6 +12,7 @@ import EditorPage from './pages/EditorPage';
 import TrackPage from './pages/TrackPage';
 import ExamPage from '@/pages/ExamPage';
 import BookmarksPage from '@/pages/BookmarksPage';
+import NotesPage from './pages/NotesPage';
 
 function ScrollToTop() {
   const { pathname, search } = useLocation();
@@ -36,6 +37,7 @@ function AppContent() {
         <Route path="/track/:slug" element={<TrackPage />} />
         <Route path="/course/:slug/exam" element={<ExamPage />} />
         <Route path="/bookmarks" element={<BookmarksPage />} />
+        <Route path="/notes" element={<NotesPage />} />
       </Routes>
       <Toaster theme={theme} position="top-center" richColors closeButton />
     </>

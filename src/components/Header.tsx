@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useState, useMemo } from 'react';
-import { Search, GraduationCap, Menu, X, Bookmark } from 'lucide-react';
+import { Search, GraduationCap, Menu, X, Bookmark, StickyNote } from 'lucide-react';
 import { useSearch } from '@/components/SearchProvider';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useProgress } from '@/lib/progress';
@@ -28,6 +28,8 @@ export function Header() {
     return total > 0 ? Math.round((done / total) * 100) : 0;
   }, [state.done]);
   const bookmarksCount = Object.keys(state.bookmarks).length;
+
+  const notesCount = Object.keys(state.notes).length;
 
   const goMyCourses = () => {
     setMobileOpen(false);
@@ -89,6 +91,20 @@ export function Header() {
           <ThemeToggle />
 
           <Link
+            to="/notes"
+            className="relative grid h-9 w-9 place-items-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Мои заметки"
+            title="Мои заметки"
+          >
+            <StickyNote className="h-5 w-5 text-muted-foreground" />
+            {notesCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                {notesCount > 9 ? '9+' : notesCount}
+              </span>
+            )}
+          </Link>
+
+          <Link
             to="/bookmarks"
             className="relative grid h-9 w-9 place-items-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Закладки"
@@ -138,6 +154,13 @@ export function Header() {
             <div className="flex items-center px-3 py-1">
                <ThemeToggle />
                <span className="ml-2 text-sm font-medium">Сменить тему</span>
+               <Link
+                to="/notes"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-md px-3 py-3 text-left text-sm font-medium hover:bg-accent"
+              >
+                Мои заметки {notesCount > 0 && `(${notesCount})`}
+              </Link>
             </div>
           </div>
         </div>
