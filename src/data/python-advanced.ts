@@ -33,7 +33,7 @@ export const pythonAdvancedCourse: Course = {
       id: 'py-a-m1',
       title: 'ООП: классы и объекты',
       lessons: [
-        {
+                {
           id: 'py-l15',
           title: 'Классы и экземпляры',
           minutes: 25,
@@ -112,6 +112,23 @@ export const pythonAdvancedCourse: Course = {
             },
             {
               id: 'py-l15-s4',
+              title: 'Проверь себя: анатомия класса',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте элемент класса и его роль',
+                pairs: [
+                  { left: 'class Cart:', right: 'Объявление класса' },
+                  { left: 'def __init__(self)', right: 'Конструктор, вызывается при Cart()' },
+                  { left: 'self.items', right: 'Атрибут экземпляра' },
+                  { left: 'Cart()', right: 'Создание экземпляра' },
+                ],
+                explanation:
+                  'Класс — объявление, __init__ — конструктор (срабатывает при создании), self.items — атрибут экземпляра (свой у каждого), Cart() — вызов. Это минимальный словарь, без которого невозможно читать чужой ООП-код.',
+              },
+            },
+            {
+              id: 'py-l15-s5',
               title: 'Практика: класс Counter',
               type: 'theory',
               blocks: [
@@ -148,14 +165,7 @@ export const pythonAdvancedCourse: Course = {
                 {
                   type: 'mermaid',
                   caption: 'Базовый Page и наследники',
-                  code: `graph TD
-                    Page["Page<br/>open()<br/>screenshot()"]
-                    Login["LoginPage<br/>+ login()"]
-                    Cart["CartPage<br/>+ add_item()"]
-                    Admin["AdminPage<br/>+ admin_token<br/>open() переопределён,<br/>вызывает super()"]
-                    Page --> Login
-                    Page --> Cart
-                    Page --> Admin`
+                  code: 'graph TD\n  Page["Page<br/>open()<br/>screenshot()"]\n  Login["LoginPage<br/>+ login()"]\n  Cart["CartPage<br/>+ add_item()"]\n  Admin["AdminPage<br/>+ admin_token<br/>open() переопределён,<br/>вызывает super()"]\n  Page --> Login\n  Page --> Cart\n  Page --> Admin',
                 },
                 {
                   type: 'code',
@@ -222,6 +232,23 @@ export const pythonAdvancedCourse: Course = {
             },
             {
               id: 'py-l16-s4',
+              title: 'Проверь себя: is-a vs has-a',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте отношение и предпочтительный механизм',
+                pairs: [
+                  { left: 'LoginPage и Page', right: 'Наследование (LoginPage является Page)' },
+                  { left: 'CheckoutPage и CartPage', right: 'Композиция (CheckoutPage использует CartPage)' },
+                  { left: 'Dog и Animal', right: 'Наследование (Dog является Animal)' },
+                  { left: 'Car и Engine', right: 'Композиция (Car имеет Engine)' },
+                ],
+                explanation:
+                  '«Является» (is-a) — наследование: LoginPage, Dog. «Использует / имеет» (has-a) — композиция: CheckoutPage, Car. Правило: если не уверены, что дочерний класс — это разновидность родителя, используйте композицию. Наследование — жёсткая связь, композиция — гибкая.',
+              },
+            },
+            {
+              id: 'py-l16-s5',
               title: 'Практика: наследование',
               type: 'theory',
               blocks: [
@@ -323,6 +350,23 @@ export const pythonAdvancedCourse: Course = {
             },
             {
               id: 'py-l17-s4',
+              title: 'Проверь себя: dunder-методы',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте метод и что он активирует',
+                pairs: [
+                  { left: '__init__', right: 'Создание объекта Cart()' },
+                  { left: '__repr__', right: 'repr(obj), отладчик, логи' },
+                  { left: '__eq__', right: 'Сравнение ==' },
+                  { left: '__hash__', right: 'hash(obj), set/dict' },
+                ],
+                explanation:
+                  '__init__ — конструктор. __repr__ — «официальное» строковое представление (в отладчике). __eq__ — равенство. __hash__ — хеширование для set/dict. Если определяете __eq__, добавьте и __hash__ (или frozen=True dataclass) — иначе объект перестанет быть хешируемым.',
+              },
+            },
+            {
+              id: 'py-l17-s5',
               title: 'Практика: dataclass',
               type: 'theory',
               blocks: [
@@ -427,6 +471,24 @@ export const pythonAdvancedCourse: Course = {
             },
             {
               id: 'py-l18-s4',
+              title: 'Проверь себя: что НЕ в Page Object',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Что НЕ должно попадать в Page Object?',
+                options: [
+                  { id: 'a', text: 'Локаторы элементов страницы' },
+                  { id: 'b', text: 'Бизнес-логика (расчёт скидки, генерация тестовых данных)' },
+                  { id: 'c', text: 'Работа с БД или API' },
+                  { id: 'd', text: 'Метод login(email, password)' },
+                ],
+                correct: ['b', 'c'],
+                explanation:
+                  'Локаторы (a) и методы работы со страницей (d) — это норма Page Object. Бизнес-логика (b) — в хелперах/юнит-тестах бэкенда. Работа с БД/API (c) — в отдельных клиентах (api_client, db_helper). Page Object = только UI-слой.',
+              },
+            },
+            {
+              id: 'py-l18-s5',
               title: 'Практика: dataclass',
               type: 'theory',
               blocks: [
@@ -459,7 +521,7 @@ export const pythonAdvancedCourse: Course = {
         {
           id: 'py-l19',
           title: 'Функции как объекты',
-          minutes: 20,
+          minutes: 25,
           steps: [
             {
               id: 'py-l19-s1',
@@ -484,6 +546,37 @@ export const pythonAdvancedCourse: Course = {
             },
             {
               id: 'py-l19-s2',
+              title: 'Функции как аргументы: map, filter, sorted',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Главное практическое применение «функции как значения» — передача функции в другую функцию. `sorted(..., key=...)`, `map`, `filter` — везде аргумент-функция. Это прямой мост к декораторам (следующий урок).',
+                },
+                {
+                  type: 'code',
+                  lang: 'python',
+                  caption: 'sorted, map, filter',
+                  code: 'users = [\n    {"name": "Анна", "age": 30},\n    {"name": "Борис", "age": 25},\n    {"name": "Вера", "age": 35},\n]\n\n# sorted с key — функция определяет правило сортировки\nsorted(users, key=lambda u: u["age"])\n# [{25}, {30}, {35}]\n\n# map — применить функцию к каждому элементу\nlist(map(lambda x: x * 2, [1, 2, 3]))\n# [2, 4, 6]\n\n# filter — оставить подходящие\nlist(filter(lambda x: x > 1, [1, 2, 3]))\n# [2, 3]\n\n# Своя функция высшего порядка\ndef apply_twice(f, x):\n    return f(f(x))\n\napply_twice(lambda x: x * 2, 5)   # 20 = (5*2)*2',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'sorted(iter, key=func) — func задаёт «ключ сортировки»',
+                    'map(func, iter) — применить func к каждому элементу',
+                    'filter(func, iter) — оставить элементы, где func(x) == True',
+                    'lambda x: expr — короткая безымянная функция (только одно выражение)',
+                    'Функция высшего порядка — функция, принимающая или возвращающая функцию',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'В 90% случаев `map`/`filter` заменяются list comprehension: `[x * 2 for x in [1, 2, 3]]` читается лучше. `sorted(..., key=...)` — единственное, где функция-аргумент незаменима. На собеседовании junior: «что такое lambda?» — «анонимная функция из одного выражения, у которой неявный return».',
+                },
+              ],
+            },
+            {
+              id: 'py-l19-s3',
               title: 'Проверь себя',
               type: 'quiz',
               quiz: {
@@ -501,7 +594,25 @@ export const pythonAdvancedCourse: Course = {
               },
             },
             {
-              id: 'py-l19-s3',
+              id: 'py-l19-s4',
+              title: 'Проверь себя: функции первого класса',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие утверждения о функциях в Python верны?',
+                options: [
+                  { id: 'a', text: 'Функцию можно присвоить переменной' },
+                  { id: 'b', text: 'Функцию можно передать в другую функцию как аргумент' },
+                  { id: 'c', text: 'Функция — это объект, у неё есть атрибуты (__name__, __doc__)' },
+                  { id: 'd', text: 'Функция обязана иметь имя — анонимных функций в Python нет' },
+                ],
+                correct: ['a', 'b', 'c'],
+                explanation:
+                  'a, b, c — «функции первого класса»: можно присвоить, передать, у функции есть атрибуты. d — неверно: `lambda x: x * 2` — анонимная функция. Именно поэтому можно писать `sorted(users, key=lambda u: u["age"])`.',
+              },
+            },
+            {
+              id: 'py-l19-s5',
               title: 'Практика: замыкание',
               type: 'theory',
               blocks: [
@@ -722,6 +833,24 @@ export const pythonAdvancedCourse: Course = {
             },
             {
               id: 'py-l21-s4',
+              title: 'Проверь себя: свойства генератора',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие утверждения о генераторах верны?',
+                options: [
+                  { id: 'a', text: 'Генератор одноразовый: пройдя цикл, повторно его не пройти' },
+                  { id: 'b', text: 'Генератор экономит память — значения вычисляются по требованию' },
+                  { id: 'c', text: 'Генератор поддерживает индексацию: gen[0]' },
+                  { id: 'd', text: 'Генератор можно превратить в список через list(gen)' },
+                ],
+                correct: ['a', 'b', 'd'],
+                explanation:
+                  'a — одноразовый, второй `for` пустой. b — ленивый, экономит память. c — неверно: `gen[0]` бросает TypeError, генератор не последовательность. d — `list(gen)` работает, но «съест» всю память, обнулив смысл генератора. Правило: если нужен повторный проход — сохраните в список; если один проход по огромным данным — генератор.',
+              },
+            },
+            {
+              id: 'py-l21-s5',
               title: 'Практика: генератор',
               type: 'theory',
               blocks: [
@@ -792,19 +921,7 @@ export const pythonAdvancedCourse: Course = {
                 {
                   type: 'mermaid',
                   caption: 'Event loop: пока одна корутина ждёт, работает другая',
-                  code: `sequenceDiagram
-                    participant EL as Event Loop
-                    participant T1 as Task 1
-                    participant T2 as Task 2
-                    EL->>T1: запустить
-                    T1->>EL: await (I/O)
-                    EL->>T2: пока T1 ждёт — запустить T2
-                    T2->>EL: await (I/O)
-                    Note over EL: ждёт завершения I/O
-                    EL-->>T1: результат готов
-                    T1->>EL: продолжить
-                    EL-->>T2: результат готов
-                    T2->>EL: продолжить`
+                  code: 'sequenceDiagram\n  participant EL as Event Loop\n  participant T1 as Task 1\n  participant T2 as Task 2\n  EL->>T1: запустить\n  T1->>EL: await (I/O)\n  EL->>T2: пока T1 ждёт — запустить T2\n  T2->>EL: await (I/O)\n  Note over EL: ждёт завершения I/O\n  EL-->>T1: результат готов\n  T1->>EL: продолжить\n  EL-->>T2: результат готов\n  T2->>EL: продолжить',
                 },
                 {
                   type: 'code',
@@ -848,6 +965,24 @@ export const pythonAdvancedCourse: Course = {
             },
             {
               id: 'py-l22-s4',
+              title: 'Проверь себя: I/O vs CPU',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Для каких задач async даст реальное ускорение? (выберите все подходящие)',
+                options: [
+                  { id: 'a', text: 'Много параллельных HTTP-запросов к API' },
+                  { id: 'b', text: 'Много запросов к PostgreSQL' },
+                  { id: 'c', text: 'Парсинг 10 GB JSON в памяти' },
+                  { id: 'd', text: 'Загрузка 100 файлов по сети' },
+                ],
+                correct: ['a', 'b', 'd'],
+                explanation:
+                  'a, b, d — I/O-bound: пока один запрос/файл ждёт сеть, event loop запускает следующий. Парсинг JSON в памяти (c) — CPU-bound: тут async не поможет, нужен multiprocessing. Правило: «ждём» — async, «считаем» — процессы.',
+              },
+            },
+            {
+              id: 'py-l22-s5',
               title: 'Практика: async / await',
               type: 'theory',
               blocks: [
@@ -880,15 +1015,7 @@ export const pythonAdvancedCourse: Course = {
                 {
                   type: 'mermaid',
                   caption: 'Последовательно vs gather',
-                  code: `graph LR
-                    subgraph Seq["Последовательно — 3 сек"]
-                        A1["fetch a"] --> A2["fetch b"] --> A3["fetch c"]
-                    end
-                    subgraph Par["gather — 1 сек"]
-                        P1["fetch a"]
-                        P2["fetch b"]
-                        P3["fetch c"]
-                    end`
+                  code: 'graph LR\n  subgraph Seq["Последовательно — 3 сек"]\n    A1["fetch a"] --> A2["fetch b"] --> A3["fetch c"]\n  end\n  subgraph Par["gather — 1 сек"]\n    P1["fetch a"]\n    P2["fetch b"]\n    P3["fetch c"]\n  end',
                 },
                 {
                   type: 'code',
@@ -951,6 +1078,24 @@ export const pythonAdvancedCourse: Course = {
             },
             {
               id: 'py-l23-s4',
+              title: 'Проверь себя: gather vs TaskGroup',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие утверждения о `asyncio.gather` и `asyncio.TaskGroup` верны?',
+                options: [
+                  { id: 'a', text: 'gather возвращает список результатов в порядке переданных задач' },
+                  { id: 'b', text: 'TaskGroup при падении одной задачи отменяет остальные и бросает ExceptionGroup' },
+                  { id: 'c', text: 'TaskGroup появился в Python 3.11' },
+                  { id: 'd', text: 'gather и TaskGroup взаимозаменяемы без разницы в поведении' },
+                ],
+                correct: ['a', 'b', 'c'],
+                explanation:
+                  'gather (a) — список в порядке задач. TaskGroup (b, c) — 3.11+, при ошибке отменяет остальные и бросает ExceptionGroup. Они НЕ взаимозаменяемы (d): gather по умолчанию «падает на первой ошибке, но не отменяет» (если не return_exceptions), TaskGroup — «отменяет всё». Для «все задачи важны» — gather(return_exceptions=True); для «одна упала — всё плохо» — TaskGroup.',
+              },
+            },
+            {
+              id: 'py-l23-s5',
               title: 'Практика: asyncio.gather',
               type: 'theory',
               blocks: [
@@ -973,7 +1118,7 @@ export const pythonAdvancedCourse: Course = {
         {
           id: 'py-l24',
           title: 'Async в автотестах',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'py-l24-s1',
@@ -1004,7 +1149,7 @@ export const pythonAdvancedCourse: Course = {
               blocks: [
                 {
                   type: 'code',
-                  lang: 'python',
+                  lang: 'bash',
                   caption: 'Установка и настройка',
                   code: 'pip install pytest-asyncio httpx',
                 },
@@ -1043,6 +1188,51 @@ export const pythonAdvancedCourse: Course = {
                 explanation:
                   'Async ускоряет I/O-bound задачи: HTTP, БД. Для CPU-bound (вычисления) нужен multiprocessing, async не поможет. Для UI-тестов async не нужен — Playwright sync уже использует auto-waiting, async-обёртка только усложнит код.',
               },
+            },
+            {
+              id: 'py-l24-s4',
+              title: 'Проверь себя: asyncio_mode',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Что делает `asyncio_mode = auto` в pytest.ini?',
+                options: [
+                  { id: 'a', text: 'Автоматически устанавливает pytest-asyncio при запуске тестов' },
+                  { id: 'b', text: 'Запускает все `async def` тесты как async без явного `@pytest.mark.asyncio`' },
+                  { id: 'c', text: 'Ускоряет тесты в 10 раз' },
+                  { id: 'd', text: 'Отключает async-режим для всех тестов' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'asyncio_mode = auto — все `async def test_*` автоматически запускаются в event loop без декоратора. Альтернатива — strict (по умолчанию): тогда нужно писать `@pytest.mark.asyncio` на каждом async-тесте. На новом проекте — auto удобнее, на legacy — strict, чтобы не сломать существующее.',
+              },
+            },
+            {
+              id: 'py-l24-s5',
+              title: 'Практика: gather-тайминги',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Проверим на числах, почему `gather` быстрее последовательного `await` в цикле. Если каждый запрос «висит» 1 секунду, а запросов 10 — сколько всего времени? Формула: последовательно = N × T, параллельно (gather) = T (при достаточной параллельности).',
+                },
+                {
+                  type: 'python',
+                  python: {
+                    starterCode:
+                      'n = 10            # запросов\nt_per = 1.0       # секунд на запрос\n\n# Задача: посчитать, во сколько раз gather быстрее последовательного кода.\n# sequential = n * t_per\n# concurrent = t_per  (при достаточной параллельности)\n# speedup = sequential / concurrent\n# Формат: "<целое>x"\n\nspeedup = None  # TODO\nprint(f"{speedup:.0f}x")\n',
+                    task: 'Посчитайте ускорение: `sequential = n × t_per`, `concurrent = t_per`, `speedup = sequential / concurrent`. Выведите с суффиксом `x`, целым числом.',
+                    solution:
+                      'n = 10\nt_per = 1.0\n\nsequential = n * t_per\nconcurrent = t_per\nspeedup = sequential / concurrent\nprint(f"{speedup:.0f}x")',
+                    expected: { type: 'stdout', value: '10x' },
+                    hint: 'speedup = (n * t_per) / t_per = n',
+                  },
+                },
+                {
+                  type: 'note',
+                  text: 'В реальности ускорение чуть меньше `n` — из-за оверхеда на создание задач, ограничений сервера, DNS. На 50 запросах gather даст 10–30×. На 1000 запросах без Semaphore — сервер упадёт, а не ускорится. Правило: Semaphore(10–50) + gather — золотая середина.',
+                },
+              ],
             },
           ],
         },
@@ -1140,6 +1330,23 @@ export const pythonAdvancedCourse: Course = {
             },
             {
               id: 'py-l25-s4',
+              title: 'Проверь себя: типы',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте тип и его назначение',
+                pairs: [
+                  { left: 'str | None', right: 'Строка или None (может отсутствовать)' },
+                  { left: 'TypedDict', right: 'Словарь с фиксированными полями (JSON-ответ API)' },
+                  { left: 'Protocol', right: 'Утиная типизация: любой объект с нужным методом' },
+                  { left: 'Callable[[int], str]', right: 'Функция, принимающая int, возвращающая str' },
+                ],
+                explanation:
+                  'str | None — «может быть None» (замена Optional). TypedDict — фиксированные ключи, IDE подсказывает. Protocol — «любой с таким методом» без наследования. Callable — «функция с такой сигнатурой». Эти четыре — 90% продвинутой типизации в реальных проектах.',
+              },
+            },
+            {
+              id: 'py-l25-s5',
               title: 'Практика: type hints',
               type: 'theory',
               blocks: [
@@ -1161,7 +1368,7 @@ export const pythonAdvancedCourse: Course = {
         {
           id: 'py-l26',
           title: 'mypy и pyright: проверка типов',
-          minutes: 20,
+          minutes: 25,
           steps: [
             {
               id: 'py-l26-s1',
@@ -1235,6 +1442,37 @@ export const pythonAdvancedCourse: Course = {
             },
             {
               id: 'py-l26-s4',
+              title: 'pyproject.toml: единый конфиг',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'pyproject.toml — стандарт конфигурации Python-проектов (PEP 518). Один файл вместо mypy.ini + pytest.ini + ruff.toml + black.toml. Все инструменты читают свои секции `[tool.X]`.',
+                },
+                {
+                  type: 'code',
+                  lang: 'toml',
+                  caption: 'pyproject.toml: mypy + pytest + ruff',
+                  code: '[tool.mypy]\npython_version = "3.12"\nstrict = true\nwarn_unused_ignores = true\n\n[tool.pytest.ini_options]\nasyncio_mode = "auto"\ntestpaths = ["tests"]\naddopts = "-v --strict-markers"\n\n[tool.ruff]\nline-length = 100\ntarget-version = "py312"\n\n[tool.ruff.lint]\nselect = ["E", "F", "I", "N", "UP", "B"]',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    '[tool.mypy] — настройки проверки типов',
+                    '[tool.pytest.ini_options] — настройки pytest',
+                    '[tool.ruff] — линтер (замена flake8 + isort + pyupgrade)',
+                    '[tool.uv] — менеджер пакетов uv (2025)',
+                    'CI и IDE читают один файл вместо четырёх',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Один pyproject.toml в корне — стандарт 2025. Если проект старый — можно оставить отдельные `mypy.ini`/`pytest.ini`. Но для новых — только pyproject.toml. На собеседовании junior Python: «где настраивается mypy?» — «в pyproject.toml, секция [tool.mypy]».',
+                },
+              ],
+            },
+            {
+              id: 'py-l26-s5',
               title: 'Практика: type hints',
               type: 'theory',
               blocks: [
@@ -1257,7 +1495,7 @@ export const pythonAdvancedCourse: Course = {
         {
           id: 'py-l27',
           title: 'Виртуальные окружения и зависимости',
-          minutes: 25,
+          minutes: 30,
           steps: [
             {
               id: 'py-l27-s1',
@@ -1295,7 +1533,7 @@ export const pythonAdvancedCourse: Course = {
                   type: 'code',
                   lang: 'text',
                   caption: 'requirements.txt — версии должны быть зафиксированы',
-                  code: '# Плохо: latest\nrequests\npytest\nplaywright\n\n# Тоже плохо: слишком свободно\nrequests>=2.0\npytest~=8.0\n\n# Хорошо: точные версии\nrequests==2.32.3\npytest==8.3.3\nplaywright==1.48.0\n\n# Компромисс: минорные обновления допустимы\nrequests~=2.32.3       # >=2.32.3, <2.33.0\n',
+                  code: '# Плохо: latest\nrequests\npytest\nplaywright\n\n# Тоже плохо: слишком свободно\nrequests>=2.0\npytest~=8.0\n\n# Хорошо: точные версии\nrequests==2.32.3\npytest==8.3.3\nplaywright==1.48.0\n\n# Компромисс: минорные обновления допустимы\nrequests~=2.32.3       # >=2.32.3, <2.33.0',
                 },
                 {
                   type: 'code',
@@ -1333,6 +1571,66 @@ export const pythonAdvancedCourse: Course = {
                   'venv изолирует зависимости (a), позволяет разным версиям сосуществовать (b), обеспечивает воспроизводимость на CI (d). Скорость выполнения — не про venv (c — миф).',
               },
             },
+            {
+              id: 'py-l27-s4',
+              title: 'pyproject.toml и современные менеджеры',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'requirements.txt — самый простой, но не единственный формат. В 2025 стандарт — pyproject.toml + lock-файл. Разные инструменты, разный подход.',
+                },
+                {
+                  type: 'table',
+                  caption: 'Инструменты управления зависимостями',
+                  head: ['Инструмент', 'Формат', 'Скорость', 'Когда'],
+                  rows: [
+                    ['pip + venv', 'requirements.txt', 'Медленно', 'Старые проекты, минимализм'],
+                    ['uv', 'pyproject.toml + uv.lock', 'Очень быстро (Rust)', 'Новые проекты в 2025'],
+                    ['Poetry', 'pyproject.toml + poetry.lock', 'Средне', 'Уже настроено в команде'],
+                    ['PDM', 'pyproject.toml + pdm.lock', 'Средне', 'Альтернатива Poetry'],
+                  ],
+                },
+                {
+                  type: 'code',
+                  lang: 'toml',
+                  caption: 'pyproject.toml (uv / Poetry / PDM)',
+                  code: '[project]\nname = "myapp"\nversion = "0.1.0"\nrequires-python = ">=3.11"\ndependencies = [\n    "requests==2.32.3",\n    "httpx==0.27.2",\n]\n\n[project.optional-dependencies]\ndev = [\n    "pytest==8.3.3",\n    "pytest-asyncio==0.24.0",\n    "mypy==1.13.0",\n    "ruff==0.7.0",\n]',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'pyproject.toml — метаданные + зависимости + настройки инструментов',
+                    'lock-файл (uv.lock, poetry.lock) — точные версии всех транзитивных зависимостей',
+                    'lock-файл коммитится в Git — для воспроизводимости',
+                    'uv — самый быстрый (Rust), стандарт 2025',
+                    'requirements.txt — простой, но без lock-файла воспроизводимость хуже',
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: 'Правило: lock-файл — обязательно в Git. Без него CI через месяц поставит другие транзитивные версии — «на моей машине работает, на CI — нет». lock-файл гарантирует, что все получат ровно те же версии. На собеседовании: «чем pyproject.toml отличается от requirements.txt?» — «pyproject — метаданные + все инструменты, requirements — только зависимости, lock-файл — точные версии».',
+                },
+              ],
+            },
+            {
+              id: 'py-l27-s5',
+              title: 'Проверь себя: lock-файлы',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Зачем коммитить lock-файл (`uv.lock`, `poetry.lock`, `package-lock.json`) в Git?',
+                options: [
+                  { id: 'a', text: 'Это ускоряет установку зависимостей' },
+                  { id: 'b', text: 'Гарантирует, что все разработчики и CI получат ровно те же версии транзитивных зависимостей' },
+                  { id: 'c', text: 'Требуется для публикации в PyPI' },
+                  { id: 'd', text: 'Заменяет pyproject.toml' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'lock-файл фиксирует точные версии всех зависимостей — включая транзитивные (зависимости зависимостей). Без него через месяц CI может получить другую версию библиотеки — и «всё работает локально, падает на CI». lock-файл коммитится в Git. Без него нет воспроизводимости.',
+              },
+            },
           ],
         },
       ],
@@ -1362,13 +1660,7 @@ export const pythonAdvancedCourse: Course = {
                 {
                   type: 'mermaid',
                   caption: 'GIL: только один поток выполняет Python-код',
-                  code: `graph LR
-                    T1["Поток 1"] --> GIL{"GIL"}
-                    T2["Поток 2"] --> GIL
-                    T3["Поток 3"] --> GIL
-                    GIL -->|"только один<br/>одновременно"| Py["Python-байткод"]
-                    Py --> CPU["Одно ядро CPU"]
-                    GIL -.->|"I/O: GIL<br/>отпускается"| IO["Сеть / диск / sleep"]`
+                  code: 'graph LR\n  T1["Поток 1"] --> GIL{"GIL"}\n  T2["Поток 2"] --> GIL\n  T3["Поток 3"] --> GIL\n  GIL -->|"только один<br/>одновременно"| Py["Python-байткод"]\n  Py --> CPU["Одно ядро CPU"]\n  GIL -.->|"I/O: GIL<br/>отпускается"| IO["Сеть / диск / sleep"]',
                 },
                 {
                   type: 'code',
@@ -1433,6 +1725,24 @@ export const pythonAdvancedCourse: Course = {
             },
             {
               id: 'py-l28-s4',
+              title: 'Проверь себя: когда threading НЕ поможет',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Для каких задач threading НЕ даст ускорения? (выберите все подходящие)',
+                options: [
+                  { id: 'a', text: 'Цикл на 10M итераций с арифметикой' },
+                  { id: 'b', text: 'Шифрование 100 файлов через hashlib' },
+                  { id: 'c', text: 'Загрузка 100 файлов по HTTP' },
+                  { id: 'd', text: 'Парсинг 100 больших JSON-строк через json.loads' },
+                ],
+                correct: ['a', 'd'],
+                explanation:
+                  'a и d — CPU-bound (чистая арифметика и json.loads на чистом Python), GIL не отпускается — потоки не ускоряют. b — хитрый случай: hashlib — C-расширение, которое отпускает GIL, поэтому threading может помочь. c — I/O-bound, потоки ускоряют. Правило: «чистый Python-код» — GIL держит, «C-расширения» — часто отпускают.',
+              },
+            },
+            {
+              id: 'py-l28-s5',
               title: 'Практика: CPU-bound vs I/O-bound',
               type: 'theory',
               blocks: [
@@ -1465,14 +1775,7 @@ export const pythonAdvancedCourse: Course = {
                 {
                   type: 'mermaid',
                   caption: 'main thread запускает воркеров и ждёт через join()',
-                  code: `graph TD
-                    Main["main thread"] -->|"t.start()"| T1["worker A"]
-                    Main -->|"t.start()"| T2["worker B"]
-                    Main -->|"t.start()"| T3["worker C"]
-                    T1 -.->|"t.join()"| Wait["main ждёт"]
-                    T2 -.-> Wait
-                    T3 -.-> Wait
-                    Wait --> Done["Все потоки завершены"]`
+                  code: 'graph TD\n  Main["main thread"] -->|"t.start()"| T1["worker A"]\n  Main -->|"t.start()"| T2["worker B"]\n  Main -->|"t.start()"| T3["worker C"]\n  T1 -.->|"t.join()"| Wait["main ждёт"]\n  T2 -.-> Wait\n  T3 -.-> Wait\n  Wait --> Done["Все потоки завершены"]',
                 },
                 {
                   type: 'code',
@@ -1531,7 +1834,24 @@ export const pythonAdvancedCourse: Course = {
             },
             {
               id: 'py-l29-s3',
-              title: 'Проверь себя',
+              title: 'Проверь себя: методы Thread',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте метод/атрибут Thread и его назначение',
+                pairs: [
+                  { left: 'start()', right: 'Запустить поток в фоне' },
+                  { left: 'join()', right: 'Дождаться завершения' },
+                  { left: 'is_alive()', right: 'Проверить, жив ли поток' },
+                  { left: 'daemon', right: 'Фоновый поток: не блокирует выход из программы' },
+                ],
+                explanation:
+                  'start() — «побежали». join() — «подожди». is_alive() — «ты жив?». daemon=True — «я фоновый, убей меня при выходе». Эти четыре — минимум для работы с потоками. Без join() main закончится раньше, и результат может быть потерян.',
+              },
+            },
+            {
+              id: 'py-l29-s4',
+              title: 'Проверь себя: join',
               type: 'quiz',
               quiz: {
                 kind: 'single',
@@ -1546,6 +1866,33 @@ export const pythonAdvancedCourse: Course = {
                 explanation:
                   'join() блокирует текущий поток до завершения t. Без него main может закончиться раньше, и программа «зависнет» или дочерние потоки будут убиты (если daemon).',
               },
+            },
+            {
+              id: 'py-l29-s5',
+              title: 'Практика: расчёт порядка потоков',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Потоки выполняются параллельно — порядок print недетерминирован. Но если запускать последовательно с join() — гарантирован. Посчитаем время: `N` потоков по `T` секунд. Без join — main не ждёт, время = 0 (потоки работают в фоне). С join — время = max(T) при параллельности.',
+                },
+                {
+                  type: 'python',
+                  python: {
+                    starterCode:
+                      'n = 5                # потоков\nt_per = 0.5          # секунд на поток\n\n# Задача: посчитать время выполнения при параллельном запуске с join.\n# При достаточной параллельности: sequential = n * t_per, parallel = t_per.\n# speedup = sequential / parallel\n# Формат: "<целое>x"\n\nspeedup = None  # TODO\nprint(f"{speedup:.0f}x")\n',
+                    task: 'Посчитайте ускорение при параллельном запуске: `sequential = n × t_per`, `parallel = t_per`, `speedup = sequential / parallel`. Выведите целым числом с `x`.',
+                    solution:
+                      'n = 5\nt_per = 0.5\n\nsequential = n * t_per\nparallel = t_per\nspeedup = sequential / parallel\nprint(f"{speedup:.0f}x")',
+                    expected: { type: 'stdout', value: '5x' },
+                    hint: 'speedup = (n * t_per) / t_per = n',
+                  },
+                },
+                {
+                  type: 'note',
+                  text: '5 потоков по 0.5 сек = 5× ускорение (в идеале). На практике — 4–4.5× из-за оверхеда на создание, GIL при маленьких операциях. Для I/O-bound (sleep, HTTP) — близко к n. Для CPU-bound — ~1× (GIL). Без join() — вообще 0, но результаты потеряются.',
+                },
+              ],
             },
           ],
         },
@@ -1629,6 +1976,51 @@ export const pythonAdvancedCourse: Course = {
                   'submit — одна задача → Future (можно управлять таймаутом, порядком, ошибками). map — пачка задач → список результатов в порядке входа (проще, но меньше контроля). submit используют, когда нужен контроль над каждой задачей.',
               },
             },
+            {
+              id: 'py-l30-s4',
+              title: 'Практика: тайминги пула',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Сколько времени займёт N задач в пуле из W воркеров, если каждая задача — T секунд? Формула: `ceil(N / W) × T` (волны параллелизма). Например, 8 задач, 4 воркера, по 0.5 сек — 2 волны × 0.5 = 1 сек.',
+                },
+                {
+                  type: 'python',
+                  python: {
+                    starterCode:
+                      'import math\n\nn_tasks = 8          # задач\nworkers = 4          # потоков в пуле\nt_per = 0.5          # секунд на задачу\n\n# Задача: посчитать время выполнения.\n# waves = ceil(n_tasks / workers)\n# total = waves * t_per\n# Формат: "<total> сек" (одно число)\n\ntotal = None  # TODO\nprint(f"{total} сек")\n',
+                    task: 'Посчитайте время: `waves = ceil(8 / 4) = 2`, `total = 2 × 0.5 = 1.0`. Выведите с суффиксом `сек`.',
+                    solution:
+                      'import math\n\nn_tasks = 8\nworkers = 4\nt_per = 0.5\n\nwaves = math.ceil(n_tasks / workers)\ntotal = waves * t_per\nprint(f"{total} сек")',
+                    expected: { type: 'stdout', value: '1.0 сек' },
+                    hint: 'waves = math.ceil(n_tasks / workers); total = waves * t_per',
+                  },
+                },
+                {
+                  type: 'note',
+                  text: 'Если задач 8, а воркеров 4 — 2 волны по 0.5 сек = 1.0 сек. Если 8 задач, 8 воркеров — 1 волна, 0.5 сек. Но: 8 воркеров ≠ 8× ускорение, если задача — CPU-bound (GIL). Для I/O (sleep, HTTP) — близко к идеалу. На собеседовании: «сколько воркеров ставить?» — «для I/O 10–50, для CPU-bound — не потоки, а процессы».',
+                },
+              ],
+            },
+            {
+              id: 'py-l30-s5',
+              title: 'Проверь себя: map vs submit',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Когда стоит выбрать `submit` вместо `map`?',
+                options: [
+                  { id: 'a', text: 'Нужен таймаут на отдельную задачу' },
+                  { id: 'b', text: 'Нужно обрабатывать результаты по мере завершения (as_completed)' },
+                  { id: 'c', text: 'Нужен список результатов в порядке исходного iterable' },
+                  { id: 'd', text: 'Нужна разная обработка ошибок для разных задач' },
+                ],
+                correct: ['a', 'b', 'd'],
+                explanation:
+                  'submit + Future даёт: таймаут (a), as_completed (b), кастомную обработку ошибок (d). А map (c) — проще, но даёт список в порядке iterable и общий try/except на весь список. Для «все задачи простые и одинаковые» — map. Для «нужен контроль над каждой» — submit.',
+              },
+            },
           ],
         },
         {
@@ -1644,17 +2036,7 @@ export const pythonAdvancedCourse: Course = {
                 {
                   type: 'mermaid',
                   caption: 'Потерянное обновление: оба потока читают старый counter',
-                  code: `sequenceDiagram
-                    participant T1 as Поток 1
-                    participant C as counter = 0
-                    participant T2 as Поток 2
-
-                    T1->>C: read → 0
-                    T2->>C: read → 0
-                    Note over T1,T2: Оба потока прочитали<br/>старое значение 0
-                    T1->>C: write 1
-                    T2->>C: write 1
-                    Note over C: Результат: 1<br/>(ожидалось 2)<br/>Одно обновление потеряно`
+                  code: 'sequenceDiagram\n  participant T1 as Поток 1\n  participant C as counter = 0\n  participant T2 as Поток 2\n\n  T1->>C: read → 0\n  T2->>C: read → 0\n  Note over T1,T2: Оба потока прочитали<br/>старое значение 0\n  T1->>C: write 1\n  T2->>C: write 1\n  Note over C: Результат: 1<br/>(ожидалось 2)<br/>Одно обновление потеряно',
                 },
                 {
                   type: 'p',
@@ -1727,6 +2109,50 @@ export const pythonAdvancedCourse: Course = {
                   'GIL защищает отдельные байткоды, но не составные операции (read → add → write). Между ними поток может быть вытеснен. Lock сериализует доступ: только один поток за раз выполняет counter += 1.',
               },
             },
+            {
+              id: 'py-l31-s4',
+              title: 'Проверь себя: примитивы',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте примитив синхронизации и его назначение',
+                pairs: [
+                  { left: 'Lock', right: 'Только один поток за раз' },
+                  { left: 'RLock', right: 'Тот же поток может войти повторно' },
+                  { left: 'Semaphore(N)', right: 'N потоков одновременно' },
+                  { left: 'Event', right: 'Флаг: один поток ждёт, другой будит' },
+                ],
+                explanation:
+                  'Lock — «один за раз». RLock — «один, но можно повторно из того же потока» (например, рекурсивный вызов). Semaphore(N) — «N за раз» (rate limiting). Event — «сигнал» между потоками (один ждёт, другой устанавливает).',
+              },
+            },
+            {
+              id: 'py-l31-s5',
+              title: 'Практика: симуляция race и Lock',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Сымитируем race condition без реальных потоков: каждый «поток» читает counter, прибавляет 1, пишет обратно. Если два потока «одновременно» прочитали одно и то же значение — одна инкрементация теряется. Посчитаем, сколько получится при N инкрементациях с `lost`-потерями.',
+                },
+                {
+                  type: 'python',
+                  python: {
+                    starterCode:
+                      'total_increments = 100   # инкрементаций\nlost_per_pair = 1        # потерь на пару «одновременных» чтений\n# Сымитируем: каждые 2 инкремента, выполненных «одновременно»,\n# теряют 1 (оба прочитали одно значение).\n# lost = (total_increments // 2) * lost_per_pair\n# final = total_increments - lost\n\nlost = None  # TODO\nfinal = None  # TODO\nprint(f"{final}")\n',
+                    task: 'Посчитайте `lost = (total_increments // 2) × lost_per_pair` и `final = total_increments - lost`. Выведите `final`.',
+                    solution:
+                      'total_increments = 100\nlost_per_pair = 1\n\nlost = (total_increments // 2) * lost_per_pair\nfinal = total_increments - lost\nprint(f"{final}")',
+                    expected: { type: 'stdout', value: '50' },
+                    hint: 'lost = (total_increments // 2) * lost_per_pair; final = total_increments - lost',
+                  },
+                },
+                {
+                  type: 'note',
+                  text: '100 инкрементаций «парами» → 50 пар → 50 потеряно → 50 осталось. Это упрощённая модель, но она показывает суть: без Lock результат непредсказуем и обычно меньше ожидаемого. С Lock — всегда 100. Именно поэтому Lock обязателен для счётчиков, буферов, любых общих mutable-структур в потоках.',
+                },
+              ],
+            },
           ],
         },
         {
@@ -1792,18 +2218,63 @@ export const pythonAdvancedCourse: Course = {
               title: 'Проверь себя',
               type: 'quiz',
               quiz: {
-                kind: 'single',
-                question: 'Почему `if __name__ == "__main__":` обязателен в multiprocessing на Windows?',
+                kind: 'multiple',
+                question: 'Зачем нужен `if __name__ == "__main__":` в multiprocessing на Windows?',
                 options: [
-                  { id: 'a', text: 'Это стилистическое требование' },
-                  { id: 'b', text: 'Без него дочерние процессы при импорте модуля создадут новые процессы — бесконечная рекурсия' },
-                  { id: 'c', text: 'Windows не поддерживает multiprocessing' },
-                  { id: 'd', text: 'Это ускоряет выполнение' },
+                  { id: 'a', text: 'Без него дочерние процессы при импорте модуля создадут новые процессы — бесконечная рекурсия' },
+                  { id: 'b', text: 'Это ускоряет выполнение в 2 раза' },
+                  { id: 'c', text: 'Windows использует spawn-модель: дочерний процесс импортирует ваш модуль заново' },
+                  { id: 'd', text: 'Это требование PEP 8' },
+                ],
+                correct: ['a', 'c'],
+                explanation:
+                  'Windows/macOS используют spawn: дочерний процесс импортирует ваш модуль заново. Без защиты `if __name__` он снова создаст процессы, те — ещё, и так до краша. На Linux (fork) такого не было бы. b — миф (ускорения нет). d — PEP 8 не про multiprocessing.',
+              },
+            },
+            {
+              id: 'py-l32-s4',
+              title: 'Проверь себя: когда multiprocessing',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'У вас 1000 HTTP-запросов к API. Что выбрать?',
+                options: [
+                  { id: 'a', text: 'multiprocessing — процессы быстрее' },
+                  { id: 'b', text: 'threading/async — I/O-bound, GIL отпускается на I/O' },
+                  { id: 'c', text: 'Всё равно — разницы нет' },
+                  { id: 'd', text: 'multiprocessing, потому что запросов много' },
                 ],
                 correct: ['b'],
                 explanation:
-                  'Windows/macOS используют spawn-модель: дочерний процесс импортирует ваш модуль заново. Без защиты if __name__ он снова создаст процессы, те — ещё, и так до краша. На Linux (fork) такого не было бы.',
+                  'HTTP — I/O-bound: GIL отпускается, потоки/async работают параллельно. multiprocessing (a, d) — оверкилл: 1000 процессов × ~30 MB RAM = 30 GB, IPC-оверхед. Правило: I/O — потоки/async, CPU-bound (вычисления, парсинг, шифрование) — процессы.',
               },
+            },
+            {
+              id: 'py-l32-s5',
+              title: 'Практика: параллельное ускорение',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Сколько времени займёт CPU-bound задача на N ядрах, если последовательно — T секунд? Формула: `T / N` (в идеале, без учёта оверхеда). Реально — `T / N × 1.1` (10% оверхед на IPC и создание процессов).',
+                },
+                {
+                  type: 'python',
+                  python: {
+                    starterCode:
+                      't_sequential = 20.0    # секунд последовательно\ncores = 4              # процессов\noverhead = 1.1         # 10% оверхед\n\n# Задача: посчитать время с multiprocessing.\n# parallel = (t_sequential / cores) * overhead\n# Формат: два знака после точки\n\nparallel = None  # TODO\nprint(f"{parallel:.2f} сек")\n',
+                    task: 'Посчитайте `parallel = (t_sequential / cores) × overhead`. Выведите с точностью 2 знака.',
+                    solution:
+                      't_sequential = 20.0\ncores = 4\noverhead = 1.1\n\nparallel = (t_sequential / cores) * overhead\nprint(f"{parallel:.2f} сек")',
+                    expected: { type: 'stdout', value: '5.50 сек' },
+                    hint: 'parallel = (t_sequential / cores) * overhead',
+                  },
+                },
+                {
+                  type: 'note',
+                  text: '20 сек / 4 ядра × 1.1 = 5.5 сек. В идеале было бы 5 сек. Оверхед — создание процессов, передача данных через IPC, синхронизация. Для реальных задач: 4× ускорение на 4 ядрах — уже хорошо. 8× на 8 ядрах — редкость (амдал: не всё параллелится). На собеседовании: «какое ускорение ожидать?» — «2–3× на 4 ядрах — реалистично, 4× — идеал».',
+                },
+              ],
             },
           ],
         },
@@ -1927,6 +2398,23 @@ export const pythonAdvancedCourse: Course = {
                 correct: ['a', 'b', 'd'],
                 explanation:
                   'Независимость и уникальные данные — обязательны, иначе race condition. pytest-xdist использует процессы (не потоки) — вариант C неверен. Фикстуры session создаются на каждый процесс — это надо помнить при настройке БД, браузеров и т.д.',
+              },
+            },
+            {
+              id: 'py-l33-s5',
+              title: 'Проверь себя: задача → инструмент',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте задачу и оптимальный инструмент',
+                pairs: [
+                  { left: '100 HTTP-запросов к API', right: 'asyncio.gather + httpx' },
+                  { left: 'Парсинг 1000 больших JSON', right: 'multiprocessing.Pool' },
+                  { left: '100 запросов к БД через блокирующий psycopg2', right: 'ThreadPoolExecutor' },
+                  { left: 'Параллельный прогон pytest', right: 'pytest-xdist (-n auto)' },
+                ],
+                explanation:
+                  'HTTP без блокирующих библиотек — asyncio. CPU-bound парсинг — multiprocessing. Блокирующий клиент БД — ThreadPoolExecutor (не переписывать на async). Параллельные тесты — pytest-xdist. Правило: «много ждём» → потоки/async, «много считаем» → процессы, «тесты» → xdist.',
               },
             },
           ],

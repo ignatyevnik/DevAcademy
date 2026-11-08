@@ -117,6 +117,24 @@ export const pythonBasicsCourse: Course = {
                 },
               ],
             },
+            {
+              id: 'py-l9-s5',
+              title: 'Проверь себя: операторы',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие из этих выражений истинны в Python?',
+                options: [
+                  { id: 'a', text: '`10 / 2 == 5.0`' },
+                  { id: 'b', text: '`10 // 3 == 3`' },
+                  { id: 'c', text: '`10 % 3 == 1`' },
+                  { id: 'd', text: '`2 ** 3 == 6`' },
+                ],
+                correct: ['a', 'b', 'c'],
+                explanation:
+                  '`10/2 = 5.0` (float). `10//3 = 3`. `10%3 = 1`. А `2**3 = 8` (не 6). Правильные — a, b, c.',
+              },
+            },
           ],
         },
         {
@@ -198,6 +216,25 @@ export const pythonBasicsCourse: Course = {
                     solution: 'print("Python"[::-1])',
                     expected: { type: 'stdout', value: 'nohtyP' },
                     hint: 'срез [::-1] разворачивает строку',
+                  },
+                },
+              ],
+            },
+            {
+              id: 'py-l10-s5',
+              title: 'Практика: методы строк',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Методы строк можно комбинировать в цепочку. `strip()` убирает пробелы по краям, `replace()` заменяет подстроку, `upper()`/`lower()` меняют регистр. Каждый метод возвращает новую строку — исходная не меняется.' },
+                {
+                  type: 'python',
+                  python: {
+                    starterCode: 'text = "  Hello, World!  "\n# обработайте text\n',
+                    task: 'Возьмите строку `"  Hello, World!  "`, примените `.strip()` (убрать пробелы по краям) и `.replace("World", "Python")` (заменить "World" на "Python"). Напечатайте результат.',
+                    solution:
+                      'text = "  Hello, World!  "\nresult = text.strip().replace("World", "Python")\nprint(result)',
+                    expected: { type: 'stdout', value: 'Hello, Python!' },
+                    hint: 'text.strip().replace("World", "Python") — методы можно объединять в цепочку',
                   },
                 },
               ],
@@ -293,6 +330,23 @@ export const pythonBasicsCourse: Course = {
                 },
               ],
             },
+            {
+              id: 'py-l11-s5',
+              title: 'Проверь себя: параметры print',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте параметр `print` и что он делает',
+                pairs: [
+                  { left: 'sep', right: 'Что вставить между аргументами (по умолчанию пробел)' },
+                  { left: 'end', right: 'Что добавить в конце (по умолчанию перевод строки)' },
+                  { left: 'file', right: 'Куда печатать (по умолчанию stdout)' },
+                  { left: 'input()', right: 'Возвращает введённую пользователем строку' },
+                ],
+                explanation:
+                  'print(..., sep="-", end="") — гибкий вывод. input() — только строка, для чисел нужен int() / float().',
+              },
+            },
           ],
         },
         {
@@ -371,6 +425,24 @@ export const pythonBasicsCourse: Course = {
                   },
                 },
               ],
+            },
+            {
+              id: 'py-l12-s5',
+              title: 'Проверь себя: range и enumerate',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие утверждения верны?',
+                options: [
+                  { id: 'a', text: '`range(3)` даёт 0, 1, 2' },
+                  { id: 'b', text: '`enumerate(["a","b"])` даёт пары (0,"a"), (1,"b")' },
+                  { id: 'c', text: '`zip([1,2],[3,4])` останавливается на самом коротком' },
+                  { id: 'd', text: '`range(1, 5)` включает 5' },
+                ],
+                correct: ['a', 'b', 'c'],
+                explanation:
+                  '`range(3)` = 0,1,2 (a). `enumerate` = индекс+значение (b). `zip` останавливается на коротком (c). `range(1,5)` = 1,2,3,4 — БЕЗ 5 (d — неверно).',
+              },
             },
           ],
         },
@@ -469,6 +541,24 @@ export const pythonBasicsCourse: Course = {
               },
             ],
           },
+            {
+              id: 'py-l1-s5',
+              title: 'Проверь себя: типы',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие типы верно указаны?',
+                options: [
+                  { id: 'a', text: '`25` — `int`' },
+                  { id: 'b', text: '`3.14` — `float`' },
+                  { id: 'c', text: '`"25"` — `str`' },
+                  { id: 'd', text: '`25 / 5` — `int`' },
+                ],
+                correct: ['a', 'b', 'c'],
+                explanation:
+                  '`25` — int, `3.14` — float, `"25"` — str. А `25 / 5` — float (5.0), потому что `/` всегда даёт float (d — неверно).',
+              },
+            },
           ],
         },
         {
@@ -558,6 +648,25 @@ export const pythonBasicsCourse: Course = {
                 },
               ],
             },
+            {
+              id: 'py-l2-s5',
+              title: 'Практика: тернарный оператор',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Тернарный оператор — «выражение1, если условие, иначе выражение2». Читается справа налево. Удобен для простых проверок в одну строку.' },
+                {
+                  type: 'python',
+                  python: {
+                    starterCode: 'n = 7\n',
+                    task: 'С помощью тернарного оператора присвойте переменной `parity` значение `"чёт"`, если `n` чётное, и `"нечёт"` иначе. Напечатайте `parity`.',
+                    solution:
+                      'n = 7\nparity = "чёт" if n % 2 == 0 else "нечёт"\nprint(parity)',
+                    expected: { type: 'stdout', value: 'нечёт' },
+                    hint: '"чёт" if n % 2 == 0 else "нечёт"',
+                  },
+                },
+              ],
+            },
           ],
         },
         {
@@ -640,7 +749,25 @@ export const pythonBasicsCourse: Course = {
                   },
                 },
               ],
-            }, 
+            },
+            {
+              id: 'py-l3-s5',
+              title: 'Проверь себя: управление циклом',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Что верно про `break`, `continue` и `else` у цикла?',
+                options: [
+                  { id: 'a', text: '`break` выходит из цикла целиком' },
+                  { id: 'b', text: '`continue` пропускает текущую итерацию' },
+                  { id: 'c', text: '`else` выполняется, если цикл завершился БЕЗ `break`' },
+                  { id: 'd', text: '`break` можно использовать только в `while`' },
+                ],
+                correct: ['a', 'b', 'c'],
+                explanation:
+                  '`break` — выход, `continue` — пропуск итерации (a, b). `else` у цикла сработает, только если не было `break` (c). `break` работает и в `for`, и в `while` (d — неверно).',
+              },
+            },
           ],
         },
       ],
@@ -730,6 +857,24 @@ export const pythonBasicsCourse: Course = {
                 },
               ],
             },
+            {
+              id: 'py-l4-s5',
+              title: 'Проверь себя: списки и кортежи',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Что верно?',
+                options: [
+                  { id: 'a', text: '`lst.sort()` сортирует список и возвращает `None`' },
+                  { id: 'b', text: '`sorted(lst)` возвращает НОВЫЙ список, исходный не трогает' },
+                  { id: 'c', text: 'Кортеж `(1, 2, 3)` можно изменить: `t[0] = 100`' },
+                  { id: 'd', text: '`len(lst)`, `sum(lst)` работают и для списков, и для кортежей' },
+                ],
+                correct: ['a', 'b', 'd'],
+                explanation:
+                  '`lst.sort()` — на месте, `None` (a). `sorted(lst)` — новый (b). `len`/`sum` работают с любой последовательностью (d). Кортеж НЕЛЬЗЯ изменить (c — неверно).',
+              },
+            },
           ],
         },
         {
@@ -805,6 +950,24 @@ export const pythonBasicsCourse: Course = {
                   },
                 },
               ],
+            },
+            {
+              id: 'py-l5-s5',
+              title: 'Проверь себя: словари',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'В чём разница между `d["key"]` и `d.get("key")`, если ключа нет?',
+                options: [
+                  { id: 'a', text: 'Оба вернут `None`' },
+                  { id: 'b', text: '`d["key"]` бросит `KeyError`, а `d.get("key")` вернёт `None`' },
+                  { id: 'c', text: '`d.get("key")` бросит `KeyError`' },
+                  { id: 'd', text: 'Оба бросят `KeyError`' },
+                ],
+                correct: ['b'],
+                explanation:
+                  '`d["key"]` — прямое обращение: если ключа нет, `KeyError`. `d.get("key")` — безопасный доступ: вернёт `None` (или значение по умолчанию). Для «может быть» — `get`, для «обязательно есть» — `[].',
+              },
             },
           ],
         },
@@ -902,6 +1065,31 @@ export const pythonBasicsCourse: Course = {
                 },
               ],
             },
+            {
+              id: 'py-l6-s5',
+              title: 'Проверь себя: аргументы',
+              type: 'quiz',
+              quiz: {
+                kind: 'sorting',
+                question: 'Расставьте виды аргументов в правильном порядке в объявлении функции',
+                items: [
+                  'Позиционные',
+                  'Со значением по умолчанию',
+                  '*args',
+                  'Только keyword (после *)',
+                  '**kwargs',
+                ],
+                correct: [
+                  'Позиционные',
+                  'Со значением по умолчанию',
+                  '*args',
+                  'Только keyword (после *)',
+                  '**kwargs',
+                ],
+                explanation:
+                  'Правило: def f(a, b=1, *args, c, **kwargs). Сначала обязательные, потом со значением по умолчанию, потом *args, потом только-keyword, в конце **kwargs.',
+              },
+            },
           ],
         },
         {
@@ -965,6 +1153,41 @@ export const pythonBasicsCourse: Course = {
                   },
                 },
               ],
+            },
+            {
+              id: 'py-l7-s4',
+              title: 'Проверь себя: модули',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте модуль и типичную задачу',
+                pairs: [
+                  { left: 'json', right: 'Сериализация в JSON и обратно' },
+                  { left: 'pathlib', right: 'Работа с путями и файлами' },
+                  { left: 'datetime', right: 'Даты и время' },
+                  { left: 'random', right: 'Случайные числа' },
+                ],
+                explanation:
+                  'json.dumps/loads — JSON. pathlib.Path — пути. datetime.now() — время. random.randint — случайные числа. На собеседовании junior/middle: «что импортируете для работы с файлами?» — pathlib.',
+              },
+            },
+            {
+              id: 'py-l7-s5',
+              title: 'Проверь себя: from import *',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Почему `from module import *` считается плохой практикой?',
+                options: [
+                  { id: 'a', text: 'Это синтаксическая ошибка' },
+                  { id: 'b', text: 'Засоряет пространство имён и скрывает, откуда что взялось' },
+                  { id: 'c', text: 'Не работает в Python 3' },
+                  { id: 'd', text: 'Работает только с math' },
+                ],
+                correct: ['b'],
+                explanation:
+                  '`import *` тащит все публичные имена из модуля — конфликты с вашими переменными, непонятно, откуда функция. Лучше: `from module import specific_function` или `import module` с `module.function()`.',
+              },
             },
           ],
         },
@@ -1052,6 +1275,24 @@ export const pythonBasicsCourse: Course = {
                 },
               ],
             },
+            {
+              id: 'py-l8-s5',
+              title: 'Проверь себя: with',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Зачем нужен `with open(...) as f:`?',
+                options: [
+                  { id: 'a', text: 'Ускоряет чтение файла' },
+                  { id: 'b', text: 'Гарантирует закрытие файла даже при ошибке' },
+                  { id: 'c', text: 'Работает только на Windows' },
+                  { id: 'd', text: 'Шифрует файл' },
+                ],
+                correct: ['b'],
+                explanation:
+                  '`with` — контекстный менеджер: гарантирует `f.close()` даже если внутри блока произошло исключение. Без `with` можно забыть закрыть файл — утечка дескрипторов.',
+              },
+            },
           ],
         },
       ],
@@ -1134,6 +1375,49 @@ export const pythonBasicsCourse: Course = {
                 },
               ],
             },
+            {
+              id: 'py-l13-s4',
+              title: 'Проверь себя: порядок в comprehension',
+              type: 'quiz',
+              quiz: {
+                kind: 'sorting',
+                question: 'Расставьте части list comprehension в правильном порядке',
+                items: [
+                  'Открывающая `[`',
+                  'Выражение (что делать с элементом)',
+                  '`for элемент in итерируемое`',
+                  '`if условие` (опционально)',
+                  'Закрывающая `]`',
+                ],
+                correct: [
+                  'Открывающая `[`',
+                  'Выражение (что делать с элементом)',
+                  '`for элемент in итерируемое`',
+                  '`if условие` (опционально)',
+                  'Закрывающая `]`',
+                ],
+                explanation:
+                  'Синтаксис: `[выражение for элемент in итерируемое if условие]`. Сначала — что делаем (выражение), потом — откуда берём (for), в конце — фильтр (if).',
+              },
+            },
+            {
+              id: 'py-l13-s5',
+              title: 'Проверь себя: когда comprehension',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Когда list comprehension — плохой выбор?',
+                options: [
+                  { id: 'a', text: 'Простое преобразование: `[x*2 for x in nums]`' },
+                  { id: 'b', text: 'Сложная логика с несколькими условиями и побочными эффектами' },
+                  { id: 'c', text: 'Внутри comprehension нужен `try/except`' },
+                  { id: 'd', text: 'Совсем не нужно собирать список, а только пройтись циклом' },
+                ],
+                correct: ['b', 'c', 'd'],
+                explanation:
+                  'Простое преобразование — comprehension (a). Сложная логика (b), try/except (c) и «просто пройтись без списка» (d) — плохие кандидаты: пишите обычный `for`. Если не нужно возвращать список, comprehension создаст его зря.',
+              },
+            },
           ],
         },
         {
@@ -1213,6 +1497,24 @@ export const pythonBasicsCourse: Course = {
                   },
                 },
               ],
+            },
+            {
+              id: 'py-l14-s5',
+              title: 'Проверь себя: sort vs sorted',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Что верно про `lst.sort()` и `sorted(lst)`?',
+                options: [
+                  { id: 'a', text: '`lst.sort()` сортирует список на месте и возвращает `None`' },
+                  { id: 'b', text: '`sorted(lst)` возвращает новый список, исходный не меняет' },
+                  { id: 'c', text: '`sorted(lst, reverse=True)` — по убыванию' },
+                  { id: 'd', text: '`lst.sort()` работает и для кортежей' },
+                ],
+                correct: ['a', 'b', 'c'],
+                explanation:
+                  '`lst.sort()` — на месте, `None` (a). `sorted()` — новый список (b), с `reverse=True` — по убыванию (c). Кортежи нельзя сортировать на месте (d — неверно), для них только `sorted()`.',
+              },
             },
           ],
         },

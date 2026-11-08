@@ -277,6 +277,41 @@ export const sqlBasicsCourse: Course = {
               ],
             },
             {
+              id: 'sql-l1-s4',
+              title: 'Первый запрос: SELECT',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Первый шаг — посмотреть, что вообще лежит в таблице. Команда `SELECT * FROM users;` вернёт все колонки и все строки. Звёздочка `*` означает «все колонки».' },
+                { type: 'p', text: 'В песочнице уже есть таблица `users` с тремя пользователями. Попробуйте выполнить запрос в редакторе ниже и нажмите «Выполнить» — увидите результат. Потом «Проверить» — сверьте с эталоном.' },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE users (
+  id    INTEGER,
+  email TEXT,
+  name  TEXT
+);
+INSERT INTO users VALUES
+  (1, 'anna@x.com',  'Анна'),
+  (2, 'boris@x.com', 'Борис'),
+  (3, 'vera@x.com',  'Вера');`,
+                    task: 'Выведите все строки и все колонки из таблицы `users`. Отсортируйте по `id`.',
+                    solution: 'SELECT * FROM users ORDER BY id;',
+                    expected: {
+                      columns: ['id', 'email', 'name'],
+                      rows: [
+                        [1, 'anna@x.com', 'Анна'],
+                        [2, 'boris@x.com', 'Борис'],
+                        [3, 'vera@x.com', 'Вера'],
+                      ],
+                      order: 'order',
+                    },
+                    hint: 'SELECT * FROM users — звёздочка означает «все колонки». ORDER BY id — порядок вывода.',
+                  },
+                },
+              ],
+            },
+            {
               id: 'sql-l1-s2',
               title: 'Проверь себя',
               type: 'quiz',
@@ -307,6 +342,23 @@ export const sqlBasicsCourse: Course = {
                   { left: 'products', right: 'Каталог товаров: название, цена' },
                 ],
                 explanation: 'users → orders (один ко многим), orders → order_items (один ко многим), order_items → products (многие к одному). Понимание связей — половина навыка SQL.',
+              },
+            },
+            {
+              id: 'sql-l1-s5',
+              title: 'Проверь себя: SELECT',
+              type: 'quiz',
+              quiz: {
+                kind: 'fill',
+                question: 'Напишите запрос, чтобы получить только колонку `email` из таблицы `users` (все строки).',
+                accepted: [
+                  'SELECT email FROM users',
+                  'SELECT email FROM users;',
+                  'select email from users',
+                  'select email from users;',
+                ],
+                hint: 'SELECT колонка FROM таблица',
+                explanation: 'SELECT email FROM users. Одна колонка — `email`, одна таблица — `users`. Без `WHERE` — все строки. `SELECT *` вернул бы все колонки, а нужна одна.',
               },
             },
           ],
@@ -393,6 +445,38 @@ export const sqlBasicsCourse: Course = {
                 explanation: 'IN — список, BETWEEN — диапазон, LIKE — шаблон, IS NULL — проверка на NULL. Именно IS NULL, не = NULL: = NULL в SQL всегда даёт NULL.',
               },
             },
+            {
+              id: 'sql-l2-s5',
+              title: 'Практика: WHERE с IN и сравнением',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'WHERE можно комбинировать: `IN` — «значение из списка», `>` — числовое сравнение. Условия соединяются через `AND` или `OR`.' },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE orders (
+  id     INTEGER,
+  status TEXT,
+  total  INTEGER
+);
+INSERT INTO orders VALUES
+  (1, 'new',       500),
+  (2, 'paid',      2000),
+  (3, 'paid',      1500),
+  (4, 'cancelled', 300),
+  (5, 'shipped',   3500);`,
+                    task: "Выведите `id` заказов, у которых статус `paid` или `shipped` И сумма больше 1000. Отсортируйте по `id`.",
+                    solution: "SELECT id FROM orders WHERE status IN ('paid', 'shipped') AND total > 1000 ORDER BY id;",
+                    expected: {
+                      columns: ['id'],
+                      rows: [[2], [3], [5]],
+                      order: 'order',
+                    },
+                    hint: "WHERE status IN ('paid', 'shipped') AND total > 1000",
+                  },
+                },
+              ],
+            },
           ],
         },
         {
@@ -448,6 +532,59 @@ export const sqlBasicsCourse: Course = {
                 explanation: 'DISTINCT убирает дубли. Для подсчёта по статусам нужен GROUP BY + COUNT (следующий модуль).',
               },
             },
+            {
+              id: 'sql-l3-s4',
+              title: 'Практика: ORDER BY, DESC, LIMIT',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Сортировка (`ORDER BY`) и ограничение (`LIMIT`) — пара, без которой не обойтись: «топ-10», «последние 5», «самые дорогие». `DESC` переворачивает порядок (по убыванию).' },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE products (
+  id    INTEGER,
+  name  TEXT,
+  price INTEGER
+);
+INSERT INTO products VALUES
+  (1, 'Ноутбук',    80000),
+  (2, 'Мышь',       1500),
+  (3, 'Книга',      800),
+  (4, 'Клавиатура', 5000),
+  (5, 'Ручка',      100);`,
+                    task: 'Выведите `id`, `name`, `price` трёх самых дорогих товаров. Отсортируйте по `price` по убыванию и ограничьте тремя строками.',
+                    solution: 'SELECT id, name, price FROM products ORDER BY price DESC LIMIT 3;',
+                    expected: {
+                      columns: ['id', 'name', 'price'],
+                      rows: [
+                        [1, 'Ноутбук', 80000],
+                        [4, 'Клавиатура', 5000],
+                        [2, 'Мышь', 1500],
+                      ],
+                      order: 'order',
+                    },
+                    hint: 'ORDER BY price DESC LIMIT 3',
+                  },
+                },
+              ],
+            },
+            {
+              id: 'sql-l3-s5',
+              title: 'Проверь себя: DISTINCT',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие утверждения про `SELECT DISTINCT` верны?',
+                options: [
+                  { id: 'a', text: '`DISTINCT` убирает дубли из результата' },
+                  { id: 'b', text: '`DISTINCT` работает только с одной колонкой' },
+                  { id: 'c', text: '`SELECT DISTINCT a, b FROM t` вернёт уникальные пары `(a, b)`' },
+                  { id: 'd', text: '`DISTINCT` ставится сразу после `SELECT`' },
+                ],
+                correct: ['a', 'c', 'd'],
+                explanation: '`DISTINCT` убирает дубли (a), работает с несколькими колонками — вернёт уникальные комбинации (c), пишется сразу после SELECT (d). Вариант b — неверно: `SELECT DISTINCT a, b` — валидный запрос.',
+              },
+            },
           ],
         },
         {
@@ -498,6 +635,57 @@ export const sqlBasicsCourse: Course = {
                 placeholder: 'имя функции',
                 hint: 'Стандарт SQL',
                 explanation: 'COALESCE(a, b, c, ...) — первое не-NULL. COALESCE(total, 0) вернёт 0, если total IS NULL.',
+              },
+            },
+            {
+              id: 'sql-l4-s4',
+              title: 'Практика: IS NULL',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'NULL — «значение неизвестно», а не пустая строка и не ноль. Единственный корректный способ проверить — `IS NULL` / `IS NOT NULL`. `WHERE phone = NULL` вернёт 0 строк, потому что `NULL = NULL` даёт `NULL`, а не `true`.' },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE users (
+  id    INTEGER,
+  email TEXT,
+  phone TEXT
+);
+INSERT INTO users VALUES
+  (1, 'a@x.com', '+79991112233'),
+  (2, 'b@x.com', NULL),
+  (3, 'c@x.com', '+79994445566'),
+  (4, 'd@x.com', NULL);`,
+                    task: 'Выведите `id` и `email` пользователей, у которых НЕ указан телефон (`phone IS NULL`). Отсортируйте по `id`.',
+                    solution: 'SELECT id, email FROM users WHERE phone IS NULL ORDER BY id;',
+                    expected: {
+                      columns: ['id', 'email'],
+                      rows: [
+                        [2, 'b@x.com'],
+                        [4, 'd@x.com'],
+                      ],
+                      order: 'order',
+                    },
+                    hint: 'WHERE phone IS NULL ORDER BY id',
+                  },
+                },
+              ],
+            },
+            {
+              id: 'sql-l4-s5',
+              title: 'Проверь себя: NULL',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие утверждения о `NULL` верны?',
+                options: [
+                  { id: 'a', text: '`NULL = NULL` возвращает `NULL`, а не `true`' },
+                  { id: 'b', text: '`WHERE phone = NULL` вернёт 0 строк' },
+                  { id: 'c', text: '`COUNT(*)` и `COUNT(phone)` при NULL-строках дадут разные числа' },
+                  { id: 'd', text: '`NULL` — это то же самое, что пустая строка' },
+                ],
+                correct: ['a', 'b', 'c'],
+                explanation: '`NULL` — «неизвестно» (d — неверно). Любое сравнение через `=` даёт `NULL` (a), поэтому `WHERE ... = NULL` возвращает 0 строк (b). Агрегаты игнорируют NULL, а `COUNT(*)` — нет (c).',
               },
             },
           ],
@@ -563,6 +751,55 @@ export const sqlBasicsCourse: Course = {
                 ],
                 correct: ['b'],
                 explanation: '100 пользователей, у 10 нет email: COUNT(*) = 100, COUNT(email) = 90. COUNT(DISTINCT email) — уникальные.',
+              },
+            },
+            {
+              id: 'sql-l5-s4',
+              title: 'Практика: агрегаты одним запросом',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Несколько агрегатов можно посчитать одним запросом. Это классический «отчёт по когорте»: сколько заказов, на какую сумму, какой средний чек. `ROUND(...)` округляет результат до нужного числа знаков.' },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE orders (
+  id     INTEGER,
+  status TEXT,
+  total  INTEGER
+);
+INSERT INTO orders VALUES
+  (1, 'paid',      1000),
+  (2, 'paid',      2000),
+  (3, 'paid',      1500),
+  (4, 'cancelled', 500),
+  (5, 'cancelled', 800);`,
+                    task: `Для оплаченных заказов (status = 'paid') посчитайте одним запросом: количество (колонка \`cnt\`), сумму (колонка \`total_sum\`), средний чек с округлением до 2 знаков (колонка \`avg_check\`). Одна строка результата.`,
+                    solution: `SELECT COUNT(*) AS cnt, SUM(total) AS total_sum, ROUND(AVG(total), 2) AS avg_check FROM orders WHERE status = 'paid';`,
+                    expected: {
+                      columns: ['cnt', 'total_sum', 'avg_check'],
+                      rows: [[3, 4500, 1500]],
+                      order: 'order',
+                    },
+                    hint: `COUNT(*) AS cnt, SUM(total) AS total_sum, ROUND(AVG(total), 2) AS avg_check. Не забудьте WHERE status = 'paid'.`,
+                  },
+                },
+              ],
+            },
+            {
+              id: 'sql-l5-s5',
+              title: 'Проверь себя: агрегаты и NULL',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Что верно про агрегаты (SUM, AVG, MIN, MAX) в SQL?',
+                options: [
+                  { id: 'a', text: 'Агрегаты игнорируют строки, где значение = NULL' },
+                  { id: 'b', text: 'AVG(total) при 100 строках с 20 NULL = сумма / 80' },
+                  { id: 'c', text: 'SUM(total) при всех NULL в колонке вернёт 0' },
+                  { id: 'd', text: 'MIN и MAX могут вернуть NULL, если все значения NULL' },
+                ],
+                correct: ['a', 'b', 'd'],
+                explanation: 'Агрегаты игнорируют NULL (a, b) — COUNT/SUM/AVG «видят» меньше строк. Если все значения NULL — MIN/MAX вернут NULL (d). SUM при всех NULL вернёт NULL, а не 0 (c — неверно).',
               },
             },
           ],
@@ -776,10 +1013,7 @@ ORDER BY status;`,
               title: 'Практика: JOIN + агрегат',
               type: 'theory',
               blocks: [
-                {
-                  type: 'p',
-                  text: 'Соедините пользователей с их заказами и посчитайте сумму заказов каждого пользователя. Пользователи без заказов в результат не попадают — это обычный INNER JOIN.',
-                },
+                { type: 'p', text: 'Соедините пользователей с их заказами и посчитайте сумму заказов каждого пользователя. Пользователи без заказов в результат не попадают — это обычный INNER JOIN.' },
                 {
                   type: 'sandbox',
                   sandbox: {
@@ -794,11 +1028,7 @@ INSERT INTO orders VALUES
   (11, 1, 500),
   (12, 2, 2000);`,
                     task: 'Выведите email пользователя (колонка email) и сумму его заказов (колонка total). Отсортируйте по email.',
-                    solution: `SELECT u.email, SUM(o.total) AS total
-FROM users u
-JOIN orders o ON o.user_id = u.id
-GROUP BY u.email
-ORDER BY u.email;`,
+                    solution: `SELECT u.email, SUM(o.total) AS total\nFROM users u\nJOIN orders o ON o.user_id = u.id\nGROUP BY u.email\nORDER BY u.email;`,
                     expected: {
                       columns: ['email', 'total'],
                       rows: [
@@ -811,6 +1041,23 @@ ORDER BY u.email;`,
                   },
                 },
               ],
+            },
+            {
+              id: 'sql-l7-s5',
+              title: 'Проверь себя: INNER JOIN',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Что произойдёт при `SELECT * FROM users JOIN orders ON users.id = orders.user_id`?',
+                options: [
+                  { id: 'a', text: 'Пользователи без заказов не попадут в результат' },
+                  { id: 'b', text: 'Заказы с user_id, которого нет в users, не попадут' },
+                  { id: 'c', text: 'Если у пользователя 3 заказа — будет 3 строки' },
+                  { id: 'd', text: 'Всегда ровно одна строка на пользователя' },
+                ],
+                correct: ['a', 'b', 'c'],
+                explanation: 'INNER JOIN оставляет только строки с совпадением с обеих сторон: пользователи без заказов не попадут (a), заказы без пользователя — тоже (b). Каждый заказ — отдельная строка (c). «Одна на пользователя» — это уже GROUP BY, а не сам JOIN (d — неверно).',
+              },
             },
           ],
         },
@@ -995,6 +1242,22 @@ ORDER BY u.email;`,
                 explanation: 'timestamptz хранит UTC-момент, при выборке конвертирует в TZ сессии. timestamp — «как есть, без пояса». Для событий (created_at, paid_at) — всегда timestamptz.',
               },
             },
+            {
+              id: 'sql-l14-s5',
+              title: 'Проверь себя: значение → тип',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте значение и подходящий тип PostgreSQL',
+                pairs: [
+                  { left: 'Цена товара 199.99', right: 'numeric(12, 2)' },
+                  { left: 'ID пользователя (автоинкремент)', right: 'bigint GENERATED AS IDENTITY' },
+                  { left: 'Email пользователя', right: 'text / varchar' },
+                  { left: 'Флаг is_active (да/нет)', right: 'boolean' },
+                ],
+                explanation: 'Деньги — numeric (точность). ID — bigint / integer. Строки — text/varchar. Флаги — boolean. На собеседовании junior/middle: «какой тип для денег?» — numeric, не float. Это отличает «понимаю» от «слышал».',
+              },
+            },
           ],
         },
         {
@@ -1070,6 +1333,36 @@ ORDER BY u.email;`,
                 explanation: "'а' || 'б' = 'аб'. Стандарт SQL, работает в PostgreSQL, Oracle, SQLite. Для совместимости с MySQL/MSSQL иногда используют CONCAT.",
               },
             },
+            {
+              id: 'sql-l15-s5',
+              title: 'Практика: UPPER и LENGTH',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'Функции можно применять прямо в `SELECT` и комбинировать в одном запросе. `UPPER(email)` — приведёт к верхнему регистру, `LENGTH(email)` — посчитает количество символов. Псевдонимы `AS` дают читаемые имена колонок в результате.' },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE users (id INTEGER, email TEXT);
+INSERT INTO users VALUES
+  (1, 'anna@X.com'),
+  (2, 'boris@Y.com'),
+  (3, 'vera@Z.com');`,
+                    task: 'Для каждого пользователя выведите email в верхнем регистре (колонка `upper_email`) и длину email (колонка `len`). Отсортируйте по `id`.',
+                    solution: `SELECT UPPER(email) AS upper_email, LENGTH(email) AS len FROM users ORDER BY id;`,
+                    expected: {
+                      columns: ['upper_email', 'len'],
+                      rows: [
+                        ['ANNA@X.COM', 10],
+                        ['BORIS@Y.COM', 11],
+                        ['VERA@Z.COM', 10],
+                      ],
+                      order: 'order',
+                    },
+                    hint: 'UPPER(email) AS upper_email, LENGTH(email) AS len',
+                  },
+                },
+              ],
+            },
           ],
         },
         {
@@ -1115,10 +1408,7 @@ ORDER BY u.email;`,
                   caption: 'Заказы за последние 7 дней',
                   code: `SELECT * FROM orders\nWHERE created_at >= NOW() - INTERVAL '7 days'\n  AND created_at < NOW()           -- не включать будущее\nORDER BY created_at DESC;`,
                 },
-                {
-                  type: 'note',
-                  text: 'Границы диапазона: `>= начало` и `< конец` — стандарт. Если написать `BETWEEN начало AND конец`, то `конец` включится, и вы захватите лишнюю секунду. Для «за последние 7 дней» — `>= NOW() - INTERVAL \'7 days\'`.',
-                },
+                { type: 'note', text: 'Границы диапазона: `>= начало` и `< конец` — стандарт. Если написать `BETWEEN начало AND конец`, то `конец` включится, и вы захватите лишнюю секунду. Для «за последние 7 дней» — `>= NOW() - INTERVAL \'7 days\'`.' },
               ],
             },
             {
@@ -1149,6 +1439,23 @@ ORDER BY u.email;`,
                 placeholder: 'имя функции',
                 hint: 'DATE_ + обрезать',
                 explanation: "DATE_TRUNC('month', created_at) — обрезает до 1-го числа месяца. Стандарт для группировки по месяцам/дням/неделям.",
+              },
+            },
+            {
+              id: 'sql-l16-s5',
+              title: 'Проверь себя: диапазон дат',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие запросы корректно возвращают заказы за последние 7 дней (PostgreSQL)?',
+                options: [
+                  { id: 'a', text: "WHERE created_at >= NOW() - INTERVAL '7 days'" },
+                  { id: 'b', text: "WHERE created_at = NOW() - INTERVAL '7 days'" },
+                  { id: 'c', text: "WHERE created_at >= DATE_TRUNC('day', NOW() - INTERVAL '7 days')" },
+                  { id: 'd', text: "WHERE created_at BETWEEN NOW() - INTERVAL '7 days' AND NOW()" },
+                ],
+                correct: ['a', 'c', 'd'],
+                explanation: "a — стандарт (>=). c — обрезает до начала дня, «за последние 7 дней с точностью до дня». d — BETWEEN тоже работает, но правая граница включительна (может захватить лишние доли секунды). b — неверно: `=` ищет точное совпадение (одну секунду), а не диапазон.",
               },
             },
           ],
@@ -1243,6 +1550,58 @@ ORDER BY u.email;`,
                 explanation: 'UNION = UNION ALL + DISTINCT. Дедупликация требует сортировки или хеширования — на больших данных разница в разы. Если дубли не важны — всегда UNION ALL.',
               },
             },
+            {
+              id: 'sql-l17-s4',
+              title: 'Практика: UNION',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: '`UNION` склеивает два `SELECT` вертикально, убирая дубли. Типы и количество колонок должны совпадать. Если нужно сохранить дубли — `UNION ALL`.' },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE users (email TEXT);
+CREATE TABLE leads (email TEXT);
+INSERT INTO users VALUES
+  ('a@x.com'),
+  ('shared@x.com'),
+  ('b@x.com');
+INSERT INTO leads VALUES
+  ('shared@x.com'),
+  ('lead@x.com');`,
+                    task: 'Выведите уникальные email из `users` и `leads` (объединение). Отсортируйте по `email`.',
+                    solution: `SELECT email FROM users\nUNION\nSELECT email FROM leads\nORDER BY email;`,
+                    expected: {
+                      columns: ['email'],
+                      rows: [
+                        ['a@x.com'],
+                        ['b@x.com'],
+                        ['lead@x.com'],
+                        ['shared@x.com'],
+                      ],
+                      order: 'order',
+                    },
+                    hint: 'UNION (не UNION ALL!) — иначе `shared@x.com` попадёт дважды. ORDER BY — в самом конце, после второго SELECT.',
+                  },
+                },
+              ],
+            },
+            {
+              id: 'sql-l17-s5',
+              title: 'Проверь себя: правила UNION',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие утверждения про UNION и UNION ALL верны?',
+                options: [
+                  { id: 'a', text: 'UNION удаляет дубли, UNION ALL оставляет все строки' },
+                  { id: 'b', text: 'UNION ALL обычно быстрее UNION' },
+                  { id: 'c', text: 'Оба требуют одинаковое количество колонок в SELECT' },
+                  { id: 'd', text: 'UNION можно использовать только с двумя SELECT' },
+                ],
+                correct: ['a', 'b', 'c'],
+                explanation: 'UNION = UNION ALL + дедупликация (a), поэтому медленнее (b). Количество и типы колонок должны совпадать (c). Про d — можно с тремя и более SELECT (это цепочка).',
+              },
+            },
           ],
         },
         {
@@ -1262,10 +1621,7 @@ ORDER BY u.email;`,
                   caption: 'CASE: простая и поисковая форма',
                   code: `-- Простая форма: CASE column WHEN value\nSELECT\n    id,\n    CASE status\n        WHEN 'paid'      THEN 'Оплачен'\n        WHEN 'shipped'   THEN 'Отправлен'\n        WHEN 'cancelled' THEN 'Отменён'\n        ELSE 'Новый'\n    END AS status_ru\nFROM orders;\n\n-- Поисковая форма: CASE WHEN condition\nSELECT\n    id,\n    total,\n    CASE\n        WHEN total < 1000  THEN 'дешёвый'\n        WHEN total < 5000  THEN 'средний'\n        ELSE                    'дорогой'\n    END AS price_category\nFROM orders;`,
                 },
-                {
-                  type: 'note',
-                  text: 'CASE выполняется по порядку: срабатывает первое подходящее WHEN. Поэтому «WHEN total < 1000 ... WHEN total < 5000 ...» — правильно, а наоборот — нет (всё меньше 5000 попадёт во вторую ветку).',
-                },
+                { type: 'note', text: 'CASE выполняется по порядку: срабатывает первое подходящее WHEN. Поэтому «WHEN total < 1000 ... WHEN total < 5000 ...» — правильно, а наоборот — нет (всё меньше 5000 попадёт во вторую ветку).' },
               ],
             },
             {
@@ -1328,6 +1684,44 @@ ORDER BY u.email;`,
                 correct: ['a', 'b', 'c'],
                 explanation: 'FILTER (PostgreSQL) и SUM(CASE WHEN) (универсально) — стандартные способы. UNION из двух SELECT тоже работает, но медленнее (два прохода). Подзапрос — не единственный вариант.',
               },
+            },
+            {
+              id: 'sql-l18-s5',
+              title: 'Практика: CASE',
+              type: 'theory',
+              blocks: [
+                { type: 'p', text: 'CASE пригодится, когда нужна категоризация. Внутри `CASE` можно использовать любые условия (`<`, `>`, `=`, `IN`). В SQLite, как и в PostgreSQL, `CASE` работает одинаково.' },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema: `CREATE TABLE orders (
+  id     INTEGER,
+  status TEXT,
+  total  INTEGER
+);
+INSERT INTO orders VALUES
+  (1, 'new',       500),
+  (2, 'paid',      2000),
+  (3, 'paid',      1500),
+  (4, 'cancelled', 300),
+  (5, 'shipped',   3500);`,
+                    task: `Для каждого заказа выведите \`id\`, \`total\` и категорию \`price_cat\`: 'дешёвый', если total < 1000; 'средний', если total < 3000; иначе 'дорогой'. Отсортируйте по \`id\`.`,
+                    solution: `SELECT id, total,\n  CASE\n    WHEN total < 1000 THEN 'дешёвый'\n    WHEN total < 3000 THEN 'средний'\n    ELSE 'дорогой'\n  END AS price_cat\nFROM orders\nORDER BY id;`,
+                    expected: {
+                      columns: ['id', 'total', 'price_cat'],
+                      rows: [
+                        [1, 500, 'дешёвый'],
+                        [2, 2000, 'средний'],
+                        [3, 1500, 'средний'],
+                        [4, 300, 'дешёвый'],
+                        [5, 3500, 'дорогой'],
+                      ],
+                      order: 'order',
+                    },
+                    hint: 'CASE WHEN total < 1000 THEN ... WHEN total < 3000 THEN ... ELSE ... END AS price_cat',
+                  },
+                },
+              ],
             },
           ],
         },
