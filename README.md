@@ -1,373 +1,375 @@
-# DevAcademy (ДевАкадемия)
+# DevAcademy
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.19%20%7C%7C%20%3E%3D22.12-brightgreen)](https://nodejs.org/)
-[![PWA Ready](https://img.shields.io/badge/PWA-офлайн%20режим-blueviolet)](https://web.dev/progressive-web-apps/)
+> Инженерная база знаний: тестирование, Python, Docker, Kubernetes, IaC и ИИ-агенты. Работает полностью офлайн, прогресс хранится локально на устройстве.
 
-**Офлайн-учебник по инженерным практикам.**  
-21 курс, 400+ уроков: Git, Linux, сети, SQL, PostgreSQL, Python, тестирование, Docker, Kubernetes, Terraform, Ansible, Kafka, CI/CD, GitOps, ИИ-агенты, проектирование.  
-Работает полностью офлайн (PWA). Прогресс хранится в браузере. Экспорт/импорт прогресса — через JSON.
+[![CI](https://github.com/ignatyevnik/DevAcademy/actions/workflows/ci.yml/badge.svg)](https://github.com/ignatyevnik/DevAcademy/actions/workflows/ci.yml)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=fff)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=000)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=fff)](https://vite.dev/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**Некоммерческий проект.** Любой желающий может пользоваться приложением, получить исходники, форкнуть и адаптировать под свои задачи.
+## Оглавление
 
----
+- [О проекте](#о-проекте)
+- [Возможности](#возможности)
+- [Каталог курсов](#каталог-курсов)
+- [Треки обучения](#треки-обучения)
+- [Технологический стек](#технологический-стек)
+- [Быстрый старт](#быстрый-старт)
+- [Структура проекта](#структура-проекта)
+- [Как внести вклад](#как-внести-вклад)
+- [Как добавить урок](#как-добавить-урок)
+- [Как добавить курс](#как-добавить-курс)
+- [Как добавить новый блок или тип квиза](#как-добавить-новый-блок-или-тип-квиза)
+- [Валидация и тесты](#валидация-и-тесты)
+- [Сообщить об ошибке](#сообщить-об-ошибке)
+- [Лицензия](#лицензия)
 
-## 📖 Содержание
+## О проекте
 
-- [✨ Возможности](#-возможности)
-- [📚 Каталог курсов](#-каталог-курсов)
-- [🧪 Офлайн-песочницы (SQL и Python)](#-офлайн-песочницы-sql-и-python)
-- [🚀 Быстрый старт](#-быстрый-старт)
-  - [Требования](#требования)
-  - [Установка](#установка)
-  - [Запуск](#запуск)
-  - [Проверка качества](#проверка-качества)
-- [📂 Структура проекта](#-структура-проекта)
-- [🖥️ Визуальный редактор контента](#️-визуальный-редактор-контента)
-- [📝 Как выглядят уроки (для разработчиков)](#-как-выглядят-уроки-для-разработчиков)
-- [➕ Как добавить урок в код](#-как-добавить-урок-в-код)
-- [📚 Как добавить курс в код](#-как-добавить-курс-в-код)
-- [🛠️ Технологии](#️-технологии)
-- [📶 Офлайн-режим (PWA) и Деплой](#-офлайн-режим-pwa-и-деплой)
-- [🤝 Вклад в проект](#-вклад-в-проект)
-- [📄 Лицензия и использование](#-лицензия-и-использование)
+**DevAcademy** — открытая некоммерческая платформа для инженеров, которые хотят системно освоить базу: тестирование, Python, Docker, Kubernetes, IaC и ИИ-агенты. Курсы построены по принципу «теория → проверка»: короткие шаги, практика на реальных песочницах, вопросы на закрепление.
 
----
+Особенности:
 
-## ✨ Возможности
+- **Полностью офлайн.** PWA: приложение можно установить и использовать без интернета.
+- **Офлайн-песочницы.** SQL — через `sql.js` (SQLite в WebAssembly), Python — через `Pyodide` (CPython в WebAssembly). Прямо в браузере, без сервера.
+- **Прогресс — локально.** Никаких аккаунтов и бэкенда: всё в `localStorage`. Экспорт/импорт в JSON для переноса между устройствами.
+- **Валидированный контент.** Zod-схемы гарантируют, что каждый урок корректен: уникальные `id`, правильные `correct` в квизах, валидные `pairs.right` и т.д.
+- **Встроенный редактор.** Можно создавать и редактировать курсы прямо в браузере (`/editor`) — с превью и автосохранением.
 
-- **21 курс, 400+ уроков** — от новичка до Senior в QA, Middle в DevOps/Backend/AI.
-- **Категории курсов на главной** — «Фундамент», «Данные», «Языки», «QA», «Контейнеры», «IaC», «CI/CD и доставка», «AI», «Архитектура». Сворачиваются, чтобы каталог не превращался в стену карточек.
-- **Треки обучения** — готовые маршруты под роль: QA с нуля, QA Automation, QA Senior, DevOps, Backend Python, AI Engineer. С полосками прогресса прямо на главной.
-- **10 типов заданий**: выбор ответа (single/multiple), текстовый ввод (fill), сопоставление (matching), сортировка (sorting), интерактивные таблицы (table), числовой ответ (number), заполнение пропусков (cloze) и написание кода (code).
-- **Экзамен по курсу** — возможность пройти все тесты курса подряд (до 20 случайных вопросов) в режиме реального времени. Результаты не влияют на общий прогресс, но показывают общий процент усвоения и оценки.
-- **Офлайн-песочница SQL** — в шагах `sql-basics` и `sql-advanced` можно писать и выполнять SQL-запросы прямо в браузере. Движок — `sql.js` (SQLite в WASM). Поддержка `Ctrl+Enter` для проверки.
-- **Офлайн-песочница Python** — в курсах `python-basics` и `python-advanced` можно запускать код на настоящем CPython (Pyodide в WASM). Проверка результатов по выводу `stdout` или значению переменной.
-- **Богатые блоки контента**: текст (Markdown), код с подсветкой синтаксиса и кнопкой «Копировать», **изображения** и **диаграммы Mermaid** (включая `erDiagram` для схем БД) — прямо в шагах урока.
-- **Визуальный редактор контента (`/editor`)** — создание и редактирование курсов прямо в браузере. Поддерживает все блоки (включая песочницы) и типы заданий.
-- **Полнотекстовый поиск (Ctrl+K)** — ищет по названиям, тексту, коду и вариантам ответов.
-- **Интервальное повторение (Spaced Repetition)** — алгоритм SM-2, как в Anki. Приложение напоминает, какие вопросы пора повторить.
-- **Личные заметки и экспорт в Markdown** — конспект под каждым шагом. Все заметки можно выгрузить в один `.md` файл.
-- **Закладки** — сохранение уроков «на потом».
-- **Тёмная и светлая темы** — переключение вручную или автоматически.
-- **Экспорт/импорт прогресса** — JSON-файл для переноса обучения на другое устройство.
-- **Офлайн-режим (PWA)** — устанавливается на телефон или десктоп и работает без интернета.
+## Возможности
 
----
+- 📚 **21 курс** в 9 категориях, **400 уроков**
+- 🎯 **9 типов заданий:** single, multiple, fill, matching, sorting, table, number, cloze, code
+- 🧪 **2 типа песочниц:** SQL (SQLite) и Python (Pyodide)
+- 🧠 **Интервальное повторение** по алгоритму SM-2: квизы, которые пора повторить, показываются на главной
+- 📝 **Заметки** к каждому шагу + экспорт всех заметок в Markdown
+- 🔖 **Закладки** на уроки
+- 🏆 **Экзамен** по курсу (случайные 20 квизов из всех уроков)
+- 🔥 **Стрик** (дней подряд) + цель 15 минут в день
+- 🌙 **Тёмная и светлая темы**, регулировка размера шрифта
+- 📴 **Экспорт/импорт** прогресса в JSON
+- ⚡ **Ленивая загрузка** тяжёлых виджетов (CodeMirror, Pyodide, sql.js) — страница открывается быстро
 
-## 📚 Каталог курсов
+## Каталог курсов
 
-Курсы сгруппированы по категориям на главной странице.
+**21 курс, 400 уроков** в 9 категориях. Точное число и прогресс — в приложении (на главной).
 
 ### Фундамент
-- **Git и командная работа** — версионирование, ветки, PR, rebase, reset, reflog, hooks, worktree, bisect, submodules/subtree, модели ветвления.
-- **Linux: с нуля до уверенного пользователя** — терминал, FHS, права, процессы, systemd, ssh, bash-скрипты, cron.
-- **Сети и HTTP** — OSI, TCP/IP, DNS, HTTP/2, HTTP/3, TLS, WebSocket, диагностика.
+
+| Курс | Уроков | О чём |
+|------|-------:|-------|
+| Git и командная работа | ≈18 | Ветки, merge, rebase, reset, reflog, хуки, worktree, bisect, submodules |
+| Linux: с нуля до уверенного пользователя | 26 | Терминал, FHS, права, процессы, systemd, journalctl, сеть, bash, cron |
+| Сети и HTTP | 11 | OSI, TCP/IP, DNS, HTTP/2-3, TLS, WebSocket, прокси, диагностика |
 
 ### Данные
-- **SQL: основы** — введение в БД/СУБД, DBeaver, ER-диаграммы, SELECT, JOIN, агрегаты, строки, даты, UNION, офлайн-песочница.
-- **SQL: продвинуто** — подзапросы, CTE, индексы, транзакции, EXPLAIN, оконные функции, JSONB, миграции, офлайн-песочница.
-- **PostgreSQL: глубоко** — MVCC, WAL, VACUUM, EXPLAIN с BUFFERS, индексы GiST/GIN/BRIN, партиционирование, репликация, PITR, PgBouncer, pgvector.
+
+| Курс | Уроков | О чём |
+|------|-------:|-------|
+| SQL: основы | 19 | SELECT, JOIN, агрегаты, строки, даты, UNION, CASE |
+| SQL: продвинуто | 13 | Подзапросы, CTE, индексы, транзакции, EXPLAIN, окна, JSONB, миграции |
+| PostgreSQL: глубоко | 20 | MVCC, WAL, VACUUM, EXPLAIN BUFFERS, партиционирование, репликация, PgBouncer |
 
 ### Языки
-- **Python: основы** — синтаксис, коллекции, функции, файлы, ошибки, офлайн-песочница.
-- **Python: продвинуто** — ООП, декораторы, генераторы, async, типизация, GIL, threading vs multiprocessing, офлайн-песочница.
+
+| Курс | Уроков | О чём |
+|------|-------:|-------|
+| Python: основы | 16 | Синтаксис, коллекции, функции, файлы, comprehension, sorted |
+| Python: продвинуто | 20 | ООП, декораторы, генераторы, async, типизация, многопоточность |
 
 ### QA
-- **QA: основы** — ISTQB, тест-дизайн, баг-репорты, первый автотест на pytest.
-- **QA Automation** — pytest, Playwright, API, SQL, нагрузка, безопасность, мобильное тестирование, a11y.
-- **QA Senior** — стратегия, DORA-метрики, архитектура тестов, observability, менторство.
+
+| Курс | Уроков | О чём |
+|------|-------:|-------|
+| QA: основы | 18 | ISTQB, тест-дизайн, баг-репорты, API, pytest |
+| QA Automation | 40 | Pytest, Playwright, SQL, нагрузка, безопасность, мобилки, a11y |
+| QA Senior | 20 | Стратегия, CoQ, DORA, Screenplay, Testcontainers, SAST/DAST, BDD, Observability |
 
 ### Контейнеры
-- **Docker с нуля** — образы, Dockerfile, volumes, compose, buildx, multi-arch, безопасность.
-- **Kubernetes: основы** — поды, деплойменты, сервисы, config/secret, probes, контроллеры.
-- **Kubernetes: продвинуто** — Ingress, NetworkPolicy, PV/PVC, RBAC, securityContext, Helm, Kustomize.
 
-### IaC и автоматизация
-- **Terraform: инфраструктура как код** — HCL, state, модули, remote backend, CI/CD, drift detection.
-- **Ansible: конфигурация и автоматизация** — inventory, playbooks, роли, Jinja2, vault, collections, molecule.
+| Курс | Уроков | О чём |
+|------|-------:|-------|
+| Docker с нуля | 25 | Контейнеры, Dockerfile, compose, безопасность, registry, buildx |
+| Kubernetes: основы | 29 | Поды, деплойменты, сервисы, конфигурация, probes, контроллеры |
+| Kubernetes: продвинуто | ≈15 | Ingress, NetworkPolicy, PV/PVC, RBAC, securityContext, Helm, Kustomize |
+
+### IaC
+
+| Курс | Уроков | О чём |
+|------|-------:|-------|
+| Terraform: IaC | 18 | HCL, state, модули, провайдеры, remote backend, CI/CD |
+| Ansible | 16 | Inventory, playbooks, роли, Jinja2, vault, collections, molecule |
 
 ### CI/CD и доставка
-- **CI/CD: основы** — GitHub Actions, GitLab CI, Jenkins, тесты и Docker в пайплайне.
-- **GitOps и деплой** — ArgoCD, Flux, стратегии деплоя, feature flags, supply chain, secrets.
-- **Kafka: event streaming** — topics, partitions, consumer groups, producer, транзакции, экосистема, Strimzi.
+
+| Курс | Уроков | О чём |
+|------|-------:|-------|
+| CI/CD: основы | 12 | GitHub Actions, GitLab CI, Jenkins, тесты, Docker в CI |
+| GitOps и деплой | 8 | ArgoCD, Flux, canary, blue-green, supply chain, Vault, DORA |
+| Kafka | 18 | Topics, partitions, consumer groups, producer, репликация, Connect, Schema Registry |
 
 ### AI
-- **Настройка ИИ-агентов** — промпты, function calling, RAG, безопасность, MCP, LangChain/LangGraph.
+
+| Курс | Уроков | О чём |
+|------|-------:|-------|
+| Настройка ИИ-агентов | 25 | Промпты, function calling, память, RAG, MCP, оценка, безопасность |
 
 ### Архитектура
-- **Проектирование и паттерны** — SOLID, GoF, Repository, монолит vs микросервисы, CQRS.
 
----
+| Курс | Уроков | О чём |
+|------|-------:|-------|
+| Проектирование и паттерны | 13 | SOLID, GoF, Repository, UoW, монолит vs микросервисы, CQRS |
 
-## 🧪 Офлайн-песочницы (SQL и Python)
+## Треки обучения
 
-В приложении есть два вида полностью офлайн-песочниц. Они не требуют сервера и не отправляют код в сеть.
+Готовые маршруты под разные роли — см. `src/data/tracks.ts`.
 
-### 1. SQL-песочница (sql.js)
-Доступна в курсах **SQL: основы** и **SQL: продвинуто**.
+| Трек | Курсы |
+|------|-------|
+| **QA: с нуля** | Git → Linux → Сети → SQL → SQL: продвинуто → QA: основы |
+| **QA Automation** | Git → Linux → Сети → SQL → SQL: продвинуто → Python: база → Python: продвинуто → QA: основы → QA: автоматизация |
+| **QA Senior** | QA: основы → QA: автоматизация → QA: сеньор |
+| **DevOps** | Git → Linux → Сети → SQL → SQL: продвинуто → PostgreSQL: глубоко → Docker → K8s: основы → K8s: продвинуто → Terraform → Ansible → Kafka → CI/CD: основы → GitOps |
+| **Backend Python** | Git → Linux → Python: база → Python: продвинуто → Сети → SQL → SQL: продвинуто → PostgreSQL: глубоко → Docker → Проектирование → Terraform → Kafka |
+| **AI Engineer** | Git → Linux → Python: база → Python: продвинуто → Сети → SQL → SQL: продвинуто → Docker → AI-агенты |
 
-- **Движок:** `sql.js` (SQLite в WebAssembly).
-- **Безопасность:** база создаётся в памяти на каждый шаг. Встроенный фильтр блокирует `DROP`, `DELETE`, `UPDATE`, `INSERT`, `ALTER`, `PRAGMA` и т.п. — разрешены только `SELECT`-запросы и `WITH`.
-- **Проверка:** результат запроса сравнивается с эталоном (колонки + строки). Если `expected` в блоке не задан, эталон вычисляется прогоном `solution`.
-- **Где используется:** `sql-basics` (`sql-l6-s5`, `sql-l7-s4`) и `sql-advanced` (`sql-l10-s4`, `sql-l16-s4`).
+## Технологический стек
 
-### 2. Python-песочница (Pyodide)
-Доступна в курсах **Python: основы** и **Python: продвинуто**.
+- **Frontend:** React 19, React Router 7, TypeScript 5.9, Vite 7
+- **UI:** Tailwind CSS 3.4, Radix UI, lucide-react, sonner (toasts)
+- **Контент:** Zod 4 — валидация схем курсов и уроков
+- **Песочницы:** `sql.js` (SQLite → WASM), `pyodide` (CPython → WASM)
+- **Редактор кода:** CodeMirror 6 (`@uiw/react-codemirror`)
+- **Подсветка:** prism-react-renderer, mermaid (диаграммы)
+- **Тесты:** Vitest 5, Testing Library
+- **Сборка:** Vite, PWA (`vite-plugin-pwa`)
 
-- **Движок:** `Pyodide` — полноценный CPython, скомпилированный в WebAssembly (~12 МБ).
-- **Особенности:** первый запуск занимает 10–15 секунд (загрузка `.wasm`), затем всё работает мгновенно. Поддерживается `Ctrl+Enter` для проверки.
-- **Проверка:** код запускается в изолированном namespace. Результат проверяется либо по выводу `stdout` (`print`), либо по значению конкретной переменной.
-- **Ограничения:** в песочнице работает только стандартная библиотека (импорт тяжелых пакетов вроде pandas не поддерживается, так как они весят десятки мегабайт).
-- **Где используется:** в уроках `python-basics` и `python-advanced` (шаги с задачами на `print`, `if`, списки, ООП, декораторы и т.д.).
-
-> **⚠️ Важно про Pyodide (Python-песочница)**
-> 
-> 1. **Не используйте `vite-plugin-static-copy` для `.mjs` файлов.** В dev-режиме Vite отдаёт их с неверным MIME-типом, и браузер блокирует загрузку (ошибка `NS_ERROR_CORRUPTED_CONTENT`). Правильный путь — скопировать файлы Pyodide в `public/assets/pyodide/`. Vite автоматически отдаст их с корректным `Content-Type` и включит в сборку.
-> 2. **Предупреждение `try_table` в консоли** — это нормально. Pyodide скомпилирован с использованием старой инструкции WebAssembly для обработки исключений. Emscripten (компилятор) пока не перешёл на `try_table`. Это не ошибка и не влияет на работу кода.
-
----
-
-## 🚀 Быстрый старт
-
-### Требования
-
-- **Node.js 20.19+ или 22.12+** — ниже не заработает (Vite 7 требует)
-- **npm 10+** (идёт вместе с Node)
-- Операционная система: Windows, macOS, Linux
-
-### Установка
+## Быстрый старт
 
 ```bash
-# 1. Клонировать репозиторий (или распаковать архив)
+# Клонировать
 git clone https://github.com/ignatyevnik/DevAcademy.git
 cd DevAcademy
 
-# 2. Установить зависимости (~400 МБ, 1–3 минуты)
+# Установить зависимости
 npm install
 
-# 3. Запустить dev-сервер
+# Запустить dev-сервер
 npm run dev
 ```
 
-Откройте [http://localhost:3000](http://localhost:3000) — приложение готово.
+Откройте `http://localhost:5173`.
 
-### Проверка качества
+### Скрипты
 
 ```bash
-# Запуск линтера
-npm run lint
-
-# Запуск тестов
-npm test
-
-# Запуск тестов в watch-режиме
-npm run test:watch
-
-# Сборка production-версии
-npm run build
+npm run dev         # dev-сервер
+npm run build       # прод-сборка
+npm run preview     # предпросмотр сборки
+npm run typecheck   # tsc --noEmit
+npm run lint        # eslint
+npm run test        # vitest (один прогон)
+npm run test:watch  # vitest watch
 ```
 
----
-
-## 📂 Структура проекта
+## Структура проекта
 
 ```
 DevAcademy/
-├── public/                 # Статические файлы (иконки, манифест PWA)
-│   ├── images/             # Изображения для уроков (скриншоты, схемы)
-│   └── assets/pyodide/     # Файлы Pyodide (wasm, stdlib) для Python-песочницы
 ├── src/
-│   ├── components/         # Переиспользуемые UI-компоненты
-│   │   ├── CourseCard.tsx
-│   │   ├── CourseIcon.tsx  # Иконки курсов (svg по slug)
-│   │   ├── SandboxView.tsx # Офлайн-песочница SQL
-│   │   ├── PythonView.tsx  # Офлайн-песочница Python
-│   │   ├── StepContent.tsx # Рендер блоков, quiz и кнопки «Копировать»
-│   │   └── editor/         # Редакторы (BlockEditor, SandboxEditor, PythonEditor, QuizEditor)
-│   ├── data/               # Данные курсов и уроков
-│   │   ├── index.ts        # Реестр курсов
-│   │   ├── types.ts        # Типы (Course, Lesson, Step, Quiz, SandboxBlock, PythonBlock)
-│   │   ├── schemas.ts      # Zod-схемы для валидации
-│   │   ├── validate.ts     # validateAllCourses()
-│   │   ├── categories.ts   # Категории для главной
-│   │   ├── tracks.ts       # Треки обучения
-│   │   └── *.ts            # Файлы курсов (git, linux, sql-basics, python-basics...)
-│   ├── lib/                # Хуки и утилиты
-│   │   ├── progress.tsx    # Контекст прогресса (localStorage)
-│   │   ├── exam-mode.tsx   # Контекст для экзамена (не пишет прогресс)
-│   │   ├── srs.ts          # SM-2 для повторения
-│   │   ├── search.ts       # Полнотекстовый поиск
-│   │   ├── progress-io.ts  # Экспорт/импорт прогресса и заметок (.md)
-│   │   ├── sql-sandbox.ts  # Загрузка sql.js, проверка SQL
-│   │   ├── pyodide-sandbox.ts # Загрузка Pyodide, запуск Python-кода
+│   ├── components/           # переиспользуемые компоненты
+│   │   ├── ui/               # shadcn-компоненты (button, input, badge, ...)
+│   │   ├── editor/           # редактор курсов (BlockEditor, QuizEditor, ...)
+│   │   ├── StepContent.tsx   # рендер шага: теория + 9 типов квизов
+│   │   ├── SandboxView.tsx   # SQL-песочница
+│   │   ├── PythonView.tsx    # Python-песочница
+│   │   └── ...               # Header, CourseCard, TrackCard, Search, Theme, ...
+│   ├── data/
+│   │   ├── *.ts              # курсы (git.ts, linux.ts, docker.ts, ...)
+│   │   ├── index.ts          # сборка baseCourses + кастомные из localStorage
+│   │   ├── types.ts          # типы: Course, Module, Lesson, Step, Quiz, TextBlock
+│   │   ├── schemas.ts        # Zod-схемы для валидации контента
+│   │   ├── validate.ts       # validateAllCourses
+│   │   ├── categories.ts     # 9 категорий + маппинг slug → категория
+│   │   └── tracks.ts         # 6 треков
+│   ├── lib/
+│   │   ├── progress.tsx      # прогресс, SRS, заметки, закладки
+│   │   ├── sql-sandbox.ts    # SQLite через sql.js
+│   │   ├── pyodide-sandbox.ts
+│   │   ├── search.ts         # поиск по контенту
+│   │   ├── streak.ts         # стрик
+│   │   ├── theme.tsx         # тёмная/светлая тема
+│   │   ├── font-size.ts      # размер шрифта
+│   │   ├── exam-mode.tsx
 │   │   └── ...
-│   ├── pages/              # Страницы приложения (роутинг)
-│   │   ├── Home.tsx
-│   │   ├── CoursePage.tsx
-│   │   ├── LessonPage.tsx
-│   │   ├── TrackPage.tsx
-│   │   ├── ReviewPage.tsx
-│   │   ├── ExamPage.tsx    # Экзамен по курсу
-│   │   └── EditorPage.tsx
-│   ├── App.tsx             # Корневой компонент
-│   └── main.tsx            # Точка входа
+│   ├── pages/                # Home, CoursePage, LessonPage, ExamPage, ...
+│   └── test/                 # тесты (vitest)
+├── public/
+│   └── assets/pyodide/       # Pyodide WASM (копируется при сборке)
+├── scripts/
+│   └── ...
 ├── package.json
 ├── vite.config.ts
-├── tailwind.config.js
+├── tailwind.config.ts
 └── README.md
 ```
 
-> **Примечание:** актуальная структура может незначительно отличаться. Для точной навигации используйте файловое дерево репозитория.
+## Как внести вклад
 
----
+Мы рады любой помощи: исправления опечаток, новые уроки, новые типы квизов, улучшение UX, переводы, фиксы багов. Перед большими изменениями — откройте issue, чтобы обсудить.
 
-## 🖥️ Визуальный редактор контента
+### Требования к контенту
 
-По адресу `/editor` доступен встроенный редактор, который позволяет:
+1. **Минимум 5 шагов в уроке.** Исключение — вводные уроки (`...-l0`) и практикумы (там 10–12 шагов).
+2. **Каждый шаг — либо `theory` (с `blocks`), либо `quiz`.** Никаких пустых шагов.
+3. **Уникальные `id`** в пределах урока (`step.id`) и в пределах модуля (`lesson.id`).
+4. **Квиз-ответы:**
+   - `single`: `correct` — ровно 1 элемент, и он есть в `options`.
+   - `multiple`: `correct` — минимум 1, все есть в `options`.
+   - `matching`: `pairs.right` — уникальны.
+   - `sorting`: `items.length === correct.length` и `items` = `correct` (те же элементы).
+   - `cloze`: количество `____` в `text` = количеству `blanks`.
+   - `table`: `rows[i].correct` содержит только значения из `columns`.
+5. **Стиль:** на «вы», без воды, с примерами. В `code` — одинарные кавычки с `\n`, если внутри есть `${{ ... }}` (чтобы не ломался TypeScript template literal и не терялись данные).
+6. **Заметки (`note`)** — для важных предупреждений и «на собеседовании спросят».
 
-- Создавать новые курсы и уроки без изменения кода.
-- Редактировать существующие уроки (сохраняется локальная копия).
-- Использовать все 10 типов заданий.
-- Добавлять блоки **`image`**, **`mermaid`**, **`sandbox`** (SQL) и **`python`** наравне с текстом и кодом.
-- Предпросматривать результат в реальном времени.
+### Как добавить урок
 
-Для песочниц доступны отдельные редакторы:
-- `SandboxEditor` (схема БД, эталонный SQL, ожидаемый результат в JSON).
-- `PythonEditor` (стартовый код, эталонный код, ожидаемый вывод в JSON).
+1. Откройте файл курса, например `src/data/linux.ts`.
+2. Найдите нужный модуль (например, `ln-m1`).
+3. Добавьте урок в `lessons: [...]`:
 
-Созданные курсы хранятся в `localStorage` и не затрагивают исходники.
-
----
-
-## 📝 Как выглядят уроки (для разработчиков)
-
-Каждый урок представляет собой набор шагов. Шаг может содержать блоки:
-
-- **Текст** — Markdown, с поддержкой инлайн-кода.
-- **Код** — с подсветкой синтаксиса (Prism React Renderer) и кнопкой копирования.
-- **Изображение** (`image`).
-- **Диаграмма** (`mermaid`) — `graph`, `sequenceDiagram`, `gitGraph`, `erDiagram` и др.
-- **Песочница SQL** (`sandbox`).
-- **Песочница Python** (`python`).
-- **Задание** — один из 10 типов (single/multiple/fill/matching/sorting/table/number/cloze/code).
-
-Данные уроков хранятся в структурированном виде (TypeScript-файлы) в директории `src/data/`. Схемы блоков описаны в `types.ts` и валидируются через `schemas.ts` (Zod). Каждый курс проверяется автоматически в тестах (`npm test`).
-
-### Пример блока `sandbox` (SQL)
-
-```json
+```ts
 {
-  "type": "sandbox",
-  "sandbox": {
-    "schema": "CREATE TABLE users (id INTEGER, email TEXT, age INTEGER); INSERT INTO users VALUES (1, 'a@x.com', 20), (2, 'b@x.com', 30);",
-    "task": "Выберите email пользователей старше 25 лет.",
-    "solution": "SELECT email FROM users WHERE age > 25;",
-    "expected": { "columns": ["email"], "rows": [["b@x.com"]] },
-    "hint": "Используйте WHERE age > 25"
-  }
+  id: 'ln-l27',              // уникальный, с префиксом курса
+  title: 'Название урока',
+  minutes: 25,
+  steps: [
+    {
+      id: 'ln-l27-s1',
+      title: 'Теория',
+      type: 'theory',
+      blocks: [
+        { type: 'p', text: 'Абзац. Можно **жирный** и `код`.' },
+        { type: 'code', lang: 'bash', code: 'ls -la', caption: 'Пример' },
+        { type: 'note', text: 'Важное замечание.' },
+      ],
+    },
+    {
+      id: 'ln-l27-s2',
+      title: 'Проверь себя',
+      type: 'quiz',
+      quiz: {
+        kind: 'single',
+        question: '...',
+        options: [
+          { id: 'a', text: '...' },
+          { id: 'b', text: '...' },
+        ],
+        correct: ['a'],
+        explanation: '...',
+      },
+    },
+    // ... минимум 5 шагов
+  ],
 }
 ```
 
-### Пример блока `python` (Pyodide)
+4. Запустите `npm run dev` — приложение покажет ошибку валидации, если что-то не так (в консоли).
+5. Запустите `npm run test` — `schemas.test.ts` проверит все курсы.
 
-```json
-{
-  "type": "python",
-  "python": {
-    "starterCode": "# Напечатайте Hello, World!\n",
-    "task": "Напечатайте строку `Hello, World!` с помощью `print()`.",
-    "solution": "print('Hello, World!')",
-    "expected": { "type": "stdout", "value": "Hello, World!" },
-    "hint": "print('...') выводит строку в stdout"
-  }
-}
+### Как добавить курс
+
+1. Создайте `src/data/my-course.ts`:
+
+```ts
+import type { Course } from './types';
+
+export const myCourse: Course = {
+  slug: 'my-course',          // только a-z, 0-9, дефис
+  title: 'Мой курс',
+  subtitle: 'Короткое описание',
+  description: 'Подробное описание',
+  level: 'Средний',           // Новичок | Средний | Продвинутый
+  tags: ['Custom'],
+  accent: '#4a90d9',          // hex-цвет
+  icon: 'python',             // см. CourseIcon: flask, docker, python, sql, design, ...
+  modules: [ /* ... */ ],
+  outcomes: ['Чему научитесь 1', 'Чему научитесь 2'],
+  requirements: ['Требование 1'],
+};
 ```
 
-Поля для Python: `expected` может быть `{ "type": "stdout", "value": "..." }` или `{ "type": "variable", "name": "x", "value": 42 }`. `forbidden` содержит regex для блокировки нежелательных конструкций (например, `import os`).
+2. В `src/data/index.ts` добавьте импорт и в `baseCourses`:
 
----
+```ts
+import { myCourse } from './my-course';
+// ...
+const baseCourses: Course[] = [
+  // ...
+  myCourse,
+];
+```
 
-## ➕ Как добавить урок в код
+3. В `src/data/categories.ts` добавьте в `courseCategory`:
+   `'my-course': 'languages',` (или другая категория из 9).
 
-1. Найдите файл нужного курса в `src/data/`.
-2. В нужном модуле (`modules[]`) и уроке (`lessons[]`) добавьте новый объект `Lesson` со `steps`.
-3. Каждый шаг — `theory` (с блоками) или `quiz` (с одним из 10 типов).
-4. Убедитесь, что все `id` уникальны.
-5. Запустите `npm test` — `validateAllCourses` проверит схемы.
-6. Запустите `npm run dev` и проверьте отображение.
+4. (Опционально) В `src/data/tracks.ts` добавьте курс в трек.
 
-> Если вы не хотите работать с кодом, используйте **визуальный редактор** по адресу `/editor`.
+5. Запустите `npm run dev` и `npm run test`.
 
----
+### Как добавить новый блок или тип квиза
 
-## 📚 Как добавить курс в код
+**Новый тип квиза:**
 
-1. Создайте новый файл в `src/data/` (например, `my-new-course.ts`) с `export const myNewCourse: Course = { ... }`.
-2. Заполните метаданные: `slug`, `title`, `subtitle`, `description`, `level`, `tags`, `accent`, `icon`, `outcomes`, `requirements`, `modules`.
-3. Добавьте уроки и шаги согласно схемам (`types.ts`).
-4. Зарегистрируйте курс в `src/data/index.ts`: импорт + запись в `baseCourses`.
-5. Если нужна иконка — добавьте `case` в `CourseIcon.tsx` и slug в `schemas.ts` (enum).
-6. Добавьте категорию в `src/data/categories.ts` (маппинг `slug → category`).
-7. Опционально — добавьте в трек в `src/data/tracks.ts`.
-8. Запустите `npm test` — валидация должна пройти.
+1. Добавьте интерфейс в `src/data/types.ts` и в union `Quiz`.
+2. Добавьте схему в `src/data/schemas.ts` (в `quizSchema`).
+3. Добавьте рендер в `src/components/StepContent.tsx` (функция `QuizView`, switch по `kind`).
+4. Добавьте редактор в `src/components/editor/QuizEditor.tsx` (и в `DEFAULT_QUIZ`).
 
----
+**Новый тип блока теории:**
 
-## 🛠️ Технологии
+1. Добавьте в union `TextBlock` (`src/data/types.ts`).
+2. Добавьте схему в `textBlockSchema` (`src/data/schemas.ts`).
+3. Добавьте рендер в `TextBlocks` (`src/components/StepContent.tsx`).
+4. Добавьте редактор в `BlockEditor.tsx` и кнопку в `EditorPage.tsx`.
 
-| Категория | Технологии |
-|-----------|------------|
-| **Фронтенд** | React 19, React Router 7, TypeScript 5.9 |
-| **Сборка** | Vite 7, vite-plugin-pwa |
-| **Стили** | Tailwind CSS 3.4, tailwind-merge, clsx |
-| **UI-компоненты** | Radix UI (Slot), Lucide React (иконки) |
-| **Валидация** | Zod 4 |
-| **Тестирование** | Vitest 5, Testing Library (React, DOM) |
-| **Линтинг** | ESLint 9, typescript-eslint |
-| **Подсветка кода** | Prism React Renderer |
-| **Диаграммы** | Mermaid 12 |
-| **SQL-песочница** | sql.js 1.13 (SQLite в WebAssembly) |
-| **Python-песочница** | Pyodide 0.29 (CPython в WebAssembly) |
-| **Уведомления** | Sonner |
+### Валидация и тесты
 
----
+Перед PR обязательно:
 
-## 📶 Офлайн-режим (PWA) и Деплой
+```bash
+npm run typecheck   # tsc --noEmit
+npm run lint        # eslint
+npm run test        # vitest
+npm run build       # прод-сборка (проверит, что всё собирается)
+```
 
-Проект использует `vite-plugin-pwa` для генерации Service Worker и манифеста. После сборки (`npm run build`) приложение можно установить на устройство и использовать без подключения к интернету.
+Что проверяют тесты:
 
-Для офлайн-песочниц в `vite.config.ts`:
-- `globPatterns` включает `.wasm` файлы.
-- `maximumFileSizeToCacheInBytes` увеличен (Pyodide весит ~12 МБ, SQLite ~600 КБ).
-- Файлы Pyodide скопированы в `public/assets/pyodide/`, чтобы Vite корректно отдавал их в dev-режиме и они попадали в precache при сборке.
+- `schemas.test.ts` — все курсы проходят Zod-валидацию.
+- `stats.test.ts` — `getCourse`, `courseStats`, `findLesson`.
+- `tracks.test.ts` — все курсы в треках существуют, без дублей, ≥2 курса.
+- `progress.test.tsx` — прогресс, SRS, закладки, битый localStorage.
+- `progress-io.test.ts` — экспорт/импорт прогресса (roundtrip).
+- `pluralize.test.ts` — склонения («урок / урока / уроков»).
 
-**Деплой** осуществляется на любой статический хостинг (GitHub Pages, Vercel, Netlify и т.п.). Убедитесь, что хостинг поддерживает SPA-роутинг (все запросы должны перенаправляться на `index.html`).
+Если тест упал — в консоли будет точный путь (`course.slug` → `module.id` → `step.id`) и текст ошибки.
 
----
+### Workflow PR
 
-## 🤝 Вклад в проект
+1. Fork репозитория.
+2. Создайте ветку: `git switch -c feat/my-new-lesson`.
+3. Внесите изменения, запустите `npm run test && npm run build`.
+4. Закоммитьте (`feat: add lesson about X`), запушьте, откройте PR.
+5. Дождитесь ревью.
 
-Проект открыт для сотрудничества. Вы можете предложить новый курс, исправить ошибку, добавить диаграмму или улучшить код.
+## Сообщить об ошибке
 
-**Порядок действий:**
+- В приложении на каждом шаге есть кнопка **«Сообщить об ошибке»** — она открывает GitHub Issue с предзаполненным шаблоном (курс, урок, шаг, индекс).
+- Или создайте Issue вручную: [github.com/ignatyevnik/DevAcademy/issues](https://github.com/ignatyevnik/DevAcademy/issues).
 
-1. Сделайте форк репозитория.
-2. Создайте ветку для своей функции (`git checkout -b feature/amazing-feature`).
-3. Внесите изменения и сделайте коммит (`git commit -m 'Add some amazing feature'`).
-4. Отправьте изменения в свой форк (`git push origin feature/amazing-feature`).
-5. Откройте Pull Request в основной репозиторий.
+## Лицензия
 
-Пожалуйста, следуйте существующему стилю кода и проверяйте изменения с помощью `npm run lint` и `npm test`.
-
----
-
-## 📄 Лицензия и использование
-
-Проект распространяется под лицензией **MIT**. Это означает, что вы можете свободно использовать, копировать, изменять, объединять, публиковать, распространять, сублицензировать и/или продавать копии программного обеспечения при условии сохранения уведомления об авторских правах и разрешения.
-
-**Некоммерческий проект.** Приложение предоставляется «как есть», без каких-либо гарантий. Авторы не несут ответственности за возможный ущерб, связанный с использованием материалов.
-
----
-
-**DevAcademy** — учитесь офлайн, растите в профессии. 🚀
+MIT. См. [LICENSE](LICENSE).
