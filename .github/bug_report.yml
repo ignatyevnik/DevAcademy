@@ -1,0 +1,39 @@
+name: Баг-репорт
+description: Сообщите об ошибке в приложении или контенте
+title: "[Баг]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Спасибо, что помогаете сделать DevAcademy лучше!
+  - type: input
+    id: course
+    attributes:
+      label: Курс (если применимо)
+      placeholder: "Например: cs-basics"
+  - type: input
+    id: lesson
+    attributes:
+      label: Урок / шаг
+      placeholder: "Например: ln-l5-s3"
+  - type: textarea
+    id: description
+    attributes:
+      label: Описание ошибки
+      description: Что произошло и что ожидалось?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Шаги воспроизведения
+      placeholder: |
+        1. Открыть...
+        2. Нажать...
+        3. Увидеть...
+  - type: input
+    id: environment
+    attributes:
+      label: Окружение
+      placeholder: "Браузер, ОС, версия приложения (если известно)"

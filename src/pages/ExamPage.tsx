@@ -18,7 +18,7 @@ interface ExamQuestion {
 
 const MAX_QUESTIONS = 20;
 
-function pickQuestions(modules: Course['modules']): ExamQuestion[] {
+export function pickQuestions(modules: Course['modules']): ExamQuestion[] {
   const all: ExamQuestion[] = [];
   for (const m of modules) {
     for (const l of m.lessons) {
