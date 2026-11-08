@@ -24,6 +24,7 @@ export default defineConfig([
       // Отключаем самые частые блокеры, которые не влияют на работу приложения
       '@typescript-eslint/no-explicit-any': 'off',
       'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/preserve-manual-memoization': 'off',
       'react-refresh/only-export-components': 'off',
       'react-hooks/exhaustive-deps': 'warn',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],

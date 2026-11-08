@@ -28,21 +28,26 @@ export default function CoursePage() {
   const { courseProgress, lessonProgress, state, resetCourse, isBookmarked } = useProgress();
   const [openModules, setOpenModules] = useState<Record<string, boolean>>({});
   const [confirmReset, setConfirmReset] = useState(false);
+  
+    // 1. Сначала useMemo
+  const quizCount = useMemo(() => {
+    let n = 0;
+    if (!course) return 0; // Добавь защиту внутри
+    for (const m of course.modules) {
+      for (const l of m.lessons) {
+        for (const s of l.steps) {
+          if (s.type === 'quiz') n++;
+        }
+      }
+    }
+    return n;
+  }, [course]);
 
   if (!course) return <Navigate to="/" replace />;
 
   const { lessons, steps } = courseStats(course);
   const { pct, done } = courseProgress(course.slug);
   const minutes = allLessons(course).reduce((a, l) => a + l.minutes, 0);
-
-  const quizCount = useMemo(() => {
-  let n = 0;
-  for (const m of course.modules)
-    for (const l of m.lessons)
-      for (const s of l.steps)
-        if (s.type === 'quiz') n++;
-  return n;
-}, [course]);
 
   // Валидируем lastVisited: урок мог быть удалён/переименован
   const last = state.lastVisited[course.slug];

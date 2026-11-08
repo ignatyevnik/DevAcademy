@@ -17,7 +17,9 @@ function getInitialTheme(): Theme {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored === 'light' || stored === 'dark') return stored;
-  } catch {}
+  } catch {
+    // 
+  }
   
   if (window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
   return 'light';

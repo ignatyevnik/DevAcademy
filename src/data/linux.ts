@@ -3525,7 +3525,7 @@ tar -xzf backup.tar.gz -C /tmp/        # в конкретную папку
 
 # Посмотреть содержимое (t — list)
 tar -tzf backup.tar.gz
-tar -tzf backup.tar.gz | grep "\.log"
+tar -tzf backup.tar.gz | grep ".log"
 
 # С bzip2 (сильнее, но медленнее)
 tar -cjf backup.tar.bz2 folder/

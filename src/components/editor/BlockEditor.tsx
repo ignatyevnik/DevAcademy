@@ -11,14 +11,14 @@ interface Props {
   onDelete: () => void;
 }
 
-export function BlockEditor({ block, onChange, onDelete }: Props) {
-  const field = (key: string, value: any) => onChange({ ...block, [key]: value } as TextBlock);
-
   const CharCount = ({ current, max = 2000 }: { current: number; max?: number }) => (
     <div className="text-[10px] text-muted-foreground text-right mt-1">
       {current} {max && `/ ${max}`}
     </div>
   );
+
+export function BlockEditor({ block, onChange, onDelete }: Props) {
+  const field = (key: string, value: any) => onChange({ ...block, [key]: value } as TextBlock);
 
   return (
     <div className="rounded-lg border border-border bg-muted/10 p-3 space-y-2">
