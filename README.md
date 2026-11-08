@@ -372,4 +372,4 @@ npm run build       # прод-сборка (проверит, что всё с�
 
 ## Лицензия
 
-MIT. См. [LICENSE](LICENSE).
+MIT. См. [LICENSE.MD](LICENSE.MD).
