@@ -361,5 +361,22 @@ case 'terraform':
       </g>
     </svg>
   );
+      case 'cs':
+      return (
+        <svg viewBox="0 0 48 48" className={cls} aria-hidden="true">
+          <rect x="4" y="4" width="40" height="40" rx="10" fill={accent} />
+          <g stroke="#fff" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            {/* Монитор */}
+            <rect x="10" y="12" width="28" height="18" rx="2" />
+            {/* Подставка */}
+            <path d="M20 30v4h-4M28 30v4h4" />
+            <path d="M14 34h20" />
+            {/* Символы < / > (Computer Science) */}
+            <path d="M18 17l-3 4 3 4" />
+            <path d="M30 17l3 4-3 4" />
+            <path d="M26 15l-4 12" />
+          </g>
+        </svg>
+      );
   }
 }

@@ -20,12 +20,14 @@ import { validateAllCourses } from './validate';
 import { terraformBasicsCourse } from './terraform';
 import { postgresqlDeepCourse } from './postgresql';
 import { ansibleBasicsCourse } from './ansible';
-import { kafkaBasicsCourse } from './kafka';   
+import { kafkaBasicsCourse } from './kafka';
+import { csBasicsCourse } from './cs-basics';   
 import { courseSchema } from './schemas'; // <-- импорт схемы для кастомных курсов
 
 // Базовые курсы, сгруппированные по темам (порядок = отображение в каталоге)
 const baseCourses: Course[] = [
   // 1. Фундамент: инструменты, которые нужны всем
+  csBasicsCourse,
   gitCourse,
   linuxCourse,
   networksCourse,

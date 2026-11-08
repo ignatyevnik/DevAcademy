@@ -359,6 +359,7 @@ icon: z.enum(
     'design',
     'qa-automation',
     'qa-senior',
+    'cs',
   ],
   {
     message:

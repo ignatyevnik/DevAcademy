@@ -30,6 +30,7 @@ export const categories: Category[] = [
 
 /** slug → category. Кастомные курсы без записи попадают в «Мои курсы» */
 export const courseCategory: Record<string, CategoryId> = {
+  'cs-basics':           'fundamentals',
   'git-basics':          'fundamentals',
   'linux-basics':        'fundamentals',
   'networks-http':       'fundamentals',

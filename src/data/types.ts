@@ -91,7 +91,8 @@ export type CourseIcon =
   | 'sql-advanced'
   | 'design'
   | 'qa-automation'
-  | 'qa-senior';
+  | 'qa-senior'
+  | 'cs';
 
 export interface Course {
   slug: string;

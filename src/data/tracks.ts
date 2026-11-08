@@ -16,12 +16,13 @@ export const tracks: Track[] = [
     title: 'QA: с нуля',
     description: 'Ручное тестирование, тест-дизайн, баг-репорты, первый автотест',
     courses: [
+      { slug: 'cs-basics', label: 'CS50: Информатика' },
+      { slug: 'qa-fundamentals', label: 'QA: основы' },
       { slug: 'git-basics', label: 'Git' },
       { slug: 'linux-basics', label: 'Linux' },
       { slug: 'networks-http', label: 'Сети' },
       { slug: 'sql-basics', label: 'SQL' },
       { slug: 'sql-advanced', label: 'SQL: продвинуто' },
-      { slug: 'qa-fundamentals', label: 'QA: основы' },
     ],
   },
   {
@@ -56,6 +57,7 @@ courses: [
   title: 'DevOps',
   description: 'Linux, Docker, Kubernetes, CI/CD — от контейнера до продакшена',
   courses: [
+    { slug: 'cs-basics', label: 'CS50: Информатика' },
     { slug: 'git-basics', label: 'Git' },
     { slug: 'linux-basics', label: 'Linux' },
     { slug: 'networks-http', label: 'Сети' },
@@ -78,6 +80,7 @@ courses: [
     description: 'Python, API, контейнеры — для backend-разработки',
 // backend-python:
 courses: [
+  { slug: 'cs-basics', label: 'CS50: Информатика' },
   { slug: 'git-basics', label: 'Git' },
   { slug: 'linux-basics', label: 'Linux' },
   { slug: 'python-basics', label: 'Python: база' },
@@ -98,6 +101,7 @@ courses: [
     description: 'Python, LLM, RAG, MCP — для AI-инженера',
 // ai-engineer:
 courses: [
+  { slug: 'cs-basics', label: 'CS50: Информатика' },
   { slug: 'git-basics', label: 'Git' },
   { slug: 'linux-basics', label: 'Linux' },
   { slug: 'python-basics', label: 'Python: база' },
