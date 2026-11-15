@@ -2217,122 +2217,205 @@ ssl.truststore.location=/etc/kafka/ssl/broker.truststore.jks`,
       id: 'kf-m6',
       title: 'Практикум',
       lessons: [
-        {
+{
           id: 'kf-l18',
-          title: 'Полный сценарий: producer, consumer, DLQ',
+          title: 'Практика: producer, consumer, DLQ и эксплуатация',
           minutes: 35,
           steps: [
             {
               id: 'kf-l18-s1',
-              title: 'Producer с гарантиями',
+              title: 'Боевой Producer и Consumer с DLQ',
               type: 'theory',
               blocks: [
                 {
                   type: 'code',
                   lang: 'python',
-                  caption: 'Producer с acks=all, key, DLQ',
-                  code: `from kafka import KafkaProducer\nfrom kafka.errors import KafkaError\nimport json\n\nproducer = KafkaProducer(\n    bootstrap_servers="localhost:9092",\n    acks="all",\n    enable_idempotence=True,\n    key_serializer=lambda k: k.encode("utf-8"),\n    value_serializer=lambda v: json.dumps(v).encode("utf-8"),\n    linger_ms=10,\n    compression_type="zstd",\n)\n\ndef publish_order(order: dict) -> None:\n    key = f"user:{order['user_id']}"\n    try:\n        producer.send("orders.created", key=key, value=order).get(timeout=10)\n    except KafkaError as e:\n        # Всё, что не ушло — в DLQ\n        producer.send("orders.failed", key=key, value={**order, "error": str(e)})\n        raise`,
+                  caption: 'Producer с acks=all, идемпотентностью и ключом партиционирования',
+                  code: 'from kafka import KafkaProducer\nimport json\n\nproducer = KafkaProducer(\n    bootstrap_servers="localhost:9092",\n    acks="all",\n    enable_idempotence=True,\n    linger_ms=10,\n    compression_type="zstd",\n    key_serializer=lambda k: k.encode("utf-8"),\n    value_serializer=lambda v: json.dumps(v).encode("utf-8"),\n)\n\n# Все заказы одного пользователя попадают в одну партицию\nproducer.send("orders.created", key=f"user:{order[\'user_id\']}", value=order)',
                 },
                 {
-                  type: 'list',
-                  items: [
-                    '`acks=all` + `enable.idempotence=True` — надёжность + дедупликация',
-                    '`key=user:X` — порядок по пользователю (все события одного user в одной партиции)',
-                    '`linger_ms=10`, `compression_type=zstd` — throughput',
-                    '`.get(timeout=10)` — синхронная отправка (для критичных событий)',
-                    'DLQ (`orders.failed`) — туда падают неудачные сообщения',
-                  ],
+                  type: 'code',
+                  lang: 'python',
+                  caption: 'Consumer с ручным коммитом и Dead Letter Queue (DLQ)',
+                  code: 'for record in consumer:\n    try:\n        process_order(record.value)\n    except Exception as e:\n        dlq_producer.send("orders.dlq", key=record.key, value={\n            "payload": record.value,\n            "error": str(e),\n            "partition": record.partition,\n            "offset": record.offset,\n        })\n    finally:\n        consumer.commit()  # At-least-once: коммитим после обработки или записи в DLQ',
                 },
               ],
             },
             {
               id: 'kf-l18-s2',
-              title: 'Consumer с offset commit и DLQ',
-              type: 'theory',
-              blocks: [
-                {
-                  type: 'code',
-                  lang: 'python',
-                  caption: 'Consumer с ручным commit и DLQ',
-                  code: `from kafka import KafkaConsumer, KafkaProducer\nimport json\n\nconsumer = KafkaConsumer(\n    "orders.created",\n    bootstrap_servers="localhost:9092",\n    group_id="orders-service",\n    enable_auto_commit=False,\n    auto_offset_reset="earliest",\n    value_deserializer=lambda b: json.loads(b.decode("utf-8")),\n    key_deserializer=lambda b: b.decode("utf-8"),\n    max_poll_records=100,\n    max_poll_interval_ms=300000,\n)\n\ndlq = KafkaProducer(\n    bootstrap_servers="localhost:9092",\n    value_serializer=lambda v: json.dumps(v).encode("utf-8"),\n)\n\nfor record in consumer:\n    try:\n        process_order(record.value)\n    except Exception as e:\n        dlq.send("orders.failed", key=record.key.encode(), value={\n            **record.value, "error": str(e),\n            "partition": record.partition, "offset": record.offset,\n        })\n    finally:\n        # commit после обработки (at-least-once)\n        consumer.commit()`,
-                },
-                {
-                  type: 'note',
-                  text: 'Ключевой паттерн: `enable_auto_commit=False` + `commit()` после обработки = at-least-once (гарантируем, что не потеряем). Для exactly-once — транзакции consumer-а (`send_offsets_to_transaction`), но это сложнее. DLQ — must-have: «не смогли обработать — отложили, не потеряли».',
-                },
-              ],
-            },
-            {
-              id: 'kf-l18-s3',
-              title: 'Проверь себя: идемпотентный consumer',
+              title: 'Зачем нужен DLQ',
               type: 'quiz',
               quiz: {
                 kind: 'single',
-                question: 'Зачем consumer-у нужен DLQ (dead-letter queue)?',
+                question: 'Какую проблему решает паттерн Dead Letter Queue (DLQ) при чтении из Kafka?',
                 options: [
-                  { id: 'a', text: 'Для ускорения' },
-                  { id: 'b', text: 'Чтобы не потерять сообщения, которые не удалось обработать — отложить для разбора' },
-                  { id: 'c', text: 'Для сжатия' },
-                  { id: 'd', text: 'Для шифрования' },
+                  { id: 'a', text: 'Ускоряет сжатие батчей на брокере' },
+                  { id: 'b', text: 'Изолирует «ядовитые» (poison pill) сообщения в отдельный топик, чтобы не блокировать чтение партиции и не терять данные' },
+                  { id: 'c', text: 'Заменяет репликацию партиций' },
+                  { id: 'd', text: 'Автоматически увеличивает число партиций' },
                 ],
                 correct: ['b'],
                 explanation:
-                  'DLQ — «очередь неудачных»: если обработка упала, сообщение не теряется, а уходит в `orders.failed`. Потом можно разобрать вручную или переобработать. Без DLQ — либо падаем на каждом «плохом» сообщении (бесконечный retry), либо теряем его.',
+                  'Если сообщение вызывает ошибку обработки, без DLQ консьюмер либо застрянет на нём в бесконечном цикле ретраев, либо пропустит и потеряет его. DLQ сохраняет проблемное сообщение для разбора и позволяет двигаться дальше.',
+              },
+            },
+            {
+              id: 'kf-l18-s3',
+              title: 'Параллелизм внутри Consumer Group',
+              type: 'quiz',
+              quiz: {
+                kind: 'number',
+                question: 'У топика `orders.created` 8 партиций. В консьюмер-группе `orders-workers` запущено 10 инстансов сервиса. Сколько инстансов будут реально читать данные (не простаивать)?',
+                correct: 8,
+                explanation:
+                  'Одна партиция внутри одной consumer group может читаться максимум одним консьюмером. Поэтому 8 инстансов получат по 1 партиции, а 2 останутся в горячем резерве (idle).',
               },
             },
             {
               id: 'kf-l18-s4',
-              title: 'Проверь себя: at-least-once',
+              title: 'Настройки Producer',
               type: 'quiz',
               quiz: {
-                kind: 'single',
-                question: 'Как consumer достигает at-least-once семантики?',
-                options: [
-                  { id: 'a', text: '`enable_auto_commit=True`' },
-                  { id: 'b', text: '`enable_auto_commit=False` + `commit()` после успешной обработки' },
-                  { id: 'c', text: '`acks=0`' },
-                  { id: 'd', text: '`isolation.level=read_uncommitted`' },
+                kind: 'matching',
+                question: 'Сопоставьте параметр Producer и его роль',
+                pairs: [
+                  { left: 'acks=all', right: 'Ждать подтверждения записи от лидера и всех реплик в ISR' },
+                  { left: 'enable.idempotence=true', right: 'Защита от дублей при сетевых ретраях (по PID и sequence)' },
+                  { left: 'linger.ms=10', right: 'Подождать до 10 мс для накопления более крупного батча' },
+                  { left: 'compression.type=zstd', right: 'Сжать батч алгоритмом Zstandard перед отправкой' },
                 ],
-                correct: ['b'],
                 explanation:
-                  '`enable_auto_commit=False` + commit после обработки = at-least-once: если упали до commit, сообщение будет перечитано. Это правильный выбор для большинства: лучше обработать дважды (нужна идемпотентность!), чем потерять.',
+                  'Связка acks=all + enable.idempotence=true отвечает за надёжность без дублей, а linger.ms + compression.type — за высокий throughput.',
               },
             },
             {
               id: 'kf-l18-s5',
-              title: 'Проверь себя: команды',
+              title: 'Порядок надёжной записи с acks=all',
               type: 'quiz',
               quiz: {
-                kind: 'matching',
-                question: 'Сопоставьте параметр producer и его назначение',
-                pairs: [
-                  { left: 'acks=all', right: 'Ждать подтверждения от всех ISR' },
-                  { left: 'enable.idempotence=true', right: 'Не создавать дубликаты при ретраях' },
-                  { left: 'linger.ms=10', right: 'Копить batch для throughput' },
-                  { left: 'compression.type=zstd', right: 'Сжимать батч' },
+                kind: 'sorting',
+                question: 'Расставьте этапы записи сообщения при `acks=all` в правильном порядке',
+                items: [
+                  'Producer вычисляет партицию по hash(key) и отправляет батч лидеру',
+                  'Лидер записывает данные в свой локальный сегмент лога',
+                  'Фолловеры из списка ISR скачивают данные (fetch) и подтверждают запись',
+                  'Лидер отправляет успешный ack обратно Producer-у',
+                ],
+                correct: [
+                  'Producer вычисляет партицию по hash(key) и отправляет батч лидеру',
+                  'Лидер записывает данные в свой локальный сегмент лога',
+                  'Фолловеры из списка ISR скачивают данные (fetch) и подтверждают запись',
+                  'Лидер отправляет успешный ack обратно Producer-у',
                 ],
                 explanation:
-                  '`acks=all` — надёжность. `idempotence=true` — без дублей. `linger.ms` — batch. `compression` — сжатие. Это четыре главных параметра producer для прода.',
+                  'При acks=all лидер ждёт, пока все синхронные реплики (ISR) втянут данные, прежде чем ответить продюсеру об успехе.',
               },
             },
             {
-  id: 'kf-l18-s6',
-  title: 'Проверь себя: end-to-end идемпотентность',
-  type: 'quiz',
-  quiz: {
-    kind: 'single',
-    question: 'Producer с `enable.idempotence=true` шлёт в Kafka. Consumer читает и делает `INSERT` в Postgres. При рестарте consumer-а — что нужно для end-to-end идемпотентности?',
-    options: [
-      { id: 'a', text: 'Ничего, Kafka гарантирует' },
-      { id: 'b', text: 'Idempotency key (например, `event_id`) + `INSERT ... ON CONFLICT DO NOTHING` в Postgres' },
-      { id: 'c', text: 'acks=0' },
-      { id: 'd', text: 'Отключить enable.auto.commit' },
-    ],
-    correct: ['b'],
-    explanation:
-      'Kafka гарантирует «at least once» между топиками. Для записи в Postgres нужна идемпотентность на стороне потребителя: уникальный `event_id` + `ON CONFLICT DO NOTHING` (или уникальный индекс). Иначе при рестарте consumer-а — дубликаты в БД.',
-  },
-},
+              id: 'kf-l18-s6',
+              title: 'Политики очистки: delete vs compact',
+              type: 'quiz',
+              quiz: {
+                kind: 'table',
+                question: 'Отметьте, какая политика очистки (`cleanup.policy`) подходит для каждого сценария',
+                columns: ['delete', 'compact'],
+                rows: [
+                  { label: 'Удаляет сегменты целиком по истечении retention.ms (например, 7 дней)', correct: ['delete'] },
+                  { label: 'Хранит только последнее актуальное значение для каждого ключа', correct: ['compact'] },
+                  { label: 'Лог всех кликов пользователей для аналитики за месяц', correct: ['delete'] },
+                  { label: 'Витрина текущих профилей пользователей или KTable', correct: ['compact'] },
+                ],
+                explanation:
+                  'delete — для потоков событий с ограничением по времени/объёму. compact — для хранения актуального среза состояния по ключу.',
+              },
+            },
+            {
+              id: 'kf-l18-s7',
+              title: 'Конфигурация кворума репликации',
+              type: 'quiz',
+              quiz: {
+                kind: 'cloze',
+                question: 'Заполните стандартную промышленную конфигурацию топика из 3 реплик, допускающую падение 1 брокера без потери данных:',
+                text: 'replication.factor=____\nmin.insync.replicas=____',
+                blanks: [
+                  { accepted: ['3'], hint: 'общее число реплик' },
+                  { accepted: ['2'], hint: 'минимум синхронных реплик' },
+                ],
+                explanation:
+                  'replication.factor=3 и min.insync.replicas=2 в связке с acks=all — золотой стандарт надёжности в продакшене.',
+              },
+            },
+            {
+              id: 'kf-l18-s8',
+              title: 'Метрика отставания чтения',
+              type: 'quiz',
+              quiz: {
+                kind: 'fill',
+                question: 'Как называется ключевая метрика (3 буквы на английском), показывающая разницу между последним записанным offset в партиции и текущим прочитанным offset консьюмер-группы?',
+                accepted: ['lag', 'LAG', 'consumer lag'],
+                placeholder: 'три буквы',
+                hint: 'Отставание консьюмера',
+                explanation:
+                  'Consumer Lag (LOG-END-OFFSET минус CURRENT-OFFSET) показывает, сколько сообщений скопилось в очереди на обработку.',
+              },
+            },
+            {
+              id: 'kf-l18-s9',
+              title: 'Гарантии доставки и идемпотентность в БД',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие условия необходимы для надёжной обработки событий без потери данных и без дублей в целевой БД Postgres?',
+                options: [
+                  { id: 'a', text: 'Отключить автокоммит (enable.auto.commit=False) и коммитить offset только после записи в БД' },
+                  { id: 'b', text: 'Использовать уникальный ключ события (event_id) и INSERT ... ON CONFLICT DO NOTHING в Postgres' },
+                  { id: 'c', text: 'Поставить acks=0 на продюсере для максимальной скорости' },
+                  { id: 'd', text: 'Пересылать невалидные сообщения в DLQ-топик перед коммитом оффсета' },
+                ],
+                correct: ['a', 'b', 'd'],
+                explanation:
+                  'Ручной коммит после обработки + DLQ гарантируют отсутствие потерь (at-least-once), а идемпотентный INSERT ON CONFLICT в БД защищает от дублей при повторном чтении.',
+              },
+            },
+            {
+              id: 'kf-l18-s10',
+              title: 'Тренажёр: создание топика и сброс оффсетов (Replay)',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'kafka@cluster:~$',
+                    task: 'Создайте топик payments.processed с 6 партициями и фактором репликации 3 на localhost:9092, проверьте отставание группы payments-svc, а затем перемотайте оффсеты этой группы на самое начало (--to-earliest --execute).',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Создайте топик payments.processed (--partitions 6 --replication-factor 3 --bootstrap-server localhost:9092)',
+                        acceptedPatterns: [
+                          '^kafka-topics\\.sh\\s+(?=.*--create)(?=.*--topic\\s+payments\\.processed)(?=.*--partitions\\s+6)(?=.*--replication-factor\\s+3)(?=.*--bootstrap-server\\s+localhost:9092).*$',
+                        ],
+                        output: 'Created topic payments.processed.',
+                      },
+                      {
+                        instruction: 'Шаг 2: Проверьте статус и lag группы payments-svc через kafka-consumer-groups.sh --describe',
+                        acceptedPatterns: [
+                          '^kafka-consumer-groups\\.sh\\s+(?=.*--describe)(?=.*--group\\s+payments-svc)(?=.*--bootstrap-server\\s+localhost:9092).*$',
+                        ],
+                        output: 'GROUP         TOPIC               PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG\npayments-svc  payments.processed  0          450             450             0',
+                      },
+                      {
+                        instruction: 'Шаг 3: Сбросьте оффсеты группы payments-svc для топика payments.processed в начало (--reset-offsets --to-earliest --execute)',
+                        acceptedPatterns: [
+                          '^kafka-consumer-groups\\.sh\\s+(?=.*--reset-offsets)(?=.*--to-earliest)(?=.*--group\\s+payments-svc)(?=.*--topic\\s+payments\\.processed)(?=.*--execute)(?=.*--bootstrap-server\\s+localhost:9092).*$',
+                        ],
+                        output: 'GROUP         TOPIC               PARTITION  NEW-OFFSET\npayments-svc  payments.processed  0          0',
+                      },
+                    ],
+                    solution: 'kafka-topics.sh --create --topic payments.processed --partitions 6 --replication-factor 3 --bootstrap-server localhost:9092\nkafka-consumer-groups.sh --describe --group payments-svc --bootstrap-server localhost:9092\nkafka-consumer-groups.sh --reset-offsets --to-earliest --group payments-svc --topic payments.processed --execute --bootstrap-server localhost:9092',
+                    hint: 'Используйте kafka-topics.sh --create, затем kafka-consumer-groups.sh --describe и kafka-consumer-groups.sh --reset-offsets --to-earliest --execute.',
+                  },
+                },
+              ],
+            },
           ],
         },
       ],

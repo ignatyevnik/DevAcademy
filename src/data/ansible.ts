@@ -1743,107 +1743,204 @@ export const ansibleBasicsCourse: Course = {
   ],
 },
 {
-  id: 'ans-l15',
-  title: 'Полный сценарий: nginx + БД + деплой',
-  minutes: 35,
-  steps: [
-    {
-      id: 'ans-l15-s1',
-      title: 'Структура проекта',
-      type: 'theory',
-      blocks: [
-        {
-          type: 'code',
-          lang: 'text',
-          caption: 'Структура проекта',
-          code: 'infra/\n├── ansible.cfg\n├── inventory/\n│   ├── production/\n│   │   ├── hosts.ini\n│   │   ├── group_vars/\n│   │   │   ├── all.yml\n│   │   │   ├── web.yml\n│   │   │   ├── db.yml\n│   │   │   └── vault.yml          # зашифрован\n│   │   └── host_vars/\n│   └── staging/\n│       └── ...\n├── roles/\n│   ├── nginx/\n│   ├── postgresql/\n│   └── app/\n├── site.yml\n└── requirements.yml',
+          id: 'ans-l15',
+          title: 'Практикум: nginx, БД и безопасный деплой',
+          minutes: 35,
+          steps: [
+            {
+              id: 'ans-l15-s1',
+              title: 'Архитектура боевого проекта',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'code',
+                  lang: 'text',
+                  caption: 'Структура проекта',
+                  code: 'infra/\n├── ansible.cfg\n├── inventory/\n│   ├── production/\n│   │   ├── hosts.ini\n│   │   └── group_vars/\n│   │       ├── all.yml\n│   │       ├── web.yml\n│   │       └── vault.yml          # зашифрован ansible-vault\n├── roles/\n│   ├── nginx/\n│   ├── postgresql/\n│   └── app/\n├── site.yml\n└── requirements.yml',
+                },
+                {
+                  type: 'code',
+                  lang: 'yaml',
+                  caption: 'site.yml',
+                  code: '---\n- name: Настроить БД\n  hosts: db\n  become: true\n  roles:\n    - postgresql\n\n- name: Настроить web + приложение\n  hosts: web\n  become: true\n  serial: 1                    # rolling update по одному серверу\n  roles:\n    - nginx\n    - app\n\n- name: Применить миграции БД\n  hosts: db[0]\n  become: true\n  tasks:\n    - name: Миграция\n      ansible.builtin.command: /opt/app/migrate.sh\n      args:\n        creates: /opt/app/.migrated\n      run_once: true',
+                },
+              ],
+            },
+            {
+              id: 'ans-l15-s2',
+              title: 'Rolling update без простоя',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Какой параметр в play гарантирует обновление web-серверов строго по одному хосту за раз?',
+                options: [
+                  { id: 'a', text: 'serial: 1' },
+                  { id: 'b', text: 'strategy: free' },
+                  { id: 'c', text: 'run_once: true' },
+                  { id: 'd', text: 'delegate_to: localhost' },
+                ],
+                correct: ['a'],
+                explanation:
+                  'serial: 1 заставляет Ansible пройти все задачи play на первом хосте, и только при успехе перейти ко второму. Если первый упадёт — остальные останутся работать.',
+              },
+            },
+            {
+              id: 'ans-l15-s3',
+              title: 'Приоритет переменных в Ansible',
+              type: 'quiz',
+              quiz: {
+                kind: 'sorting',
+                question: 'Отсортируйте источники переменных от НИЗШЕГО приоритета к ВЫСШЕМУ',
+                items: [
+                  'role defaults (defaults/main.yml)',
+                  'group_vars/web.yml',
+                  'host_vars/web1.yml',
+                  'extra vars (-e в командной строке)',
+                ],
+                correct: [
+                  'role defaults (defaults/main.yml)',
+                  'group_vars/web.yml',
+                  'host_vars/web1.yml',
+                  'extra vars (-e в командной строке)',
+                ],
+                explanation:
+                  'Самый низкий приоритет у defaults роли. Переменные группы переопределяют defaults, переменные конкретного хоста — группу, а флаг -e (--extra-vars) перебивает всё.',
+              },
+            },
+            {
+              id: 'ans-l15-s4',
+              title: 'Модули и их назначение',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте модуль Ansible и задачу, для которой он предназначен',
+                pairs: [
+                  { left: 'ansible.builtin.template', right: 'Отрендерить Jinja2-конфиг с переменными' },
+                  { left: 'ansible.builtin.copy', right: 'Скопировать статический файл без изменений' },
+                  { left: 'ansible.builtin.lineinfile', right: 'Изменить или добавить одну строку в конфиге' },
+                  { left: 'ansible.builtin.service', right: 'Запустить/перезапустить демон и добавить в автозагрузку' },
+                ],
+                explanation:
+                  'template — для Jinja2 (.j2), copy — для статики, lineinfile — для точечной правки одной строки (например, в sshd_config), service — управление демонами.',
+              },
+            },
+            {
+              id: 'ans-l15-s5',
+              title: 'Специальная группа всех хостов',
+              type: 'quiz',
+              quiz: {
+                kind: 'fill',
+                question: 'Как называется встроенная группа в inventory, которая автоматически включает абсолютно все хосты?',
+                accepted: ['all'],
+                placeholder: 'одно слово',
+                hint: 'По-английски «все»',
+                explanation:
+                  'Группа all объединяет все хосты инвентаря, а группа ungrouped — те, что не попали ни в одну пользовательскую группу.',
+              },
+            },
+            {
+              id: 'ans-l15-s6',
+              title: 'Срабатывание Handler',
+              type: 'quiz',
+              quiz: {
+                kind: 'number',
+                question: 'В play 4 задачи изменили конфигурацию (вернули статус changed) и каждая вызвала `notify: reload nginx`. Сколько раз выполнится хендлер `reload nginx` в конце play?',
+                correct: 1,
+                explanation:
+                  'Ansible дедуплицирует вызовы notify: сколько бы задач ни уведомили один и тот же handler, он выполнится ровно 1 раз в конце play.',
+              },
+            },
+            {
+              id: 'ans-l15-s7',
+              title: 'Идемпотентность модулей',
+              type: 'quiz',
+              quiz: {
+                kind: 'table',
+                question: 'Отметьте, какие задачи в Ansible являются идемпотентными из коробки, а какие — нет',
+                columns: ['Идемпотентна', 'Не идемпотентна'],
+                rows: [
+                  { label: 'ansible.builtin.apt: name=nginx state=present', correct: ['Идемпотентна'] },
+                  { label: 'ansible.builtin.shell: apt install -y nginx (без creates)', correct: ['Не идемпотентна'] },
+                  { label: 'ansible.builtin.file: path=/opt/app state=directory', correct: ['Идемпотентна'] },
+                  { label: 'ansible.builtin.command: /opt/migrate.sh (без creates)', correct: ['Не идемпотентна'] },
+                ],
+                explanation:
+                  'Декларативные модули (apt, file, copy, template) проверяют текущее состояние перед действием. Модули command и shell выполняются вслепую каждый раз, если не указать args.creates или changed_when.',
+              },
+            },
+            {
+              id: 'ans-l15-s8',
+              title: 'Шаблон Jinja2 с фильтром по умолчанию',
+              type: 'quiz',
+              quiz: {
+                kind: 'cloze',
+                question: 'Допишите Jinja2-выражение в шаблоне nginx.conf.j2, чтобы при отсутствии переменной `app_port` подставлялся порт `8000`:',
+                text: 'proxy_pass http://127.0.0.1:{{ app_port | ____(____) }};',
+                blanks: [
+                  { accepted: ['default', 'd'], hint: 'фильтр значения по умолчанию' },
+                  { accepted: ['8000'], hint: 'номер порта' },
+                ],
+                explanation:
+                  'Фильтр {{ app_port | default(8000) }} защищает шаблон от ошибки undefined variable, если переменная не задана.',
+              },
+            },
+            {
+              id: 'ans-l15-s9',
+              title: 'Напишите идемпотентную задачу',
+              type: 'quiz',
+              quiz: {
+                kind: 'code',
+                question: 'Напишите задачу (task) Ansible, которая устанавливает пакет `nginx` в состояние `present` с помощью модуля `ansible.builtin.apt` и вызывает `notify: reload nginx`.',
+                starterCode: '- name: Install nginx\n  ',
+                mustInclude: [
+                  { pattern: 'ansible\\.builtin\\.apt:|apt:', message: 'Используйте модуль ansible.builtin.apt' },
+                  { pattern: 'name:\\s*nginx', message: 'Укажите пакет name: nginx' },
+                  { pattern: 'state:\\s*present', message: 'Укажите состояние state: present' },
+                  { pattern: 'notify:\\s*reload nginx', message: 'Добавьте notify: reload nginx' },
+                ],
+                explanation:
+                  '- name: Install nginx\n  ansible.builtin.apt:\n    name: nginx\n    state: present\n  notify: reload nginx',
+              },
+            },
+            {
+              id: 'ans-l15-s10',
+              title: 'Тренажёр: шифрование секретов и деплой с Vault',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'devops@control:~/infra$',
+                    task: 'Зашифруйте файл секретов group_vars/production/vault.yml с помощью ansible-vault, проверьте плейбук site.yml линтером ansible-lint и запустите site.yml с передачей пароля vault из файла ~/.vault_pass.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Зашифруйте файл group_vars/production/vault.yml командой ansible-vault encrypt',
+                        acceptedPatterns: [
+                          '^ansible-vault\\s+encrypt\\s+group_vars/production/vault\\.ya?ml$',
+                        ],
+                        output: 'Encryption successful',
+                      },
+                      {
+                        instruction: 'Шаг 2: Проверьте плейбук site.yml с помощью ansible-lint',
+                        acceptedPatterns: ['^ansible-lint(\\s+site\\.ya?ml)?$'],
+                        output: 'Passed: 0 failure(s), 0 warning(s) on 1 files.',
+                      },
+                      {
+                        instruction: 'Шаг 3: Запустите ansible-playbook site.yml с флагом --vault-password-file ~/.vault_pass',
+                        acceptedPatterns: [
+                          '^ansible-playbook\\s+(?=.*site\\.ya?ml)(?=.*--vault-password-file\\s+~\\/\\.vault_pass).*$',
+                        ],
+                        output: 'PLAY [Настроить БД] *********************************************\nPLAY RECAP ******************************************************\ndb1 : ok=4 changed=1 unreachable=0 failed=0\nweb1 : ok=6 changed=2 unreachable=0 failed=0',
+                      },
+                    ],
+                    solution: 'ansible-vault encrypt group_vars/production/vault.yml\nansible-lint site.yml\nansible-playbook site.yml --vault-password-file ~/.vault_pass',
+                    hint: 'Используйте ansible-vault encrypt, затем ansible-lint site.yml и ansible-playbook site.yml --vault-password-file ~/.vault_pass.',
+                  },
+                },
+              ],
+            },
+          ],
         },
-        {
-          type: 'code',
-          lang: 'yaml',
-          caption: 'site.yml',
-          code: '---\n- name: Настроить БД\n  hosts: db\n  become: true\n  roles:\n    - postgresql\n\n- name: Настроить web + приложение\n  hosts: web\n  become: true\n  serial: 1                    # rolling update\n  roles:\n    - nginx\n    - app\n\n- name: Применить миграции БД\n  hosts: db[0]                 # только первая БД\n  become: true\n  tasks:\n    - name: Миграция\n      command: /opt/app/migrate.sh\n      args:\n        creates: /opt/app/.migrated   # идемпотентность\n      run_once: true',
-        },
-        {
-          type: 'note',
-          text: 'Порядок: сначала БД (роль postgresql), потом web (nginx + app), потом миграции (`run_once` на первой БД). `serial: 1` на web — rolling update. `creates:` — защита от повторного запуска миграции.',
-        },
-      ],
-    },
-    {
-      id: 'ans-l15-s2',
-      title: 'Проверь себя: rolling update',
-      type: 'quiz',
-      quiz: {
-        kind: 'single',
-        question: 'Что нужно добавить в play для rolling update по одному хосту?',
-        options: [
-          { id: 'a', text: '`serial: 1`' },
-          { id: 'b', text: '`strategy: free`' },
-          { id: 'c', text: '`run_once: true`' },
-          { id: 'd', text: '`delegate_to: localhost`' },
-        ],
-        correct: ['a'],
-        explanation:
-          '`serial: 1` — обновлять по одному хосту. Если web1 упал — web2 не тронут. `strategy: free` — параллельно и непредсказуемо. `run_once` — только один хост. `delegate_to` — выполнить на другом хосте.',
-      },
-    },
-    {
-      id: 'ans-l15-s3',
-      title: 'Проверь себя: миграции',
-      type: 'quiz',
-      quiz: {
-        kind: 'single',
-        question: 'Как сделать миграцию БД идемпотентной в Ansible?',
-        options: [
-          { id: 'a', text: '`command` без `creates`' },
-          { id: 'b', text: '`command: migrate.sh` + `args: { creates: /opt/.migrated }`' },
-          { id: 'c', text: '`shell` с `changed_when: false`' },
-          { id: 'd', text: 'Просто `command: migrate.sh`' },
-        ],
-        correct: ['b'],
-        explanation:
-          '`creates:` — «не выполняй, если файл существует». После первой миграции создаётся маркер `/opt/.migrated`, и повторный запуск вернёт `ok` (skipped). Альтернатива — `changed_when: false` + `failed_when` (менее надёжно).',
-      },
-    },
-    {
-      id: 'ans-l15-s4',
-      title: 'Проверь себя: порядок задач',
-      type: 'quiz',
-      quiz: {
-        kind: 'single',
-        question: 'В `site.yml` три play: (1) БД, (2) web+app, (3) миграции на db[0]. Почему миграции идут последними, а не сразу после БД?',
-        options: [
-          { id: 'a', text: 'Так требует YAML-синтаксис' },
-          { id: 'b', text: 'Миграции меняют схему — приложение должно быть уже задеплоено, чтобы корректно работать с новой схемой; порядок «БД → приложение → миграция» — expand-contract' },
-          { id: 'c', text: 'Потому что db[0] недоступен раньше' },
-          { id: 'd', text: 'Это случайность' },
-        ],
-        correct: ['b'],
-        explanation:
-          'Классическая ошибка — мигрировать до деплоя: новый код сломается о старую схему, а старый код — о новую. Правильный порядок: (1) БД настроена, (2) новое приложение задеплоено (умеет работать со старой и новой схемой — expand-contract), (3) миграция схемы. `creates:` + `run_once` — защита от повторов.',
-      },
-    },
-    {
-      id: 'ans-l15-s5',
-      title: 'Проверь себя: run_once',
-      type: 'quiz',
-      quiz: {
-        kind: 'single',
-        question: 'Play `hosts: db` с 3 хостами, задача с `run_once: true`. На скольких хостах выполнится задача?',
-        options: [
-          { id: 'a', text: 'На всех трёх' },
-          { id: 'b', text: 'Только на первом из группы `db`' },
-          { id: 'c', text: 'Ни на одном' },
-          { id: 'd', text: 'Зависит от `serial`' },
-        ],
-        correct: ['b'],
-        explanation:
-          '`run_once: true` — «выполнить только на первом хосте группы». Идеально для миграций, регистрации в Consul, создания общих ресурсов: 10 web-хостов, но миграция — одна. Комбинируйте с `delegate_to: db[0]`, если действие должно идти на конкретном хосте (мастер БД), а не просто «первом попавшемся».',
-      },
-    },
-  ],
-},
         {
           id: 'ans-l16',
           title: 'Troubleshooting и best practices',

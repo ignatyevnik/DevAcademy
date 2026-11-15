@@ -16,6 +16,7 @@ import { gitopsCourse } from './gitops';
 import { sqlBasicsCourse } from './sql-basics';
 import { sqlAdvancedCourse } from './sql-advanced';
 import { designCourse } from './design';
+import { systemDesignCourse } from './system-design';
 import { validateAllCourses } from './validate';
 import { terraformBasicsCourse } from './terraform';
 import { postgresqlDeepCourse } from './postgresql';
@@ -65,6 +66,7 @@ const baseCourses: Course[] = [
 
   // 9. Архитектура
   designCourse,
+  systemDesignCourse,
 ];
 
 export const baseSlugs = new Set(baseCourses.map((c) => c.slug));

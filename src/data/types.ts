@@ -91,6 +91,7 @@ export type CourseIcon =
   | 'sql'
   | 'sql-advanced'
   | 'design'
+  | 'system-design'
   | 'qa-automation'
   | 'qa-senior'
   | 'cs';

@@ -2423,188 +2423,239 @@ export const postgresqlDeepCourse: Course = {
       id: 'pg-m8',
       title: 'Практикум',
       lessons: [
-        {
+{
           id: 'pg-l20',
           title: 'Практика: MVCC, EXPLAIN, индексы, бэкапы',
           minutes: 35,
           steps: [
             {
               id: 'pg-l20-s1',
-              title: 'MVCC',
+              title: 'MVCC и раздувание таблиц (bloat)',
               type: 'quiz',
               quiz: {
                 kind: 'single',
-                question: 'Почему после массовых UPDATE таблица в PostgreSQL растёт?',
+                question: 'Почему после массовых UPDATE таблица в PostgreSQL растёт на диске?',
                 options: [
-                  { id: 'a', text: 'UPDATE всегда перезаписывает файл' },
-                  { id: 'b', text: 'UPDATE = INSERT + DELETE (новая версия + мёртвая), без VACUUM мёртвые копятся' },
-                  { id: 'c', text: 'PostgreSQL не поддерживает UPDATE' },
-                  { id: 'd', text: 'Это баг' },
+                  { id: 'a', text: 'UPDATE всегда полностью перезаписывает файл таблицы' },
+                  { id: 'b', text: 'UPDATE создаёт новую версию строки (новый xmin), а старую помечает xmax; без VACUUM мёртвые версии копятся' },
+                  { id: 'c', text: 'PostgreSQL не умеет переиспользовать дисковое пространство' },
+                  { id: 'd', text: 'Это происходит только при уровне изоляции Serializable' },
                 ],
                 correct: ['b'],
                 explanation:
-                  'MVCC: UPDATE создаёт новую версию, старую помечает xmax. Мёртвые версии занимают место, пока VACUUM их не очистит. Поэтому массовые UPDATE без VACUUM = bloat.',
+                  'В MVCC UPDATE физически равен INSERT новой версии + пометка старой версии через xmax. Мёртвые версии занимают место до тех пор, пока их не очистит VACUUM.',
               },
             },
             {
               id: 'pg-l20-s2',
-              title: 'EXPLAIN: узкое место',
+              title: 'Порядок работы WAL и Checkpoint',
               type: 'quiz',
               quiz: {
-                kind: 'single',
-                question: '`EXPLAIN ANALYZE` показывает Seq Scan на 1M-таблице и `Rows Removed by Filter: 999997`. Что делать?',
-                options: [
-                  { id: 'a', text: 'Увеличить work_mem' },
-                  { id: 'b', text: 'Создать индекс на колонку в WHERE' },
-                  { id: 'c', text: 'Сделать VACUUM FULL' },
-                  { id: 'd', text: 'Перейти на другую СУБД' },
+                kind: 'sorting',
+                question: 'Расставьте этапы фиксации транзакции (COMMIT) и сброса данных на диск в правильном порядке',
+                items: [
+                  'Backend записывает изменение в WAL buffer и меняет страницу в shared_buffers',
+                  'При COMMIT процесс сбрасывает (fsync) запись из WAL buffer в файл pg_wal на диске',
+                  'Клиент получает подтверждение успешного COMMIT',
+                  'Фоновый checkpointer / bgwriter асинхронно сбрасывает грязные страницы из shared_buffers в файлы таблицы',
                 ],
-                correct: ['b'],
+                correct: [
+                  'Backend записывает изменение в WAL buffer и меняет страницу в shared_buffers',
+                  'При COMMIT процесс сбрасывает (fsync) запись из WAL buffer в файл pg_wal на диске',
+                  'Клиент получает подтверждение успешного COMMIT',
+                  'Фоновый checkpointer / bgwriter асинхронно сбрасывает грязные страницы из shared_buffers в файлы таблицы',
+                ],
                 explanation:
-                  'Seq Scan + 999 997 отфильтровано = «прочитали миллион, оставили 3». Это индексная задача: CREATE INDEX на колонку из WHERE. После — Index Scan, и запрос ускорится в сотни раз.',
+                  'Суть Write-Ahead Logging: на момент COMMIT на диск гарантированно сбрасывается только последовательный лог WAL, а сами страницы таблиц (heap) доезжают на диск позже в фоне.',
               },
             },
             {
               id: 'pg-l20-s3',
-              title: 'BUFFERS',
+              title: 'Расчёт объёма чтения из BUFFERS',
               type: 'quiz',
               quiz: {
-                kind: 'single',
-                question: '`Buffers: shared hit=10 read=5000`. Что оптимизировать?',
-                options: [
-                  { id: 'a', text: 'Индекс — 5000 страниц читается с диска' },
-                  { id: 'b', text: 'Ничего, это норма' },
-                  { id: 'c', text: 'Уменьшить shared_buffers' },
-                  { id: 'd', text: 'Удалить все индексы' },
-                ],
-                correct: ['a'],
+                kind: 'number',
+                question: 'В выводе `EXPLAIN (ANALYZE, BUFFERS)` указано: `Buffers: shared hit=100 read=1000`. Сколько мегабайт (MB) PostgreSQL прочитал с диска в этом запросе? (Стандартный размер страницы — 8 KB, считайте 1 MB = 1000 KB для простоты: 1000 * 8 / 1000)',
+                correct: 8,
                 explanation:
-                  'read=5000 — 5000 страниц (40 MB) с диска. Причины: мало shared_buffers, плохой индекс, или запрос реально читает много. Сначала — индекс/переписать запрос, потом — кэш.',
+                  'Каждая страница (блок) в PostgreSQL весит 8 KB. 1000 прочитанных с диска блоков (shared read) × 8 KB = 8000 KB ≈ 8 MB.',
               },
             },
             {
               id: 'pg-l20-s4',
-              title: 'CREATE INDEX на проде',
+              title: 'CREATE INDEX на проде без блокировок',
               type: 'quiz',
               quiz: {
                 kind: 'fill',
-                question: 'Какое ключевое слово нужно добавить к CREATE INDEX, чтобы не блокировать запись на большой прод-таблице?',
+                question: 'Какое ключевое слово нужно добавить после `CREATE INDEX`, чтобы построение индекса на большой таблице не блокировало `INSERT/UPDATE/DELETE`?',
                 accepted: ['CONCURRENTLY', 'concurrently'],
                 placeholder: 'KEYWORD',
-                hint: 'одно слово, заглавными',
+                hint: 'Одно слово на английском («параллельно/конкурентно»)',
                 explanation:
-                  'CREATE INDEX CONCURRENTLY — строит индекс в фоне, не блокируя INSERT/UPDATE/DELETE. Обычный CREATE INDEX берёт SHARE-блокировку: запись ждёт, пока строится (часы на больших таблицах).',
+                  'CREATE INDEX CONCURRENTLY строит индекс за два прохода в фоне, не блокируя пишущие транзакции.',
               },
             },
             {
               id: 'pg-l20-s5',
-              title: 'Типы индексов',
+              title: 'Типы индексов PostgreSQL',
               type: 'quiz',
               quiz: {
                 kind: 'matching',
-                question: 'Сопоставьте задачу и тип индекса',
+                question: 'Сопоставьте задачу и оптимальный тип индекса',
                 pairs: [
-                { left: 'jsonb @> и tsvector @@ (поиск)', right: 'GIN' },
-                { left: 'Геометрия (PostGIS), диапазоны', right: 'GiST' },
-                { left: 'Логи по created_at (огромная таблица)', right: 'BRIN' },
-                { left: '=, <, >, BETWEEN, ORDER BY', right: 'B-tree' },
+                  { left: 'jsonb @>, массивы и полнотекстовый поиск (tsvector @@)', right: 'GIN' },
+                  { left: 'Геометрия (PostGIS) и пересечение диапазонов', right: 'GiST' },
+                  { left: 'Огромная таблица логов, растущая строго по created_at', right: 'BRIN' },
+                  { left: 'Векторный поиск эмбеддингов для RAG (pgvector)', right: 'HNSW' },
                 ],
                 explanation:
-  'GIN — jsonb, FTS, pg_trgm, массивы. GiST — геометрия и диапазоны. BRIN — огромные сортированные данные (логи, метрики). B-tree — универсал для =, <, >, BETWEEN, ORDER BY. На собеседовании по PostgreSQL это стандартный вопрос.',
+                  'GIN — инвертированный индекс для составных значений. GiST — геометрия и диапазоны. BRIN — минимакс-индекс по блокам для логов. HNSW — графовый индекс для векторов в pgvector.',
               },
             },
             {
               id: 'pg-l20-s6',
-              title: 'Партиционирование',
+              title: 'Покрывающий и частичный индекс',
               type: 'quiz',
               quiz: {
-                kind: 'single',
-                question: 'Какой тип партиционирования подходит для таблицы orders по created_at?',
-                options: [
-                  { id: 'a', text: 'LIST' },
-                  { id: 'b', text: 'RANGE' },
-                  { id: 'c', text: 'HASH' },
-                  { id: 'd', text: 'B-tree' },
+                kind: 'cloze',
+                question: 'Допишите DDL для создания покрывающего (covering) и частичного (partial) индекса, который включает дополнительную колонку `total` и индексирует только оплаченные заказы:',
+                text: 'CREATE INDEX idx_orders_paid ON orders (user_id) ____ (total) ____ status = \'paid\';',
+                blanks: [
+                  { accepted: ['INCLUDE', 'include'], hint: 'ключевое слово для включения неключевых колонок' },
+                  { accepted: ['WHERE', 'where'], hint: 'условие фильтрации частичного индекса' },
                 ],
-                correct: ['b'],
                 explanation:
-                  'RANGE — по диапазону. Для дат (created_at) — месяцы/дни. LIST — для малого числа значений (регион). HASH — для равномерного распределения. B-tree — это индекс, не партиционирование.',
+                  'INCLUDE (total) добавляет колонку в листовые узлы индекса ради Index-Only Scan, а WHERE status = \'paid\' делает индекс частичным (partial).',
               },
             },
             {
               id: 'pg-l20-s7',
-              title: 'pgvector',
+              title: 'Сравнение физической и логической репликации',
               type: 'quiz',
               quiz: {
-                kind: 'single',
-                question: 'Какое расширение добавляет векторный поиск в PostgreSQL?',
-                options: [
-                  { id: 'a', text: 'pg_trgm' },
-                  { id: 'b', text: 'pgvector' },
-                  { id: 'c', text: 'postgis' },
-                  { id: 'd', text: 'hstore' },
+                kind: 'table',
+                question: 'Отметьте, какие свойства характерны для Streaming (физической) репликации, а какие — для Logical репликации',
+                columns: ['Streaming', 'Logical'],
+                rows: [
+                  { label: 'Точная побайтовая копия всего кластера целиком', correct: ['Streaming'] },
+                  { label: 'Позволяет реплицировать только выбранные таблицы', correct: ['Logical'] },
+                  { label: 'Позволяет реплицировать между мажорными версиями (например, PG 15 → PG 17)', correct: ['Logical'] },
+                  { label: 'Требует уровень wal_level = logical', correct: ['Logical'] },
                 ],
-                correct: ['b'],
                 explanation:
-                  'pgvector — векторный поиск (embeddings). До 10M векторов работает отлично — часто хватает, чтобы не тащить Qdrant/Pinecone. HNSW-индекс — стандарт 2025.',
+                  'Streaming реплицирует блоки диска целиком (standby той же мажорной версии и только read-only). Logical декодирует изменения строк и работает по выбранным таблицам и между разными версиями.',
               },
             },
             {
               id: 'pg-l20-s8',
-              title: 'PITR',
+              title: 'Что нужно для PITR',
               type: 'quiz',
               quiz: {
                 kind: 'multiple',
-                question: 'Что нужно для point-in-time recovery?',
+                question: 'Какие компоненты необходимы для восстановления базы на конкретную секунду в прошлом (Point-in-Time Recovery)?',
                 options: [
-                  { id: 'a', text: 'pg_basebackup (или pgBackRest full backup)' },
-                  { id: 'b', text: 'Архив WAL-файлов' },
-                  { id: 'c', text: 'recovery_target_time' },
-                  { id: 'd', text: 'VACUUM FULL' },
+                  { id: 'a', text: 'Физический базовый бэкап (pg_basebackup / pgBackRest)' },
+                  { id: 'b', text: 'Непрерывный архив WAL-сегментов с момента базового бэкапа' },
+                  { id: 'c', text: 'Настройка recovery_target_time и файл recovery.signal' },
+                  { id: 'd', text: 'Предварительный запуск VACUUM FULL' },
                 ],
                 correct: ['a', 'b', 'c'],
                 explanation:
-                  'PITR = base backup + WAL archive + recovery_target_time. Восстанавливаем базу, применяем WAL до момента. VACUUM FULL — про очистку места, к PITR не относится.',
+                  'Для PITR разворачивается базовый физический бэкап, после чего PostgreSQL накатывает архивные WAL-сегменты вплоть до указанного recovery_target_time.',
               },
             },
             {
               id: 'pg-l20-s9',
-              title: 'PgBouncer',
+              title: 'VACUUM без блокировки таблицы',
               type: 'quiz',
               quiz: {
-                kind: 'single',
-                question: 'Какой режим PgBouncer стандартен для веб-приложений?',
-                options: [
-                  { id: 'a', text: 'session' },
-                  { id: 'b', text: 'transaction' },
-                  { id: 'c', text: 'statement' },
-                  { id: 'd', text: 'async' },
+                kind: 'code',
+                question: 'Напишите SQL-команду, которая выполняет обычный неблокирующий `VACUUM` вместе со сбором статистики (`ANALYZE`) для таблицы `users` (не используйте `FULL`!).',
+                starterCode: 'VACUUM ',
+                mustInclude: [
+                  { pattern: 'VACUUM', message: 'Нужно ключевое слово VACUUM' },
+                  { pattern: 'ANALYZE', message: 'Добавьте ANALYZE для обновления статистики планировщика' },
+                  { pattern: 'users', message: 'Укажите таблицу users' },
                 ],
-                correct: ['b'],
+                mustNotInclude: [
+                  { pattern: 'FULL', message: 'Не используйте VACUUM FULL — он берёт эксклюзивную блокировку таблицы!' },
+                ],
                 explanation:
-                  'transaction — клиент занимает соединение только на время транзакции. Максимальная экономия. session — почти не экономит. statement — ломает multi-statement.',
+                  'VACUUM (ANALYZE) users; или VACUUM ANALYZE users; очищает мёртвые туплы и обновляет статистику для планировщика без блокировки чтения и записи.',
               },
             },
             {
               id: 'pg-l20-s10',
-              title: 'VACUUM',
-              type: 'quiz',
-              quiz: {
-                kind: 'code',
-                question: 'Напишите команду: обычный VACUUM (без блокировки) с ANALYZE для таблицы users.',
-                starterCode: 'VACUUM ',
-                mustInclude: [
-                  { pattern: 'VACUUM', message: 'Нужно VACUUM' },
-                  { pattern: 'ANALYZE', message: 'Нужен ANALYZE' },
-                  { pattern: 'users', message: 'Нужна таблица users' },
-                  { pattern: 'FULL', message: 'Нельзя VACUUM FULL (блокирует)' },
-                ],
-                mustNotInclude: [
-                  { pattern: 'FULL', message: 'VACUUM FULL блокирует таблицу — не для этого задания' },
-                ],
-                explanation:
-                  'VACUUM (ANALYZE) users; или VACUUM ANALYZE users; — очищает мёртвые версии и обновляет статистику, не блокируя таблицу. VACUUM FULL — блокирует, не использовать.',
-              },
+              title: 'Песочница SQL: диагностика раздутых таблиц и Seq Scan',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Представьте, что вы подключились к проблемной БД и выгрузили срез системного представления `pg_stat_user_tables` в таблицу `table_stats`. Найдите таблицы, которым срочно нужны индекс и вакуум.',
+                },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema:
+                      'CREATE TABLE table_stats (\n  relname TEXT,\n  seq_scan INTEGER,\n  idx_scan INTEGER,\n  n_live_tup INTEGER,\n  n_dead_tup INTEGER\n);\nINSERT INTO table_stats VALUES\n  (\'users\', 15, 95000, 50000, 200),\n  (\'orders\', 4500, 120, 200000, 85000),\n  (\'audit_logs\', 8200, 0, 500000, 190000),\n  (\'countries\', 50, 500, 200, 0);',
+                    task: 'Выберите имя таблицы (`relname`) и количество мёртвых строк (`n_dead_tup`) для таблиц, где число последовательных сканирований (`seq_scan`) больше 1000 И число мёртвых строк (`n_dead_tup`) больше 50000. Отсортируйте по убыванию `n_dead_tup`.',
+                    solution:
+                      'SELECT relname, n_dead_tup\nFROM table_stats\nWHERE seq_scan > 1000 AND n_dead_tup > 50000\nORDER BY n_dead_tup DESC;',
+                    expected: {
+                      columns: ['relname', 'n_dead_tup'],
+                      rows: [
+                        ['audit_logs', 190000],
+                        ['orders', 85000],
+                      ],
+                      order: 'order',
+                    },
+                    hint: 'Используйте WHERE seq_scan > 1000 AND n_dead_tup > 50000 и ORDER BY n_dead_tup DESC.',
+                  },
+                },
+              ],
+            },
+            {
+              id: 'pg-l20-s11',
+              title: 'Тренажёр: снятие дампа и проверка готовности PostgreSQL',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'dba@pg-primary:~$',
+                    task: 'Проверьте готовность сервера PostgreSQL на localhost утилитой pg_isready, снимите сжатый логический бэкап базы mydb в custom-формате (-Fc) в файл mydb.dump, а затем восстановите его в базу mydb_stage в 4 потока (-j 4) через pg_restore.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Проверьте доступность PostgreSQL командой pg_isready',
+                        acceptedPatterns: ['^pg_isready(\\s+-h\\s+localhost)?$'],
+                        output: '/var/run/postgresql:5432 - accepting connections',
+                      },
+                      {
+                        instruction: 'Шаг 2: Создайте дамп базы mydb в custom-формате (-Fc) в файл mydb.dump с помощью pg_dump',
+                        acceptedPatterns: [
+                          '^pg_dump\\s+(?=.*-Fc)(?=.*-f\\s+mydb\\.dump)(?=.*mydb).*$',
+                        ],
+                        commonMistakes: [
+                          {
+                            pattern: '^pg_dump\\s+(?!.*-Fc).*mydb',
+                            output: 'Подсказка: укажите флаг -Fc (custom format) и выходной файл -f mydb.dump.',
+                          },
+                        ],
+                        output: 'Дамп базы mydb успешно сохранён в файл mydb.dump (custom compressed format).',
+                      },
+                      {
+                        instruction: 'Шаг 3: Восстановите mydb.dump в базу -d mydb_stage в 4 потока (-j 4) через pg_restore',
+                        acceptedPatterns: [
+                          '^pg_restore\\s+(?=.*-d\\s+mydb_stage)(?=.*-j\\s+4).*mydb\\.dump$',
+                        ],
+                        output: 'pg_restore: restored 42 tables and 88 indexes in 4 parallel jobs.',
+                      },
+                    ],
+                    solution: 'pg_isready\npg_dump -Fc -f mydb.dump mydb\npg_restore -d mydb_stage -j 4 mydb.dump',
+                    hint: 'Последовательность: pg_isready → pg_dump -Fc -f mydb.dump mydb → pg_restore -d mydb_stage -j 4 mydb.dump.',
+                  },
+                },
+              ],
             },
           ],
         },

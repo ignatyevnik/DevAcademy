@@ -60,4 +60,5 @@ export const courseCategory: Record<string, CategoryId> = {
   'ai-agents':           'ai',
 
   'design-patterns':     'architecture',
+  'system-design':       'architecture', 
 };

@@ -299,6 +299,32 @@ case 'python':
         </svg>
       );
 
+    case 'system-design':
+      return (
+        <svg viewBox="0 0 48 48" className={cls} aria-hidden="true">
+          <rect x="4" y="4" width="40" height="40" rx="10" fill={accent} />
+          <g
+            stroke="#fff"
+            strokeWidth="2.4"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            transform="translate(2.4, 2.4) scale(0.9)"
+          >
+            {/* Верхний узел (Load Balancer) */}
+            <rect x="18" y="9" width="12" height="7" rx="2" />
+            {/* Два средних узла (App Servers) */}
+            <rect x="9" y="21" width="11" height="7" rx="2" />
+            <rect x="28" y="21" width="11" height="7" rx="2" />
+            {/* Нижний узел (Storage / Shards) */}
+            <ellipse cx="24" cy="36" rx="8" ry="3" />
+            {/* Связи */}
+            <path d="M24 16v3M24 19l-9.5 2M24 19l9.5 2M14.5 28l6 5.5M33.5 28l-6 5.5" />
+          </g>
+          <GearBadge accent={accent} />
+        </svg>
+      );  
+
     case 'qa-automation':
       return (
         <svg viewBox="0 0 48 48" className={cls} aria-hidden="true">

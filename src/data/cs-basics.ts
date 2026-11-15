@@ -135,7 +135,7 @@ export const csBasicsCourse: Course = {
             },
           ],
         },
-        {
+{
           id: 'cs-l2',
           title: 'Алгоритмы и псевдокод',
           minutes: 30,
@@ -175,6 +175,11 @@ export const csBasicsCourse: Course = {
                     'Линейный поиск: начать с 1-й страницы и листать по одной. В худшем случае — 1000 шагов.',
                     'Бинарный поиск: открыть 500-ю страницу, понять, в какой мы половине, и повторять. В худшем случае — всего 10 шагов (потому что 2^10 = 1024).',
                   ],
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Как бинарный поиск делит массив из 1000 элементов в худшем случае (поиск 1000)',
+                  code: 'graph LR\n  S1["1..1000<br/>mid=500"] -->|"1000 > 500"| S2["501..1000<br/>mid=750"]\n  S2 -->|"1000 > 750"| S3["751..1000<br/>mid=875"]\n  S3 -->|"..."| S10["Шаг 10:<br/>mid=1000 (Найдено!)"]',
                 },
                 {
                   type: 'p',
@@ -232,84 +237,90 @@ export const csBasicsCourse: Course = {
             },
             {
               id: 'cs-l2-s5',
-              title: 'Практика: бинарный поиск',
+              title: 'Практика: бинарный поиск в худшем случае',
               type: 'theory',
               blocks: [
                 {
                   type: 'p',
-                  text: 'Давайте посмотрим, как бинарный поиск выглядит на Python. Обратите внимание, как мы сужаем границы `left` и `right`.',
+                  text: 'В коде ниже бинарный поиск ищет число `750` в списке от 1 до 1000. Если запустить его как есть, он найдёт `750` всего за **2 шага** (первым шагом проверит середину `500`, а вторым — середину правой половины `750`). Но сколько шагов потребуется в **худшем случае** — например, при поиске самого последнего числа `1000`?',
                 },
                 {
                   type: 'python',
                   python: {
                     starterCode:
-                      'def binary_search(arr, target):\n    left = 0\n    right = len(arr) - 1\n    steps = 0\n\n    while left <= right:\n        steps += 1\n        mid = (left + right) // 2\n\n        if arr[mid] == target:\n            return steps  # Возвращаем количество шагов\n        elif arr[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n\n    return -1\n\n# У нас есть отсортированный список от 1 до 1000\nnumbers = list(range(1, 1001))\n# Найдём число 750 и сохраним количество шагов\nresult = binary_search(numbers, 750)\nprint(result)\n',
-                    task: 'Запустите код. Сколько шагов потребовалось бинарному поиску, чтобы найти число 750 в списке из 1000 элементов? Количество шагов сохранится в переменной `result`.',
+                      'def binary_search(arr, target):\n    left = 0\n    right = len(arr) - 1\n    steps = 0\n\n    while left <= right:\n        steps += 1\n        mid = (left + right) // 2\n\n        if arr[mid] == target:\n            return steps  # Возвращаем количество шагов\n        elif arr[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n\n    return -1\n\n# Список от 1 до 1000\nnumbers = list(range(1, 1001))\n# TODO: Замените 750 на 1000, чтобы проверить худший случай (10 шагов)\nresult = binary_search(numbers, 750)\nprint(result)\n',
+                    task: 'Замените искомое число `750` на `1000` в вызове `binary_search(numbers, ...)`, чтобы проверить худший случай для 1000 элементов, и нажмите «Проверить».',
                     solution:
-                      'def binary_search(arr, target):\n    left = 0\n    right = len(arr) - 1\n    steps = 0\n\n    while left <= right:\n        steps += 1\n        mid = (left + right) // 2\n\n        if arr[mid] == target:\n            return steps\n        elif arr[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n\n    return -1\n\nnumbers = list(range(1, 1001))\nresult = binary_search(numbers, 750)\nprint(result)',
+                      'def binary_search(arr, target):\n    left = 0\n    right = len(arr) - 1\n    steps = 0\n\n    while left <= right:\n        steps += 1\n        mid = (left + right) // 2\n\n        if arr[mid] == target:\n            return steps\n        elif arr[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n\n    return -1\n\nnumbers = list(range(1, 1001))\nresult = binary_search(numbers, 1000)\nprint(result)',
                     expected: { type: 'stdout', value: '10' },
-                    hint: 'Просто запустите код, он сам выведет количество шагов.',
+                    hint: 'Измените строку вызова на: result = binary_search(numbers, 1000)',
                   },
                 },
                 {
                   type: 'note',
-                  text: 'Потрясающе: чтобы найти число среди 1000, потребовалось всего 10 шагов. Чтобы найти среди миллиона — потребуется всего 20. Вот почему выбор правильного алгоритма (Big O) важнее, чем скорость процессора.',
+                  text: 'Даже для самого крайнего числа 1000 бинарному поиску потребовалось всего 10 шагов (а линейному понадобилась бы вся 1000). Чтобы найти число среди миллиона элементов — потребуется не более 20 шагов.',
                 },
               ],
             },
           ],
         },
-                {
+{
           id: 'cs-l3',
           title: 'Булева алгебра и логика',
           minutes: 25,
           steps: [
             {
               id: 'cs-l3-s1',
-              title: 'Джордж Буль и мир True/False',
+              title: 'Джордж Буль и базовые логические вентили',
               type: 'theory',
               blocks: [
                 {
                   type: 'p',
-                  text: 'В XIX веке математик Джордж Буль придумал систему, в которой всё сводится к двум значениям: Истина (True) или Ложь (False). Спустя сто лет инженеры поняли, что эта система идеально ложится на транзисторы: 1 — это True, а 0 — это False.',
+                  text: 'В XIX веке математик Джордж Буль придумал алгебру, в которой всё сводится к двум значениям: Истина (True / 1) или Ложь (False / 0). В XX веке Клод Шеннон доказал, что если соединять транзисторы в простые схемы — **логические вентили (logic gates)** — то с помощью булевой алгебры можно выполнять любые математические и логические операции.',
                 },
                 {
                   type: 'mermaid',
-                  caption: 'Логические операторы',
-                  code: 'graph TD\n  A["Условие A"] --> AND{"AND (И)"}\n  B["Условие B"] --> AND\n  AND -->|"Оба True"| True1["True"]\n  AND -->|"Хотя бы один False"| False1["False"]',
+                  caption: 'Четыре фундаментальных логических вентиля: AND, OR, NOT, XOR',
+                  code: 'graph LR\n  subgraph G_AND["AND (И) — оба 1"]\n    A1["Вход A"] --> GateAND(["AND"])\n    B1["Вход B"] --> GateAND\n    GateAND --> OutAND["1 только если<br/>A=1 И B=1"]\n  end\n  subgraph G_OR["OR (ИЛИ) — хотя бы один 1"]\n    A2["Вход A"] --> GateOR(["OR"])\n    B2["Вход B"] --> GateOR\n    GateOR --> OutOR["1 если A=1<br/>ИЛИ B=1"]\n  end\n  subgraph G_NOT["NOT (НЕ) — инверсия"]\n    A3["Вход A"] --> GateNOT(["NOT"])\n    GateNOT --> OutNOT["Меняет 1→0<br/>и 0→1"]\n  end\n  subgraph G_XOR["XOR (Исключающее ИЛИ)"]\n    A4["Вход A"] --> GateXOR(["XOR"])\n    B4["Вход B"] --> GateXOR\n    GateXOR --> OutXOR["1 если входы<br/>РАЗНЫЕ"]\n  end',
                 },
                 {
                   type: 'note',
-                  text: 'Булева алгебра — это фундамент всех вычислений. Любой сложный алгоритм, любая программа — это в конечном счёте огромное количество операций сравнения True и False.',
+                  text: 'Булева алгебра — это буквальный «мост» между физикой и кодом. Из миллиардов крошечных вентилей AND, OR, NOT и XOR внутри процессора собираются сумматоры, ячейки памяти и блоки управления.',
                 },
               ],
             },
             {
               id: 'cs-l3-s2',
-              title: 'Три главных оператора',
+              title: 'Три главных оператора и как из них строят схемы',
               type: 'theory',
               blocks: [
                 {
                   type: 'p',
-                  text: 'В программировании мы используем три основных логических оператора. Они позволяют комбинировать условия.',
+                  text: 'В программировании мы постоянно комбинируем базовые логические операторы. Чтобы понять, насколько они мощные, посмотрим на **полусумматор (Half Adder)** — реальную схему внутри процессора, которая складывает два бита (`A` и `B`) с помощью всего двух вентилей (`XOR` и `AND`):',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Как процессор складывает два бита (1 + 1 = 10 в двоичной) через XOR и AND',
+                  code: 'graph LR\n  A["Бит A (1)"] --> XOR(["XOR (Разные?)"])\n  B["Бит B (1)"] --> XOR\n  A --> AND(["AND (Оба 1?)"])\n  B --> AND\n  XOR --> Sum["Младший бит суммы (Sum = 0)"]\n  AND --> Carry["Перенос в старший разряд (Carry = 1)"]',
                 },
                 {
                   type: 'list',
                   items: [
-                    'AND (И, в Python — `and`): возвращает True, только если ОБА условия истинны. (True and False = False)',
-                    'OR (ИЛИ, в Python — `or`): возвращает True, если ХОТЯ БЫ ОДНО условие истинно. (True or False = True)',
-                    'NOT (НЕ, в Python — `not`): инвертирует значение. (not True = False)',
+                    'AND (И, в Python — `and`): возвращает True, только если ОБА условия истинны. (`True and False` → `False`)',
+                    'OR (ИЛИ, в Python — `or`): возвращает True, если ХОТЯ БЫ ОДНО условие истинно. (`True or False` → `True`)',
+                    'NOT (НЕ, в Python — `not`): инвертирует значение на противоположное. (`not True` → `False`)',
+                    'XOR (Исключающее ИЛИ, в Python — `!=` или `^` для булевых): возвращает True, когда значения РАЗНЫЕ (`True ^ False` → `True`, но `True ^ True` → `False`).',
                   ],
                 },
                 {
                   type: 'table',
-                  caption: 'Таблица истинности',
-                  head: ['A', 'B', 'A and B', 'A or B', 'not A'],
+                  caption: 'Полная таблица истинности',
+                  head: ['A', 'B', 'A and B', 'A or B', 'A xor B', 'not A'],
                   rows: [
-                    ['True', 'True', 'True', 'True', 'False'],
-                    ['True', 'False', 'False', 'True', 'False'],
-                    ['False', 'True', 'False', 'True', 'True'],
-                    ['False', 'False', 'False', 'False', 'True'],
+                    ['True (1)', 'True (1)', 'True (1)', 'True (1)', 'False (0)', 'False (0)'],
+                    ['True (1)', 'False (0)', 'False (0)', 'True (1)', 'True (1)', 'False (0)'],
+                    ['False (0)', 'True (1)', 'False (0)', 'True (1)', 'True (1)', 'True (1)'],
+                    ['False (0)', 'False (0)', 'False (0)', 'False (0)', 'False (0)', 'True (1)'],
                   ],
                 },
               ],
@@ -320,7 +331,7 @@ export const csBasicsCourse: Course = {
               type: 'quiz',
               quiz: {
                 kind: 'single',
-                question: 'Что вернёт выражение `True and False or True`? (Оператор AND выполняется раньше OR)',
+                question: 'Что вернёт выражение `True and False or True`? (Приоритет: NOT → AND → OR)',
                 options: [
                   { id: 'a', text: 'True' },
                   { id: 'b', text: 'False' },
@@ -329,27 +340,32 @@ export const csBasicsCourse: Course = {
                 ],
                 correct: ['a'],
                 explanation:
-                  'Сначала вычисляется `True and False` (результат False). Затем выражение принимает вид `False or True`, что равно True.',
+                  'У операторов есть строгий приоритет: сначала `not`, затем `and`, и в конце `or` (как умножение перед сложением). Сначала вычисляется `True and False` → `False`. Затем `False or True` → `True`.',
               },
             },
             {
               id: 'cs-l3-s4',
-              title: 'Логические выражения в Python',
+              title: 'Составные условия и ленивые вычисления',
               type: 'theory',
               blocks: [
                 {
                   type: 'p',
-                  text: 'Логические операторы часто используются в условиях `if`. Например, чтобы проверить, что пользователь совершеннолетний и имеет водительские права:',
+                  text: 'В реальных программах вентили соединяются в цепочки проверок. Например, пустить пользователя за руль каршеринга можно, если ему есть 18 лет **И** у него есть права **И** аккаунт **НЕ** заблокирован:',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Комбинация AND и NOT в бизнес-логике',
+                  code: 'graph LR\n  Age["age >= 18"] --> AND1(["AND"])\n  Lic["has_license"] --> AND1\n  Ban["is_banned"] --> NOT1(["NOT"])\n  AND1 --> AND2(["AND"])\n  NOT1 --> AND2\n  AND2 -->|"True"| Allow["Доступ разрешён"]\n  AND2 -->|"False"| Deny["Отказ"]',
                 },
                 {
                   type: 'code',
                   lang: 'python',
-                  caption: 'Проверка условий',
-                  code: 'age = 20\nhas_license = True\n\nif age >= 18 and has_license:\n    print("Можно за руль")\nelse:\n    print("Нельзя")\n\n# Если бы age было 16, то первое условие (age >= 18) вернуло бы False.\n# False and True = False, сработал бы else.',
+                  caption: 'Проверка условий в Python',
+                  code: 'age = 20\nhas_license = True\nis_banned = False\n\nif age >= 18 and has_license and not is_banned:\n    print("Можно за руль")\nelse:\n    print("Нельзя")',
                 },
                 {
                   type: 'note',
-                  text: 'Python использует ленивые вычисления (short-circuit evaluation). В выражении `A and B` он даже не будет проверять B, если A уже False, так как результат гарантированно False.',
+                  text: 'Python использует ленивые вычисления (short-circuit evaluation): в выражении `A and B` он даже не станет проверять `B`, если `A` уже `False`. А в `A or B` он не станет проверять `B`, если `A` уже `True`.',
                 },
               ],
             },
@@ -2074,7 +2090,7 @@ export const csBasicsCourse: Course = {
         // ─────────────────────────────────────────────
         // Урок cs-l18: Итоговый экзамен
         // ─────────────────────────────────────────────
-        {
+{
           id: 'cs-l18',
           title: 'Практика: от битов до алгоритмов',
           minutes: 35,
@@ -2098,6 +2114,17 @@ export const csBasicsCourse: Course = {
             },
             {
               id: 'cs-l18-s2',
+              title: 'Перевод из двоичной в десятичную',
+              type: 'quiz',
+              quiz: {
+                kind: 'number',
+                question: 'Чему равно двоичное число `00001010` в десятичной системе счисления?',
+                correct: 10,
+                explanation: 'Считаем степени двойки справа налево: 8 (2³) + 2 (2¹) = 10.',
+              },
+            },
+            {
+              id: 'cs-l18-s3',
               title: 'Алгоритмы и Big O',
               type: 'quiz',
               quiz: {
@@ -2109,7 +2136,52 @@ export const csBasicsCourse: Course = {
               },
             },
             {
-              id: 'cs-l18-s3',
+              id: 'cs-l18-s4',
+              title: 'Булева логика',
+              type: 'quiz',
+              quiz: {
+                kind: 'fill',
+                question: 'Что выведет в консоль выражение `not (True and False)` в Python?',
+                accepted: ['True', 'true'],
+                placeholder: 'True или False',
+                hint: 'Сначала вычисляется выражение в скобках',
+                explanation: 'В скобках `True and False` даёт `False`. Затем `not False` инвертирует результат в `True`.',
+              },
+            },
+            {
+              id: 'cs-l18-s5',
+              title: 'Указатели и память в C',
+              type: 'quiz',
+              quiz: {
+                kind: 'cloze',
+                question: 'Заполните пропуски для работы с указателями и динамической памятью в C:',
+                text: 'int x = 10;\nint *p = ____x;\nint *arr = malloc(5 * sizeof(int));\n____(arr);',
+                blanks: [
+                  { accepted: ['&'], hint: 'оператор взятия адреса' },
+                  { accepted: ['free'], hint: 'освобождение памяти' },
+                ],
+                explanation: 'Оператор `&` возвращает адрес переменной в памяти, а функция `free()` освобождает память, выделенную через `malloc()`.',
+              },
+            },
+            {
+              id: 'cs-l18-s6',
+              title: 'Сравнение C и Python',
+              type: 'quiz',
+              quiz: {
+                kind: 'table',
+                question: 'Отметьте, какие характеристики относятся к языку C, а какие — к Python',
+                columns: ['C', 'Python'],
+                rows: [
+                  { label: 'Ручное управление памятью (malloc / free)', correct: ['C'] },
+                  { label: 'Автоматический сборщик мусора (Garbage Collector)', correct: ['Python'] },
+                  { label: 'Строгая статическая типизация при объявлении', correct: ['C'] },
+                  { label: 'Компилируется в байткод для виртуальной машины', correct: ['Python'] },
+                ],
+                explanation: 'В C программист сам управляет типами и памятью. Python берёт управление памятью на себя через сборщик мусора и исполняет байткод на PVM.',
+              },
+            },
+            {
+              id: 'cs-l18-s7',
               title: 'Структуры данных',
               type: 'quiz',
               quiz: {
@@ -2125,7 +2197,7 @@ export const csBasicsCourse: Course = {
               },
             },
             {
-              id: 'cs-l18-s4',
+              id: 'cs-l18-s8',
               title: 'Рекурсия',
               type: 'quiz',
               quiz: {
@@ -2142,7 +2214,24 @@ export const csBasicsCourse: Course = {
               },
             },
             {
-              id: 'cs-l18-s5',
+              id: 'cs-l18-s9',
+              title: 'Безопасность и хранение паролей',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие утверждения о безопасном хранении паролей в БД верны?',
+                options: [
+                  { id: 'a', text: 'Пароли нельзя хранить в открытом виде (plaintext)' },
+                  { id: 'b', text: 'К каждому паролю нужно добавлять уникальную случайную соль (salt) перед хешированием' },
+                  { id: 'c', text: 'Из SHA-256 хеша можно легко расшифровать исходный пароль обратно по ключу' },
+                  { id: 'd', text: 'При входе пользователя система хеширует введённый пароль и сверяет хеши' },
+                ],
+                correct: ['a', 'b', 'd'],
+                explanation: 'Хеширование — односторонняя функция, расшифровать хеш обратно нельзя (поэтому c — неверно). При логине система заново вычисляет хеш введённого пароля с солью и сравнивает его с хешем в БД.',
+              },
+            },
+            {
+              id: 'cs-l18-s10',
               title: 'Напишите бинарный поиск',
               type: 'quiz',
               quiz: {
@@ -2157,6 +2246,49 @@ export const csBasicsCourse: Course = {
                 ],
                 explanation: 'def binary_search(arr, target):\n    left, right = 0, len(arr) - 1\n    while left <= right:\n        mid = (left + right) // 2\n        if arr[mid] == target:\n            return True\n        elif arr[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return False',
               },
+            },
+            {
+              id: 'cs-l18-s11',
+              title: 'Тренажёр: компиляция и запуск программы на C',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'student@cs50:~/pset1$',
+                    task: 'Скомпилируйте исходный файл hello.c в исполняемый файл hello с помощью компилятора clang (флаг -o) и запустите полученную программу.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Скомпилируйте hello.c в бинарный файл hello через clang (или gcc)',
+                        acceptedPatterns: [
+                          '^(clang|gcc)\\s+hello\\.c\\s+-o\\s+hello$',
+                          '^(clang|gcc)\\s+-o\\s+hello\\s+hello\\.c$',
+                        ],
+                        commonMistakes: [
+                          {
+                            pattern: '^(clang|gcc)\\s+hello\\.c$',
+                            output: 'Файл скомпилирован в a.out по умолчанию. Добавьте флаг -o hello, чтобы назвать бинарник hello.',
+                          },
+                        ],
+                        output: 'Компиляция завершена успешно. Создан исполняемый файл hello.',
+                      },
+                      {
+                        instruction: 'Шаг 2: Запустите скомпилированный файл hello из текущей директории',
+                        acceptedPatterns: ['^\\./hello$'],
+                        commonMistakes: [
+                          {
+                            pattern: '^hello$',
+                            output: 'hello: command not found\n(Подсказка: чтобы запустить программу из текущей папки, укажите ./ перед именем)',
+                          },
+                        ],
+                        output: 'Hello, CS50!',
+                      },
+                    ],
+                    solution: 'clang hello.c -o hello\n./hello',
+                    hint: 'Используйте clang hello.c -o hello для сборки и ./hello для запуска.',
+                  },
+                },
+              ],
             },
           ],
         },

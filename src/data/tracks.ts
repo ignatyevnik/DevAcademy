@@ -91,6 +91,7 @@ courses: [
   { slug: 'postgresql-deep', label: 'PostgreSQL: глубоко' },
   { slug: 'docker-basics', label: 'Docker' },
   { slug: 'design-patterns', label: 'Проектирование' },
+  { slug: 'system-design', label: 'Системное проектирование' },
   { slug: 'terraform-basics', label: 'Terraform: IaC' },
   { slug: 'kafka-basics', label: 'Kafka' },
 ],

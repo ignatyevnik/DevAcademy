@@ -1719,7 +1719,7 @@ spec:
       id: 'k8-b-m5',
       title: 'Практикум',
       lessons: [
-        {
+{
           id: 'k8-l29',
           title: 'Практика: поды, деплойменты, сервисы',
           minutes: 35,
@@ -1875,6 +1875,42 @@ spec:
                 correct: ['b'],
                 explanation: 'StatefulSet — для stateful-приложений (БД, Kafka): стабильные имена (web-0, web-1), свой PVC на каждый под, порядок запуска. Deployment — для stateless.',
               },
+            },
+            {
+              id: 'k8-l29-s11',
+              title: 'Тренажёр: диагностика пода в CrashLoopBackOff',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'sre@k8s-cluster:~$',
+                    task: 'В кластере возникли проблемы с приложением. Выведите список подов, посмотрите события проблемного пода api-7d9f8c через describe и прочитайте логи его предыдущего упавшего инстанса (--previous).',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Выведите список подов в текущем namespace',
+                        acceptedPatterns: ['^kubectl\\s+get\\s+pods?(\\s+-o\\s+wide)?$'],
+                        output: 'NAME         READY   STATUS             RESTARTS      AGE\napi-7d9f8c   0/1     CrashLoopBackOff   4 (20s ago)   3m',
+                      },
+                      {
+                        instruction: 'Шаг 2: Посмотрите подробности и секцию Events пода api-7d9f8c',
+                        acceptedPatterns: ['^kubectl\\s+describe\\s+pod(/|\\s+)api-7d9f8c$'],
+                        output: 'State:          Waiting\n  Reason:       CrashLoopBackOff\nLast State:     Terminated\n  Reason:       Error\n  Exit Code:    1',
+                      },
+                      {
+                        instruction: 'Шаг 3: Посмотрите логи предыдущего запуска пода api-7d9f8c (флаг --previous или -p)',
+                        acceptedPatterns: [
+                          '^kubectl\\s+logs\\s+api-7d9f8c\\s+(--previous|-p)$',
+                          '^kubectl\\s+logs\\s+(--previous|-p)\\s+api-7d9f8c$',
+                        ],
+                        output: 'Error: missing required environment variable DATABASE_URL',
+                      },
+                    ],
+                    solution: 'kubectl get pods\nkubectl describe pod api-7d9f8c\nkubectl logs api-7d9f8c --previous',
+                    hint: 'Используйте kubectl get pods, затем kubectl describe pod api-7d9f8c и kubectl logs api-7d9f8c --previous.',
+                  },
+                },
+              ],
             },
           ],
         },

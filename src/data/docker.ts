@@ -2808,7 +2808,7 @@ export const dockerCourse: Course = {
       id: 'dk-m8',
       title: 'Практикум',
       lessons: [
-        {
+{
           id: 'dk-l25',
           title: 'Практика: образы, Dockerfile, compose',
           minutes: 35,
@@ -2968,6 +2968,78 @@ export const dockerCourse: Course = {
                 correct: ['b'],
                 explanation: 'Volume живёт независимо от контейнера. Нужен для БД, загрузок, логов — всего, что нельзя потерять.',
               },
+            },
+            {
+              id: 'dk-l25-s11',
+              title: 'Тренажёр: сборка образа и создание volume',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'devops@build:~/app$',
+                    task: 'Соберите Docker-образ myapp:1.0 из текущей директории (.), создайте именованный том pgdata и проверьте список всех локальных томов.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Соберите образ с тегом myapp:1.0 из текущей папки',
+                        acceptedPatterns: ['^docker\\s+build\\s+-t\\s+myapp:1\\.0\\s+\\./?$'],
+                        output: '[+] Building 2.4s (8/8) FINISHED\n => => naming to docker.io/library/myapp:1.0',
+                      },
+                      {
+                        instruction: 'Шаг 2: Создайте volume с именем pgdata',
+                        acceptedPatterns: ['^docker\\s+volume\\s+create\\s+pgdata$'],
+                        output: 'pgdata',
+                      },
+                      {
+                        instruction: 'Шаг 3: Выведите список существующих Docker-томов (docker volume ls)',
+                        acceptedPatterns: ['^docker\\s+volume\\s+ls$'],
+                        output: 'DRIVER    VOLUME NAME\nlocal     pgdata',
+                      },
+                    ],
+                    solution: 'docker build -t myapp:1.0 .\ndocker volume create pgdata\ndocker volume ls',
+                    hint: 'Используйте docker build -t myapp:1.0 ., затем docker volume create pgdata и docker volume ls.',
+                  },
+                },
+              ],
+            },
+            {
+              id: 'dk-l25-s12',
+              title: 'Тренажёр: управление стеком в Docker Compose',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'devops@prod:~/stack$',
+                    task: 'Поднимите многосервисный стек в фоновом режиме через docker compose, проверьте статус запущенных сервисов и аккуратно остановите стек без удаления volumes (docker compose down).',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Запустите стек в фоновом режиме (docker compose up -d)',
+                        acceptedPatterns: ['^docker\\s+compose\\s+up\\s+-d$'],
+                        output: '[+] Running 3/3\n ✔ Network stack_default  Created\n ✔ Container stack-db-1   Started\n ✔ Container stack-app-1  Started',
+                      },
+                      {
+                        instruction: 'Шаг 2: Проверьте статус сервисов стека (docker compose ps)',
+                        acceptedPatterns: ['^docker\\s+compose\\s+ps$'],
+                        output: 'NAME          IMAGE         STATUS          PORTS\nstack-app-1   myapp:1.0     Up 10 seconds   0.0.0.0:8080->8000/tcp\nstack-db-1    postgres:16   Up 12 seconds   5432/tcp',
+                      },
+                      {
+                        instruction: 'Шаг 3: Остановите и удалите контейнеры стека, сохранив том БД (без флага -v)',
+                        acceptedPatterns: ['^docker\\s+compose\\s+down$'],
+                        commonMistakes: [
+                          {
+                            pattern: '^docker\\s+compose\\s+down\\s+-v$',
+                            output: 'Осторожно! Флаг -v удалит именованный volume вместе с базой данных. Выполните просто docker compose down.',
+                          },
+                        ],
+                        output: '[+] Running 3/3\n ✔ Container stack-app-1  Removed\n ✔ Container stack-db-1   Removed\n ✔ Network stack_default  Removed',
+                      },
+                    ],
+                    solution: 'docker compose up -d\ndocker compose ps\ndocker compose down',
+                    hint: 'Последовательность: docker compose up -d → docker compose ps → docker compose down.',
+                  },
+                },
+              ],
             },
           ],
         },

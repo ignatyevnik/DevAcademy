@@ -1869,7 +1869,7 @@ export const gitCourse: Course = {
       id: 'git-m5',
       title: 'Практикум',
       lessons: [
-        {
+{
           id: 'git-l11',
           title: 'Практика: от init до PR',
           minutes: 35,
@@ -2032,6 +2032,69 @@ export const gitCourse: Course = {
                 explanation:
                   'HEAD — «где вы сейчас». Обычно указывает на вершину текущей ветки. При checkout на конкретный коммит — detached HEAD.',
               },
+            },
+            {
+              id: 'git-l11-s11',
+              title: 'Тренажёр: отложить изменения через stash',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'dev@repo (feature/cart)$',
+                    task: 'Вы редактировали файлы в ветке feature/cart, но срочно нужно переключиться на main. Спрячьте незакоммиченные изменения в карман (git stash), переключитесь на main, а затем верните изменения обратно из кармана (git stash pop).',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Отложите текущие незакоммиченные изменения в stash',
+                        acceptedPatterns: ['^git\\s+stash(\\s+push.*)?$'],
+                        output: 'Saved working directory and index state WIP on feature/cart: 9a1b2c3 Add cart model',
+                      },
+                      {
+                        instruction: 'Шаг 2: Переключитесь на ветку main',
+                        acceptedPatterns: ['^git\\s+(switch|checkout)\\s+main$'],
+                        output: 'Switched to branch \'main\'',
+                      },
+                      {
+                        instruction: 'Шаг 3: Достаньте отложенные изменения с удалением из стека (git stash pop)',
+                        acceptedPatterns: ['^git\\s+stash\\s+pop$'],
+                        output: 'Changes not staged for commit:\n\tmodified:   cart.py\nDropped refs/stash@{0}',
+                      },
+                    ],
+                    solution: 'git stash\ngit switch main\ngit stash pop',
+                    hint: 'Используйте git stash, затем git switch main и git stash pop.',
+                  },
+                },
+              ],
+            },
+            {
+              id: 'git-l11-s12',
+              title: 'Тренажёр: спасение коммита через reflog',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'dev@repo (main)$',
+                    task: 'Вы случайно выполнили git reset --hard HEAD~1 и потеряли коммит с фичей. Откройте журнал перемещений HEAD (git reflog), найдите хэш потерянного коммита (b7c8e1d) и восстановите его через git reset --hard.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Выведите журнал всех перемещений HEAD (git reflog)',
+                        acceptedPatterns: ['^git\\s+reflog$'],
+                        output: 'a3f4d2e (HEAD -> main) HEAD@{0}: reset: moving to HEAD~1\nb7c8e1d HEAD@{1}: commit: feat: add payment gateway\na3f4d2e HEAD@{2}: commit: Initial commit',
+                      },
+                      {
+                        instruction: 'Шаг 2: Восстановите ветку на коммит b7c8e1d с помощью git reset --hard b7c8e1d',
+                        acceptedPatterns: [
+                          '^git\\s+reset\\s+--hard\\s+(b7c8e1d|HEAD@\\{1\\})$',
+                        ],
+                        output: 'HEAD is now at b7c8e1d feat: add payment gateway',
+                      },
+                    ],
+                    solution: 'git reflog\ngit reset --hard b7c8e1d',
+                    hint: 'Сначала посмотрите хэш в git reflog, затем выполните git reset --hard b7c8e1d.',
+                  },
+                },
+              ],
             },
           ],
         },

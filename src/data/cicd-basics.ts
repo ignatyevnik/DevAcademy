@@ -1267,7 +1267,7 @@ export const cicdBasicsCourse: Course = {
       id: 'cd-b-m4',
       title: 'Практикум',
       lessons: [
-        {
+{
           id: 'cd-l8',
           title: 'Практика: пайплайны и деплой',
           minutes: 35,
@@ -1303,17 +1303,17 @@ export const cicdBasicsCourse: Course = {
             },
             {
               id: 'cd-l8-s3',
-              title: 'Триггер GitHub Actions',
+              title: 'Триггер и базовый job в GitHub Actions',
               type: 'quiz',
               quiz: {
                 kind: 'cloze',
-                question: 'Заполните YAML для запуска workflow на push и pull_request',
-                text: 'name: CI\n____:\n  ____: [push, pull_request]',
+                question: 'Заполните ключевые секции YAML для запуска workflow на `push` и `pull_request` на раннере `ubuntu-latest`:',
+                text: 'name: CI\n____: [push, pull_request]\njobs:\n  test:\n    ____: ubuntu-latest',
                 blanks: [
-                  { accepted: ['on'], hint: 'когда запускать' },
-                  { accepted: ['on'], hint: 'события' },
+                  { accepted: ['on'], hint: 'ключ триггера событий' },
+                  { accepted: ['runs-on'], hint: 'выбор ОС раннера' },
                 ],
-                explanation: 'on: [push, pull_request] — стандартный триггер для проверки каждого пуша и PR.',
+                explanation: 'Ключ on: задаёт события запуска workflow, а runs-on: определяет тип виртуальной машины (ubuntu-latest).',
               },
             },
             {
@@ -1420,6 +1420,41 @@ export const cicdBasicsCourse: Course = {
                 correct: ['b'],
                 explanation: 'На PR достаточно проверить, что Dockerfile собирается. Push в registry — только для main и тегов.',
               },
+            },
+            {
+              id: 'cd-l8-s11',
+              title: 'Тренажёр: multi-arch сборка с buildx и запуск workflow',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'ci@runner:~/repo$',
+                    task: 'Прогоните линтер ruff check ., соберите multi-arch образ ghcr.io/myorg/app:1.0 под linux/amd64,linux/arm64 через docker buildx build --push и запустите workflow deploy.yml утилитой GitHub CLI (gh workflow run).',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Запустите проверку кода линтером ruff в текущей директории (ruff check .)',
+                        acceptedPatterns: ['^ruff\\s+check\\s+\\.$'],
+                        output: 'All checks passed!',
+                      },
+                      {
+                        instruction: 'Шаг 2: Соберите и запушьте multi-arch образ ghcr.io/myorg/app:1.0 для платформ linux/amd64,linux/arm64',
+                        acceptedPatterns: [
+                          '^docker\\s+buildx\\s+build\\s+(?=.*--platform\\s+linux/amd64,linux/arm64)(?=.*-t\\s+ghcr\\.io/myorg/app:1\\.0)(?=.*--push).*\\.$',
+                        ],
+                        output: '[+] Building 6.1s (14/14) FINISHED\n => exporting to image\n => pushing manifest for ghcr.io/myorg/app:1.0',
+                      },
+                      {
+                        instruction: 'Шаг 3: Запустите workflow deploy.yml с помощью GitHub CLI (gh workflow run deploy.yml)',
+                        acceptedPatterns: ['^gh\\s+workflow\\s+run\\s+deploy\\.ya?ml$'],
+                        output: '✓ Created workflow_dispatch event for deploy.yml at main',
+                      },
+                    ],
+                    solution: 'ruff check .\ndocker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/myorg/app:1.0 --push .\ngh workflow run deploy.yml',
+                    hint: 'Используйте ruff check ., затем docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/myorg/app:1.0 --push . и gh workflow run deploy.yml.',
+                  },
+                },
+              ],
             },
           ],
         },

@@ -3793,7 +3793,7 @@ journalctl -u backup -f              # логи`,
       id: 'ln-m9',
       title: 'Практикум',
       lessons: [
-        {
+{
           id: 'ln-l26',
           title: 'Практика: от простого к сложному',
           minutes: 35,
@@ -3946,6 +3946,78 @@ journalctl -u backup -f              # логи`,
                 correct: ['b'],
                 explanation: 'top показывает процессы в реальном времени с CPU и RAM. Альтернатива — ps aux (снимок) или htop (удобнее).',
               },
+            },
+            {
+              id: 'ln-l26-s11',
+              title: 'Тренажёр: архивация и защита бэкапа',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'admin@srv:/var/backups$',
+                    task: 'Проверьте размер папки /var/log (du -sh), упакуйте её в сжатый архив logs.tar.gz (tar -czf) и ограничьте права на архив только для владельца (chmod 600).',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Узнайте суммарный размер папки /var/log в человекочитаемом виде (du -sh)',
+                        acceptedPatterns: ['^du\\s+-(sh|hs)\\s+/var/log/?$'],
+                        output: '142M\t/var/log',
+                      },
+                      {
+                        instruction: 'Шаг 2: Упакуйте /var/log в архив logs.tar.gz с помощью tar -czf',
+                        acceptedPatterns: [
+                          '^tar\\s+-?czf\\s+logs\\.tar\\.gz\\s+/var/log/?$',
+                        ],
+                        output: 'tar: Removing leading `/\' from member names\nАрхив logs.tar.gz успешно создан.',
+                      },
+                      {
+                        instruction: 'Шаг 3: Установите права 600 на файл logs.tar.gz',
+                        acceptedPatterns: ['^chmod\\s+600\\s+logs\\.tar\\.gz$'],
+                        output: '-rw------- 1 admin admin 18M окт 28 14:10 logs.tar.gz',
+                      },
+                    ],
+                    solution: 'du -sh /var/log\ntar -czf logs.tar.gz /var/log\nchmod 600 logs.tar.gz',
+                    hint: 'Используйте du -sh /var/log, затем tar -czf logs.tar.gz /var/log и chmod 600 logs.tar.gz.',
+                  },
+                },
+              ],
+            },
+            {
+              id: 'ln-l26-s12',
+              title: 'Тренажёр: расследование инцидента на сервере',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'oncall@prod:~$',
+                    task: 'Поступил алерт о недоступности веб-сервера. Проверьте список упавших юнитов systemd, посмотрите логи ошибок сервиса nginx через journalctl и перезапустите nginx.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Выведите список упавших сервисов (systemctl --failed)',
+                        acceptedPatterns: ['^(sudo\\s+)?systemctl\\s+--failed$'],
+                        output: '  UNIT          LOAD   ACTIVE SUB    DESCRIPTION\n● nginx.service loaded failed failed A high performance web server',
+                      },
+                      {
+                        instruction: 'Шаг 2: Посмотрите логи сервиса nginx через journalctl -u nginx',
+                        acceptedPatterns: [
+                          '^(sudo\\s+)?journalctl\\s+-u\\s+nginx(\\.service)?(\\s+.*)?$',
+                        ],
+                        output: 'окт 28 14:15:01 prod systemd[1]: nginx.service: Main process exited, code=exited, status=1/FAILURE',
+                      },
+                      {
+                        instruction: 'Шаг 3: Перезапустите сервис nginx через sudo systemctl restart nginx',
+                        acceptedPatterns: [
+                          '^sudo\\s+systemctl\\s+restart\\s+nginx(\\.service)?$',
+                        ],
+                        output: 'Сервис nginx успешно перезапущен и работает (active running).',
+                      },
+                    ],
+                    solution: 'systemctl --failed\njournalctl -u nginx\nsudo systemctl restart nginx',
+                    hint: 'Последовательность: systemctl --failed → journalctl -u nginx → sudo systemctl restart nginx.',
+                  },
+                },
+              ],
             },
           ],
         },

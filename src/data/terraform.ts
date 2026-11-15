@@ -1982,108 +1982,198 @@ export const terraformBasicsCourse: Course = {
       id: 'tf-m7',
       title: 'Практикум',
       lessons: [
-        {
+{
           id: 'tf-l18',
-          title: 'Практика: полный сценарий',
+          title: 'Практика: от HCL и state до CI/CD',
           minutes: 35,
           steps: [
             {
               id: 'tf-l18-s1',
-              title: 'Разбор реального проекта',
-              type: 'theory',
-              blocks: [
-                {
-                  type: 'code',
-                  lang: 'text',
-                  caption: 'Структура проекта',
-                  code: 'myapp-infra/\n├── modules/\n│   ├── vpc/           # общий модуль VPC\n│   ├── eks/           # модуль EKS\n│   └── rds/           # модуль RDS\n├── envs/\n│   ├── dev/\n│   │   ├── main.tf    # вызов модулей\n│   │   ├── backend.tf # S3: dev/terraform.tfstate\n│   │   └── terraform.tfvars\n│   ├── staging/\n│   │   └── ...\n│   └── prod/\n│       ├── main.tf\n│       ├── backend.tf # S3: prod/terraform.tfstate\n│       └── terraform.tfvars\n└── README.md',
-                },
-                {
-                  type: 'code',
-                  lang: 'hcl',
-                  caption: 'envs/prod/main.tf',
-                  code: 'module "vpc" {\n  source  = "../../modules/vpc"\n  cidr    = "10.0.0.0/16"\n  env     = "prod"\n}\n\nmodule "rds" {\n  source     = "../../modules/rds"\n  vpc_id     = module.vpc.vpc_id\n  subnet_ids = module.vpc.private_subnet_ids\n  env        = "prod"\n\n  lifecycle {\n    prevent_destroy = true\n  }\n}\n\nmodule "eks" {\n  source  = "../../modules/eks"\n  vpc_id  = module.vpc.vpc_id\n  env     = "prod"\n  version = "1.30"\n}',
-                },
-                {
-                  type: 'list',
-                  items: [
-                    'modules/ — переиспользуемые модули (без state)',
-                    'envs/dev, envs/staging, envs/prod — по своему state в S3',
-                    'backend.tf — ссылка на S3 (разные key для окружений)',
-                    'terraform.tfvars — параметры окружения (не секреты!)',
-                    'CI: plan в PR (для каждого envs/*), apply в main',
-                  ],
-                },
-              ],
-            },
-            {
-              id: 'tf-l18-s2',
-              title: 'Проверь себя: команды',
-              type: 'quiz',
-              quiz: {
-                kind: 'single',
-                question: 'Что делать в первую очередь перед `terraform apply` на проде?',
-                options: [
-                  { id: 'a', text: 'Сразу применить — быстрее' },
-                  { id: 'b', text: 'Посмотреть `terraform plan` — что именно изменится' },
-                  { id: 'c', text: 'Удалить state' },
-                  { id: 'd', text: 'Запустить apply с -auto-approve' },
-                ],
-                correct: ['b'],
-                explanation:
-                  'Plan — обязательный шаг перед apply, особенно на проде. Он показывает: + создать, ~ изменить, - удалить. Если plan неожиданно удаляет БД — вы это увидите и остановитесь. `-auto-approve` без plan — «выстрел в ногу».',
-              },
-            },
-            {
-              id: 'tf-l18-s3',
-              title: 'Проверь себя: state',
+              title: 'Инициализация проекта',
               type: 'quiz',
               quiz: {
                 kind: 'fill',
                 question: 'Какая команда скачивает провайдеры и инициализирует backend перед первым `terraform plan`?',
                 accepted: ['terraform init', 'init'],
                 placeholder: 'terraform ...',
-                hint: 'от английского «инициализировать»',
+                hint: 'От английского «инициализировать»',
                 explanation:
-                  'terraform init — первая команда в любом новом проекте: скачивает провайдеры, настраивает backend, создаёт .terraform.lock.hcl. Без неё plan/apply не работают.',
+                  'terraform init — первая команда в любом проекте: скачивает провайдеры, настраивает backend и создаёт .terraform.lock.hcl.',
+              },
+            },
+            {
+              id: 'tf-l18-s2',
+              title: 'Порядок работы с Terraform',
+              type: 'quiz',
+              quiz: {
+                kind: 'sorting',
+                question: 'Расставьте шаги безопасного применения инфраструктуры в правильном порядке',
+                items: [
+                  'terraform init',
+                  'terraform fmt -check && terraform validate',
+                  'terraform plan -out=tfplan',
+                  'terraform apply tfplan',
+                ],
+                correct: [
+                  'terraform init',
+                  'terraform fmt -check && terraform validate',
+                  'terraform plan -out=tfplan',
+                  'terraform apply tfplan',
+                ],
+                explanation:
+                  'Сначала инициализируем окружение, затем проверяем форматирование и синтаксис, сохраняем план в артефакт tfplan и применяем ровно этот проверенный план.',
+              },
+            },
+            {
+              id: 'tf-l18-s3',
+              title: 'Символы вывода terraform plan',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте символ из вывода `terraform plan` и действие, которое выполнит Terraform',
+                pairs: [
+                  { left: '+', right: 'Создать новый ресурс' },
+                  { left: '~', right: 'Изменить ресурс на месте (in-place update)' },
+                  { left: '-', right: 'Удалить ресурс' },
+                  { left: '-/+', right: 'Пересоздать ресурс (удалить старый и создать новый)' },
+                ],
+                explanation:
+                  'Особое внимание всегда обращайте на -/+ (replace): для баз данных и дисков это означает удаление и потерю данных, если нет снапшота.',
               },
             },
             {
               id: 'tf-l18-s4',
-              title: 'Типичные ошибки новичков',
-              type: 'theory',
-              blocks: [
-                { type: 'p', text: 'Пять ошибок, на которых «спотыкаются» почти все, кто начинает с Terraform в команде. Каждая из них — реальный инцидент в проде или час отладки.' },
-                {
-                  type: 'list',
-                  items: [
-                    'Локальный state в Git — утечка секретов. Фикс: S3 + DynamoDB (remote backend)',
-                    'Нет versioning в S3 — потеряли state, не откатить. Фикс: включить versioning',
-                    'Apply без plan на проде — сюрпризы. Фикс: всегда plan + review + saved plan',
-                    'Секреты в .tfvars / .tf — утечка. Фикс: env vars / Vault / Secrets Manager',
-                    'Нет concurrency в CI — два apply одновременно, state lock. Фикс: concurrency group',
-                  ],
-                },
-                { type: 'note', text: 'Также: `-target` для «быстро поправить» — зло. Он оставляет state в рассогласованном виде (часть ресурсов вне state). Используйте только в крайнем случае, потом — полный apply.' },
-              ],
+              title: 'Версионирование провайдера',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Что означает ограничение версии провайдера `version = "~> 5.0"`?',
+                options: [
+                  { id: 'a', text: 'Ровно версия 5.0.0' },
+                  { id: 'b', text: 'Любая версия >= 5.0 и < 6.0 (разрешены минорные и патч-обновления)' },
+                  { id: 'c', text: 'Любая версия старше 5.0, включая 6.0 и 7.0' },
+                  { id: 'd', text: 'Только альфа- и бета-версии ветки 5.x' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'Оператор ~> (pessimistic constraint) разрешает обновление последнего указанного разряда: для ~> 5.0 это >= 5.0 и < 6.0.',
+              },
             },
             {
               id: 'tf-l18-s5',
-              title: 'Проверь себя: антипаттерны',
+              title: 'Настройка S3 Remote Backend',
+              type: 'quiz',
+              quiz: {
+                kind: 'cloze',
+                question: 'Заполните пропуски в настройке удалённого стейта в S3 с блокировкой в DynamoDB:',
+                text: 'terraform {\n  ____ "s3" {\n    bucket         = "my-tf-state"\n    key            = "prod/terraform.tfstate"\n    region         = "eu-central-1"\n    ____ = "terraform-locks"\n  }\n}',
+                blanks: [
+                  { accepted: ['backend'], hint: 'блок хранения стейта' },
+                  { accepted: ['dynamodb_table'], hint: 'параметр таблицы блокировок' },
+                ],
+                explanation:
+                  'Блок backend "s3" задаёт хранение стейта в S3, а параметр dynamodb_table включает распределённую блокировку (state locking).',
+              },
+            },
+            {
+              id: 'tf-l18-s6',
+              title: 'Приоритет переменных',
+              type: 'quiz',
+              quiz: {
+                kind: 'number',
+                question: 'Сколько ресурсов создаст блок с `count = 0`?',
+                correct: 0,
+                explanation:
+                  'Приём count = var.enabled ? 1 : 0 — стандартный способ условного создания ресурса в HCL. При count = 0 ресурс не создаётся.',
+              },
+            },
+            {
+              id: 'tf-l18-s7',
+              title: 'count vs for_each',
+              type: 'quiz',
+              quiz: {
+                kind: 'table',
+                question: 'Отметьте, какие свойства относятся к `count`, а какие — к `for_each`',
+                columns: ['count', 'for_each'],
+                rows: [
+                  { label: 'Адресация ресурсов по числовому индексу [0], [1]', correct: ['count'] },
+                  { label: 'Адресация ресурсов по строковому ключу ["api"]', correct: ['for_each'] },
+                  { label: 'Безопасное удаление элемента из середины без пересоздания соседей', correct: ['for_each'] },
+                  { label: 'Принимает на вход map или set строк', correct: ['for_each'] },
+                ],
+                explanation:
+                  'count индексирует ресурсы числами (при удалении из середины индексы сдвигаются). for_each индексирует ключами и безопасно удаляет отдельные элементы.',
+              },
+            },
+            {
+              id: 'tf-l18-s8',
+              title: 'Антипаттерны работы со стейтом и секретами',
               type: 'quiz',
               quiz: {
                 kind: 'multiple',
-                question: 'Какие практики считаются антипаттернами в Terraform?',
+                question: 'Какие действия в Terraform являются опасными антипаттернами?',
                 options: [
-                  { id: 'a', text: 'Хранить локальный terraform.tfstate в Git' },
-                  { id: 'b', text: 'Применять `terraform apply` без предварительного `plan` на проде' },
-                  { id: 'c', text: 'Использовать remote backend с блокировкой' },
-                  { id: 'd', text: 'Использовать `-target` для «быстрого фикса» в проде' },
+                  { id: 'a', text: 'Коммитить файл terraform.tfstate в Git-репозиторий' },
+                  { id: 'b', text: 'Запускать terraform apply -auto-approve на проде без предварительного ревью плана' },
+                  { id: 'c', text: 'Использовать remote backend с шифрованием и блокировками' },
+                  { id: 'd', text: 'Хранить пароли БД открытым текстом в main.tf' },
                 ],
                 correct: ['a', 'b', 'd'],
                 explanation:
-                  'State в Git — утечка (a). Apply без plan — сюрпризы (b). -target — рассогласованный state (d). Remote backend с блокировкой (c) — наоборот, правильная практика, а не антипаттерн.',
+                  'В terraform.tfstate секреты лежат в открытом JSON-виде, поэтому коммитить его в Git нельзя. Применение без плана на проде и хардкод паролей в .tf — прямая дорога к инцидентам.',
               },
+            },
+            {
+              id: 'tf-l18-s9',
+              title: 'Напишите ресурс с защитой от удаления',
+              type: 'quiz',
+              quiz: {
+                kind: 'code',
+                question: 'Опишите ресурс `aws_s3_bucket` с именем `prod_data`, бакетом `"my-prod-data-bucket"` и блоком `lifecycle`, запрещающим удаление ресурса (`prevent_destroy = true`).',
+                starterCode: 'resource "aws_s3_bucket" "prod_data" {\n  \n}',
+                mustInclude: [
+                  { pattern: 'bucket\\s*=\\s*"my-prod-data-bucket"', message: 'Укажите bucket = "my-prod-data-bucket"' },
+                  { pattern: 'lifecycle\\s*\\{', message: 'Добавьте блок lifecycle { ... }' },
+                  { pattern: 'prevent_destroy\\s*=\\s*true', message: 'Внутри lifecycle укажите prevent_destroy = true' },
+                ],
+                explanation:
+                  'resource "aws_s3_bucket" "prod_data" {\n  bucket = "my-prod-data-bucket"\n  lifecycle {\n    prevent_destroy = true\n  }\n}',
+              },
+            },
+            {
+              id: 'tf-l18-s10',
+              title: 'Тренажёр: импорт ресурса и проверка drift',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'devops@tf-prod:~/infra$',
+                    task: 'Отформатируйте код в текущей папке (terraform fmt), импортируйте существующий в облаке бакет my-legacy-bucket в ресурс aws_s3_bucket.legacy и запустите terraform plan, чтобы убедиться в отсутствии расхождений (drift).',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Отформатируйте .tf-файлы командой terraform fmt',
+                        acceptedPatterns: ['^terraform\\s+fmt(\\s+-recursive)?$'],
+                        output: 'main.tf\nvariables.tf',
+                      },
+                      {
+                        instruction: 'Шаг 2: Импортируйте бакет my-legacy-bucket в ресурс aws_s3_bucket.legacy',
+                        acceptedPatterns: [
+                          '^terraform\\s+import\\s+aws_s3_bucket\\.legacy\\s+my-legacy-bucket$',
+                        ],
+                        output: 'aws_s3_bucket.legacy: Importing from ID "my-legacy-bucket"...\nImport successful!',
+                      },
+                      {
+                        instruction: 'Шаг 3: Запустите terraform plan для проверки отсутствия изменений',
+                        acceptedPatterns: ['^terraform\\s+plan(\\s+-detailed-exitcode)?$'],
+                        output: 'No changes. Your infrastructure matches the configuration.',
+                      },
+                    ],
+                    solution: 'terraform fmt\nterraform import aws_s3_bucket.legacy my-legacy-bucket\nterraform plan',
+                    hint: 'Последовательность: terraform fmt → terraform import aws_s3_bucket.legacy my-legacy-bucket → terraform plan.',
+                  },
+                },
+              ],
             },
           ],
         },

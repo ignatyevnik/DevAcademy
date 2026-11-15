@@ -304,9 +304,9 @@ def new_checkout(user):
       id: 'cd-g-m2',
       title: 'GitOps: ArgoCD и Flux',
       lessons: [
-        {
+{
           id: 'cd-l14',
-          title: 'ArgoCD: установка, Application, sync',
+          title: 'ArgoCD: установка, Application, sync (Argo CD 3.0)',
           minutes: 35,
           steps: [
             {
@@ -318,31 +318,14 @@ def new_checkout(user):
                 {
                   type: 'mermaid',
                   caption: 'Sync loop: ArgoCD тянет Git, применяет в кластер',
-                  code: `sequenceDiagram
-                    participant Dev as Разработчик
-                    participant Git as Git<br/>(манифесты)
-                    participant Argo as ArgoCD<br/>(в кластере)
-                    participant K8s as K8s API
-
-                    Dev->>Git: git push (изменение)
-                    loop каждые 3 мин
-                        Argo->>Git: pull
-                        Argo->>Argo: diff желаемое ↔ фактическое
-                        alt есть расхождение
-                            Argo->>K8s: apply
-                            K8s-->>Argo: OK
-                            Argo->>Argo: status: Synced
-                        else нет расхождения
-                            Argo->>Argo: status: Synced (no-op)
-                        end
-                    end`,
+                  code: 'sequenceDiagram\n                    participant Dev as Разработчик\n                    participant Git as Git<br/>(манифесты)\n                    participant Argo as ArgoCD<br/>(в кластере)\n                    participant K8s as K8s API\n\n                    Dev->>Git: git push (изменение)\n                    loop каждые 3 мин\n                        Argo->>Git: pull\n                        Argo->>Argo: diff желаемое ↔ фактическое\n                        alt есть расхождение\n                            Argo->>K8s: apply\n                            K8s-->>Argo: OK\n                            Argo->>Argo: status: Synced\n                        else нет расхождения\n                            Argo->>Argo: status: Synced (no-op)\n                        end\n                    end',
                 },
                 {
                   type: 'list',
                   items: [
                     'Git — source of truth: что в main, то и в кластере',
                     'Pull-based: агент в кластере сам тянет Git (не CI пушит в кластер)',
-                    'Continuous reconciliation: каждые 3 минуты проверка diff',
+                    'Continuous reconciliation: каждые 3 минуты проверка diff (или мгновенно по webhook)',
                     'Drift detection: если кто-то руками поправил кластер — ArgoCD вернёт как в Git',
                     'Audit trail: git log = история всех деплоев',
                   ],
@@ -351,49 +334,30 @@ def new_checkout(user):
             },
             {
               id: 'cd-l14-s2',
-              title: 'Установка и Application',
+              title: 'Установка, Application и стандарты Argo CD 3.0',
               type: 'theory',
               blocks: [
                 {
                   type: 'code',
                   lang: 'bash',
                   caption: 'Установка ArgoCD',
-                  code: `kubectl create namespace argocd
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-
-# Пароль admin
-kubectl -n argocd get secret argocd-initial-admin-secret \\
-  -o jsonpath="{.data.password}" | base64 -d
-
-# UI
-kubectl port-forward svc/argocd-server -n argocd 8080:443`,
+                  code: 'kubectl create namespace argocd\nkubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml\n\n# Пароль admin\nkubectl -n argocd get secret argocd-initial-admin-secret \\\n  -o jsonpath="{.data.password}" | base64 -d\n\n# UI\nkubectl port-forward svc/argocd-server -n argocd 8080:443',
                 },
                 {
                   type: 'code',
                   lang: 'yaml',
-                  caption: 'Application — «что и откуда синхронизировать»',
-                  code: `apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: myapp
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: https://github.com/myorg/k8s-manifests
-    targetRevision: main
-    path: apps/myapp
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: production
-  syncPolicy:
-    automated:
-      prune: true        # удалять объекты, которых нет в Git
-      selfHeal: true     # возвращать кластер к Git, если кто-то поправил руками
-    syncOptions:
-      - CreateNamespace=true`,
+                  caption: 'Application с Multi-Source (Helm из OCI + values из Git) и ServerSideApply',
+                  code: 'apiVersion: argoproj.io/v1alpha1\nkind: Application\nmetadata:\n  name: myapp\n  namespace: argocd\n  annotations:\n    argocd.argoproj.io/tracking-method: annotation\nspec:\n  project: default\n  sources:\n    - repoURL: ghcr.io/myorg/charts\n      chart: myapp\n      targetRevision: 1.4.2\n      helm:\n        valueFiles:\n          - $values/envs/prod/values.yaml\n    - repoURL: https://github.com/myorg/k8s-config.git\n      targetRevision: main\n      ref: values\n  destination:\n    server: https://kubernetes.default.svc\n    namespace: production\n  syncPolicy:\n    automated:\n      prune: true        # удалять объекты, которых нет в Git\n      selfHeal: true     # возвращать кластер к Git, если кто-то поправил руками\n    syncOptions:\n      - CreateNamespace=true\n      - ServerSideApply=true',
                 },
-                { type: 'note', text: 'selfHeal: true — главное отличие GitOps от классического CD. Если разработчик руками сделал kubectl edit — ArgoCD через 3 минуты вернёт как в Git. Никакого «дрифта» конфигурации.' },
+                {
+                  type: 'list',
+                  items: [
+                    'Multi-source (`spec.sources`): позволяет тянуть сам Helm-чарт из публичного/OCI-реестра, а `values.yaml` — из вашего приватного Git-репозитория',
+                    '`ServerSideApply=true`: стандарт в Argo CD 3.0 для больших CRD (например, Prometheus Operator / Istio), избавляющий от ошибки переполнения `kubectl.kubernetes.io/last-applied-configuration`',
+                    'В Argo CD 3.0 метод отслеживания ресурсов по умолчанию — `annotation` (вместо старого `label`), а кастомные плагины работают только через изолированные sidecar-контейнеры (CMP v2) и fine-grained RBAC',
+                  ],
+                },
+                { type: 'note', text: 'selfHeal: true — главное отличие GitOps от классического CD. Если разработчик руками сделал kubectl edit — ArgoCD вернёт как в Git. Никакого «дрифта» конфигурации.' },
               ],
             },
             {
@@ -406,34 +370,9 @@ spec:
                   type: 'code',
                   lang: 'yaml',
                   caption: 'ApplicationSet — Application на каждую папку',
-                  code: `apiVersion: argoproj.io/v1alpha1
-kind: ApplicationSet
-metadata:
-  name: all-apps
-  namespace: argocd
-spec:
-  generators:
-    - git:
-        repoURL: https://github.com/myorg/k8s-manifests
-        revision: main
-        directories:
-          - path: apps/*
-  template:
-    metadata:
-      name: '{{path.basename}}'
-    spec:
-      project: default
-      source:
-        repoURL: https://github.com/myorg/k8s-manifests
-        targetRevision: main
-        path: '{{path}}'
-      destination:
-        server: https://kubernetes.default.svc
-        namespace: production
-      syncPolicy:
-        automated: { prune: true, selfHeal: true }`,
+                  code: 'apiVersion: argoproj.io/v1alpha1\nkind: ApplicationSet\nmetadata:\n  name: all-apps\n  namespace: argocd\nspec:\n  generators:\n    - git:\n        repoURL: https://github.com/myorg/k8s-manifests\n        revision: main\n        directories:\n          - path: apps/*\n  template:\n    metadata:\n      name: \'{{path.basename}}\'\n    spec:\n      project: default\n      source:\n        repoURL: https://github.com/myorg/k8s-manifests\n        targetRevision: main\n        path: \'{{path}}\'\n      destination:\n        server: https://kubernetes.default.svc\n        namespace: production\n      syncPolicy:\n        automated: { prune: true, selfHeal: true }',
                 },
-                { type: 'note', text: 'ApplicationSet — стандарт в 2025. Один YAML генерирует N Application для N папок. Добавили папку apps/new-service — ArgoCD сам создал Application.' },
+                { type: 'note', text: 'ApplicationSet — стандарт. Один YAML генерирует N Application для N папок или кластеров (Git generator, Cluster generator, Matrix/Merge generators, Pull Request generator для превью-окружений).' },
               ],
             },
             {
@@ -450,7 +389,7 @@ spec:
                   { id: 'd', text: 'Ускоряет синхронизацию' },
                 ],
                 correct: ['b'],
-                explanation: 'selfHeal — «drift correction»: если кто-то сделал kubectl edit в обход Git, ArgoCD через 3 минуты вернёт как в Git. Это ключевое свойство GitOps: Git — единственный источник правды.',
+                explanation: 'selfHeal — «drift correction»: если кто-то сделал kubectl edit в обход Git, ArgoCD вернёт как в Git. Это ключевое свойство GitOps: Git — единственный источник правды.',
               },
             },
             {
@@ -461,12 +400,12 @@ spec:
                 kind: 'matching',
                 question: 'Сопоставьте поле Application и его назначение',
                 pairs: [
-                  { left: 'source.repoURL + path', right: 'Откуда брать манифесты в Git' },
+                  { left: 'sources (multi-source)', right: 'Чарт из OCI/Helm-репо + values.yaml из отдельного Git-репо' },
                   { left: 'destination', right: 'Куда деплоить (кластер + namespace)' },
-                  { left: 'syncPolicy.automated', right: 'Автоматически синхронизировать с Git' },
-                  { left: 'selfHeal', right: 'Возвращать кластер к Git при ручных правках' },
+                  { left: 'ServerSideApply=true', right: 'Применение больших CRD без переполнения last-applied-configuration' },
+                  { left: 'selfHeal: true', right: 'Возвращать кластер к Git при ручных правках' },
                 ],
-                explanation: 'source — «откуда». destination — «куда». automated — «синхронизировать автоматически». selfHeal — «защита от дрифта». Ещё важны: prune (удалять лишнее), syncOptions (CreateNamespace). На собеседовании middle DevOps это база.',
+                explanation: 'sources — объединение чарта и конфигов из разных репо. destination — целевой кластер. ServerSideApply=true — спасение от лимита в 262 КБ на аннотацию. selfHeal — защита от ручного дрифта.',
               },
             },
           ],
@@ -1084,7 +1023,7 @@ stringData:
       id: 'cd-g-m5',
       title: 'Практикум',
       lessons: [
-        {
+{
           id: 'cd-l20',
           title: 'Практика: GitOps, supply chain, secrets',
           minutes: 35,
@@ -1191,19 +1130,19 @@ stringData:
             },
             {
               id: 'cd-l20-s8',
-              title: 'OIDC',
+              title: 'Push-based CD vs Pull-based GitOps',
               type: 'quiz',
               quiz: {
-                kind: 'single',
-                question: 'Почему OIDC безопаснее хранения AWS-ключей в GitHub Secrets?',
-                options: [
-                  { id: 'a', text: 'OIDC быстрее' },
-                  { id: 'b', text: 'OIDC выдаёт временные креды (1 час), утечка ограничена по времени' },
-                  { id: 'c', text: 'GitHub Secrets не шифрует' },
-                  { id: 'd', text: 'OIDC не требует интернета' },
+                kind: 'table',
+                question: 'Отметьте, какие характеристики относятся к классическому Push-деплою из CI, а какие — к Pull-based GitOps (ArgoCD / Flux)',
+                columns: ['Push CI', 'Pull GitOps'],
+                rows: [
+                  { label: 'CI-раннер хранит админский kubeconfig от прод-кластера', correct: ['Push CI'] },
+                  { label: 'Агент работает внутри кластера и сам подтягивает манифесты из Git', correct: ['Pull GitOps'] },
+                  { label: 'Автоматически обнаруживает и откатывает ручные правки (selfHeal)', correct: ['Pull GitOps'] },
+                  { label: 'Выполняется только в момент запуска пайплайна, не следит за дрифтом', correct: ['Push CI'] },
                 ],
-                correct: ['b'],
-                explanation: 'Долгоживущий ключ утёк — catastrophe на годы. OIDC: JWT на 5 минут → креды на час. Утекли — истекут.',
+                explanation: 'В Pull-based GitOps кластер не выставляет наружу админские ключи для CI, а агент внутри кластера непрерывно сверяет состояние с Git.',
               },
             },
             {
@@ -1233,6 +1172,41 @@ stringData:
                 ],
                 explanation: 'apiVersion: kyverno.io/v1\nkind: ClusterPolicy\nmetadata:\n  name: verify-signature\nspec:\n  validationFailureAction: Enforce\n  rules:\n    - name: check\n      match:\n        any:\n          - resources: { kinds: [Pod] }\n      verifyImages:\n        - imageReferences:\n            - "ghcr.io/myorg/*"\n          attestors:\n            - entries:\n                - keyless:\n                    issuer: "https://token.actions.githubusercontent.com"',
               },
+            },
+            {
+              id: 'cd-l20-s11',
+              title: 'Тренажёр: подпись образа cosign и синхронизация в ArgoCD',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'devsecops@deploy:~$',
+                    task: 'Подпишите образ ghcr.io/myorg/myapp:1.4.2 с помощью cosign sign --yes, запустите синхронизацию приложения myapp в ArgoCD CLI (argocd app sync myapp) и дождитесь его готовности (argocd app wait myapp).',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Подпишите образ ghcr.io/myorg/myapp:1.4.2 командой cosign sign --yes',
+                        acceptedPatterns: [
+                          '^cosign\\s+sign\\s+--yes\\s+ghcr\\.io/myorg/myapp:1\\.4\\.2$',
+                        ],
+                        output: 'Generating ephemeral keys...\nSuccessfully verified SCT...\nPushing signature to: ghcr.io/myorg/myapp',
+                      },
+                      {
+                        instruction: 'Шаг 2: Синхронизируйте приложение myapp через argocd app sync myapp',
+                        acceptedPatterns: ['^argocd\\s+app\\s+sync\\s+myapp$'],
+                        output: 'TIMESTAMP                  GROUP        KIND   NAMESPACE                  NAME    STATUS   HEALTH\n2025-10-28T15:00:01+03:00   apps  Deployment  production                 myapp    Synced  Healthy',
+                      },
+                      {
+                        instruction: 'Шаг 3: Проверьте и дождитесь перехода приложения myapp в состояние Healthy (argocd app wait myapp)',
+                        acceptedPatterns: ['^argocd\\s+app\\s+wait\\s+myapp(\\s+--health)?$'],
+                        output: 'Application \'myapp\' is Synced and Healthy.',
+                      },
+                    ],
+                    solution: 'cosign sign --yes ghcr.io/myorg/myapp:1.4.2\nargocd app sync myapp\nargocd app wait myapp',
+                    hint: 'Используйте cosign sign --yes, затем argocd app sync myapp и argocd app wait myapp.',
+                  },
+                },
+              ],
             },
           ],
         },

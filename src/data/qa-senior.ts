@@ -2281,174 +2281,223 @@ def test_create_user_good(db_session):
       id: 'qa-s-m9',
       title: 'Практикум',
       lessons: [
-        {
+{
           id: 'qa-l115',
-          title: 'Комплексный экзамен',
+          title: 'Комплексный экзамен Senior QA',
           minutes: 35,
           steps: [
             {
               id: 'qa-l115-s1',
-              title: 'Экономика качества (CoQ)',
+              title: 'Экономика качества (Cost of Quality)',
               type: 'quiz',
               quiz: {
                 kind: 'single',
-                question: 'Компания тратит $10,000 в месяц на автоматизацию (Appraisal). Но в проде 2 инцидента в месяц по $50,000. Что нужно сделать Senior QA?',
+                question: 'Компания тратит $10,000 в месяц на прогон автотестов (Appraisal), но в проде регулярно случаются по 2 инцидента в месяц с убытком по $50,000 (External Failure). Куда Senior QA должен направить усилия в первую очередь?',
                 options: [
-                  { id: 'a', text: 'Нанять больше тестировщиков' },
-                  { id: 'b', text: 'Увеличить инвестиции в Prevention (Code Review, Threat Modeling)' },
-                  { id: 'c', text: 'Отказаться от автотестов' },
-                  { id: 'd', text: 'Уволить разработчиков' },
+                  { id: 'a', text: 'Нанять ещё 5 ручных тестировщиков на регресс перед релизом' },
+                  { id: 'b', text: 'Увеличить инвестиции в Prevention (Shift-Left: ревью архитектуры, Threat Modeling, контрактные тесты)' },
+                  { id: 'c', text: 'Отключить автотесты для экономии бюджета' },
+                  { id: 'd', text: 'Деплоить раз в полгода' },
                 ],
                 correct: ['b'],
-                explanation: 'Внешние ошибки (Failure) стоят в 100 раз дороже Prevention. Если инциденты часты, проблемы в архитектуре или процессе.',
+                explanation:
+                  'По правилу 1-10-100 предотвращение дефекта на этапе дизайна и кода (Prevention) в 100 раз дешевле исправления аварии в продакшене (External Failure).',
               },
             },
             {
               id: 'qa-l115-s2',
-              title: 'Математика нагрузки',
+              title: 'Математика нагрузки (Закон Литтла)',
               type: 'quiz',
               quiz: {
                 kind: 'number',
-                question: 'Если система держит 500 RPS, а среднее время ответа 0.4 сек, сколько concurrent users в системе?',
+                question: 'По закону Литтла (L = λ × W): если сервис стабильно обрабатывает 500 RPS (λ), а среднее время ответа составляет 0.4 секунды (W), сколько запросов одновременно находится в системе (L)?',
                 correct: 200,
-                explanation: 'L = λ * W = 500 * 0.4 = 200.',
+                explanation:
+                  'L = 500 × 0.4 = 200 одновременных запросов (concurrent requests). Именно под это число рассчитывают пулы потоков и соединений.',
               },
             },
             {
               id: 'qa-l115-s3',
-              title: 'Threat Modeling',
+              title: 'Жизненный цикл PR в зрелом CI/CD пайплайне',
               type: 'quiz',
               quiz: {
-                kind: 'single',
-                question: 'Какая угроза STRIDE описывает ситуацию: «Пользователь изменил price=100 на price=1 в запросе»?',
-                options: [
-                  { id: 'a', text: 'Spoofing' },
-                  { id: 'b', text: 'Tampering' },
-                  { id: 'c', text: 'Repudiation' },
-                  { id: 'd', text: 'Information Disclosure' },
+                kind: 'sorting',
+                question: 'Расставьте этапы прохождения изменения от создания PR до релиза в продакшене в правильном порядке',
+                items: [
+                  'Статический анализ (Linter + SAST / SCA на новые уязвимости)',
+                  'Быстрый запуск затронутых тестов через Test Impact Analysis (TIA)',
+                  'Проверка совместной сборки в очереди слияния (Merge Queue)',
+                  'Деплой в прод под выключенным Feature Flag и Canary-раскатка на 5% трафика',
+                  'Мониторинг SLO / Error Budget в Sentry и OpenTelemetry и раскатка на 100%',
                 ],
-                correct: ['b'],
-                explanation: 'Tampering — нарушение целостности данных. Подмена цены — классический пример.',
+                correct: [
+                  'Статический анализ (Linter + SAST / SCA на новые уязвимости)',
+                  'Быстрый запуск затронутых тестов через Test Impact Analysis (TIA)',
+                  'Проверка совместной сборки в очереди слияния (Merge Queue)',
+                  'Деплой в прод под выключенным Feature Flag и Canary-раскатка на 5% трафика',
+                  'Мониторинг SLO / Error Budget в Sentry и OpenTelemetry и раскатка на 100%',
+                ],
+                explanation:
+                  'Сначала дешёвые статические проверки и прицельные тесты на PR, затем защита от семантических конфликтов в Merge Queue, и наконец безопасный Shift-Right релиз через фича-флаг и Canary под контролем телеметрии.',
               },
             },
             {
               id: 'qa-l115-s4',
-              title: 'Test Data Management',
+              title: 'Механика статического анализа (Taint Analysis)',
               type: 'quiz',
               quiz: {
-                kind: 'single',
-                question: 'Для нагрузочного теста на 10 млн пользователей какой подход к данным правильный?',
-                options: [
-                  { id: 'a', text: 'Дамп реальной БД' },
-                  { id: 'b', text: 'Сгенерировать через Faker' },
-                  { id: 'c', text: 'Маскированные данные (Masked Data) с сохранением распределения' },
-                  { id: 'd', text: 'Умножить результат 100 пользователей' },
+                kind: 'cloze',
+                question: 'Заполните три ключевых понятия Taint Analysis в SAST-сканерах: недоверенные данные приходят из источника (____), проходят без очистки (Sanitizer) и попадают в опасную функцию приёмника (____):',
+                text: 'Путь уязвимости в SAST: ____ → (нет Sanitizer) → ____',
+                blanks: [
+                  { accepted: ['Source', 'source'], hint: 'источник пользовательского ввода' },
+                  { accepted: ['Sink', 'sink'], hint: 'опасная точка выполнения (например, cursor.execute)' },
                 ],
-                correct: ['c'],
-                explanation: 'Для нагрузки нужны паттерны распределения. Faker даст плоское распределение. Masked Data сохраняет паттерны без утечки PII.',
+                explanation:
+                  'SAST строит граф потока данных от Source (например, request.args) до Sink (например, SQL-запрос или eval) и проверяет наличие Sanitizer между ними.',
               },
             },
             {
               id: 'qa-l115-s5',
-              title: 'Merge Queue и TIA',
+              title: 'Моделирование угроз по STRIDE',
               type: 'quiz',
               quiz: {
-                kind: 'single',
-                question: 'Зачем нужна Merge Queue?',
-                options: [
-                  { id: 'a', text: 'Для Code Review' },
-                  { id: 'b', text: 'Для тестирования комбинации PR перед слиянием (защита от Semantic Conflicts)' },
-                  { id: 'c', text: 'Для мержа без тестов' },
-                  { id: 'd', text: 'Для ускорения Docker' },
+                kind: 'matching',
+                question: 'Сопоставьте категорию угрозы STRIDE и конкретный сценарий атаки',
+                pairs: [
+                  { left: 'Spoofing (Подмена личности)', right: 'Вход в чужой аккаунт с помощью украденного JWT-токена' },
+                  { left: 'Tampering (Модификация данных)', right: 'Изменение параметра price=5000 на price=1 в теле POST-запроса корзины' },
+                  { left: 'Information Disclosure (Утечка)', right: 'Эндпоинт /api/users возвращает хеши паролей и чужие телефоны' },
+                  { left: 'Elevation of Privilege (Повышение прав)', right: 'Обычный пользователь вызывает админский метод DELETE /api/admin/users/42' },
                 ],
-                correct: ['b'],
-                explanation: 'Merge Queue решает проблему, когда PR по отдельности зеленые, но вместе ломают сборку.',
+                explanation:
+                  'Spoofing бьёт по аутентификации, Tampering — по целостности данных, Information Disclosure — по конфиденциальности, а Elevation of Privilege — по авторизации.',
               },
             },
             {
               id: 'qa-l115-s6',
-              title: 'Флаки',
+              title: 'Сравнение инструментов AppSec: SAST, DAST, IAST, SCA',
               type: 'quiz',
               quiz: {
-                kind: 'multiple',
-                question: 'Вы видите, что тест падает в 10% запусков. Какие шаги НЕПРАВИЛЬНЫЕ?',
-                options: [
-                  { id: 'a', text: 'Обернуть в retry, чтобы CI был зеленым' },
-                  { id: 'b', text: 'Удалить тест навсегда' },
-                  { id: 'c', text: 'Посмотреть трейс и логи' },
-                  { id: 'd', text: 'Пометить как @flaky и вынести в карантин' },
+                kind: 'table',
+                question: 'Отметьте, какой тип сканера безопасности соответствует каждому утверждению',
+                columns: ['SAST', 'DAST', 'SCA'],
+                rows: [
+                  { label: 'Анализирует исходный код без запуска приложения и указывает точный файл и номер строки', correct: ['SAST'] },
+                  { label: 'Проверяет зависимости (requirements.txt, package-lock.json) по базам известных CVE и строит SBOM', correct: ['SCA'] },
+                  { label: 'Атакует запущенное на стенде приложение снаружи по HTTP методом чёрного ящика', correct: ['DAST'] },
+                  { label: 'Запускается за секунды прямо на каждый Pull Request до сборки контейнера', correct: ['SAST', 'SCA'] },
                 ],
-                correct: ['a', 'b'],
-                explanation: 'Retry (a) маскирует баг, удаление (b) снижает покрытие. Правильно — дебажить (c) и изолировать (d).',
+                explanation:
+                  'SAST и SCA работают статически на каждом PR (код и зависимости), а DAST тестирует уже развёрнутый стенд снаружи.',
               },
             },
             {
               id: 'qa-l115-s7',
-              title: 'Sentry',
+              title: 'Идентификатор сквозной трассировки',
               type: 'quiz',
               quiz: {
-                kind: 'single',
-                question: 'Какая метрика в Sentry важнее всего для приоритизации бага?',
-                options: [
-                  { id: 'a', text: 'Длина стектрейса' },
-                  { id: 'b', text: 'Количество затронутых пользователей (Users Affected)' },
-                  { id: 'c', text: 'Браузер' },
-                  { id: 'd', text: 'IP' },
-                ],
-                correct: ['b'],
-                explanation: 'Если ошибка у 10,000 пользователей — это Critical. Sentry помогает понять масштаб.',
+                kind: 'fill',
+                question: 'Как в стандарте OpenTelemetry называется уникальный идентификатор (два слова на английском), который прокидывается в заголовке `traceparent` через все микросервисы и позволяет собрать полный путь одного запроса в Jaeger/Grafana Tempo?',
+                accepted: ['Trace ID', 'trace id', 'trace_id', 'traceId'],
+                placeholder: 'два слова',
+                hint: 'Trace ...',
+                explanation:
+                  'Trace ID связывает все отдельные спаны (Spans) разных микросервисов в единое дерево распределённого трейса.',
               },
             },
             {
               id: 'qa-l115-s8',
-              title: 'Правило 1-10-100',
+              title: 'Борьба с флакающими тестами (Flaky Management)',
               type: 'quiz',
               quiz: {
-                kind: 'single',
-                question: 'Сколько примерно стоит баг в проде, если на этапе требований он стоит 1 доллар?',
+                kind: 'multiple',
+                question: 'Какие практики входят в здоровую инженерную культуру работы с нестабильными (flaky) тестами?',
                 options: [
-                  { id: 'a', text: '10 долларов' },
-                  { id: 'b', text: '100 долларов' },
-                  { id: 'c', text: '1000 долларов' },
-                  { id: 'd', text: '5 долларов' },
+                  { id: 'a', text: 'Автоматический вынос флакающего теста в карантин (Quarantine), чтобы не блокировать PR всей компании' },
+                  { id: 'b', text: 'Использование уникальных данных (UUID) и изоляции состояния между параллельными воркерами' },
+                  { id: 'c', text: 'Бесконечный перезапуск упавшего теста (@flaky(reruns=10)) без разбора причины падения' },
+                  { id: 'd', text: 'Мониторинг метрики Flaky Rate и назначение владельца (Owner) на починку карантинного теста' },
                 ],
-                correct: ['b'],
-                explanation: 'Требования ($1) -> QA ($10) -> Продакшен ($100).',
+                correct: ['a', 'b', 'd'],
+                explanation:
+                  'Слепой retry (c) прячет реальные баги гонок (race conditions) и растягивает время CI. Здоровый процесс — карантин + метрика Flaky Rate + изоляция данных.',
               },
             },
             {
               id: 'qa-l115-s9',
-              title: 'Screenplay',
+              title: 'Код: фикстура PostgreSQL на Testcontainers',
               type: 'quiz',
               quiz: {
-                kind: 'single',
-                question: 'В чем преимущество паттерна Screenplay над классическим Page Object?',
-                options: [
-                  { id: 'a', text: 'Он быстрее выполняется' },
-                  { id: 'b', text: 'Он моделирует бизнес-задачи (Task) и способности (Abilities)' },
-                  { id: 'c', text: 'Он работает только с Selenium' },
-                  { id: 'd', text: 'Он не требует написания локаторов' },
+                kind: 'code',
+                question: 'Напишите сессионную фикстуру `postgres_db` на `pytest` (`@pytest.fixture(scope="session")`), которая через менеджер контекста `with PostgresContainer("postgres:16-alpine") as pg:` запускает контейнер и возвращает его через `yield pg`.',
+                starterCode: 'import pytest\nfrom testcontainers.postgres import PostgresContainer\n\n',
+                mustInclude: [
+                  { pattern: '@pytest\\.fixture\\(scope=["\']session["\']\\)', message: 'Укажите @pytest.fixture(scope="session")' },
+                  { pattern: 'with\\s+PostgresContainer', message: 'Используйте менеджер контекста with PostgresContainer(...)' },
+                  { pattern: 'yield\\s+', message: 'Верните контейнер через yield' },
                 ],
-                correct: ['b'],
-                explanation: 'Screenplay позволяет писать `actor.attempts_to(Login(), Checkout())`. Это ближе к языку бизнеса.',
+                explanation:
+                  '@pytest.fixture(scope="session")\ndef postgres_db():\n    with PostgresContainer("postgres:16-alpine") as pg:\n        yield pg',
               },
             },
             {
               id: 'qa-l115-s10',
-              title: 'SAST vs DAST',
-              type: 'quiz',
-              quiz: {
-                kind: 'single',
-                question: 'Вы хотите найти SQL-инъекцию в коде до деплоя. Какой инструмент выбрать?',
-                options: [
-                  { id: 'a', text: 'DAST (OWASP ZAP)' },
-                  { id: 'b', text: 'SAST (Semgrep)' },
-                  { id: 'c', text: 'SCA (Trivy)' },
-                  { id: 'd', text: 'Пентест' },
-                ],
-                correct: ['b'],
-                explanation: 'SAST ищет SQL-инъекции прямо в исходном коде (через Taint Analysis) до деплоя.',
-              },
+              title: 'Практика в Python: расчёт окупаемости (ROI) автоматизации тест-кейса',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Посчитаем в Python, сколько часов сэкономит команде автоматизация регрессионного сценария за 1 год (`50` релизов в год). Ручное выполнение занимает `0.5` часа на каждый релиз. Написание автотеста занимает `6` часов, а его поддержка — `2` часа в год. Выведите чистую экономию часов (`saved_hours = manual_year_hours - auto_year_hours`).',
+                },
+                {
+                  type: 'python',
+                  python: {
+                    starterCode:
+                      'releases_per_year = 50\nmanual_hours_per_run = 0.5\n\nwrite_auto_hours = 6\nmaintain_auto_hours_per_year = 2\n\n# 1. Посчитайте годовые затраты на ручной прогон: releases_per_year * manual_hours_per_run\n# 2. Вычтите затраты на автотест за первый год: (write_auto_hours + maintain_auto_hours_per_year)\nsaved_hours = None  # TODO\n\nprint(int(saved_hours))\n',
+                    task: 'Вычислите чистую экономию времени в часах (`saved_hours`) за первый год и выведите целое число.',
+                    solution:
+                      'releases_per_year = 50\nmanual_hours_per_run = 0.5\nwrite_auto_hours = 6\nmaintain_auto_hours_per_year = 2\n\nmanual_year = releases_per_year * manual_hours_per_run\nauto_year = write_auto_hours + maintain_auto_hours_per_year\nsaved_hours = manual_year - auto_year\nprint(int(saved_hours))',
+                    expected: { type: 'stdout', value: '17' },
+                    hint: 'manual_year = 50 * 0.5 = 25 ч; auto_year = 6 + 2 = 8 ч; экономия = 25 - 8 = 17 ч.',
+                  },
+                },
+              ],
+            },
+            {
+              id: 'qa-l115-s11',
+              title: 'Тренажёр: генерация SBOM, SAST-проверка и запуск затронутых тестов (TIA)',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'qa-arch@ci-node:~/service$',
+                    task: 'Выполните проверки Quality Gate: запустите SAST-сканер semgrep scan --config auto, сгенерируйте SBOM-файл sbom.cdx.json для образа app:1.2 через trivy image и запустите только затронутые коммитом тесты с помощью pytest --testmon.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Запустите статический анализ безопасности кода командой semgrep scan --config auto',
+                        acceptedPatterns: ['^semgrep\\s+scan\\s+--config(=|\\s+)auto$'],
+                        output: 'Scanning 42 files...\n✓ No blocking findings (0 Critical, 0 High).',
+                      },
+                      {
+                        instruction: 'Шаг 2: Сгенерируйте SBOM в формате cyclonedx в файл sbom.cdx.json для образа app:1.2 через trivy image',
+                        acceptedPatterns: [
+                          '^trivy\\s+image\\s+(?=.*-f\\s+cyclonedx)(?=.*-o\\s+sbom\\.cdx\\.json).*app:1\\.2$',
+                        ],
+                        output: '2025-10-28T16:00:00Z INFO Generating CycloneDX SBOM... saved to sbom.cdx.json',
+                      },
+                      {
+                        instruction: 'Шаг 3: Запустите только затронутые изменениями тесты через Test Impact Analysis (pytest --testmon)',
+                        acceptedPatterns: ['^pytest\\s+--testmon$'],
+                        output: 'testmon: 420 tests deselected by coverage graph, running 8 impacted tests...\n........ [100%]\n8 passed, 420 deselected in 0.92s',
+                      },
+                    ],
+                    solution: 'semgrep scan --config auto\ntrivy image -f cyclonedx -o sbom.cdx.json app:1.2\npytest --testmon',
+                    hint: 'Последовательность: semgrep scan --config auto → trivy image -f cyclonedx -o sbom.cdx.json app:1.2 → pytest --testmon.',
+                  },
+                },
+              ],
             },
           ],
         },
