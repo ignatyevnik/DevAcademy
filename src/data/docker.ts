@@ -22,7 +22,7 @@ export const dockerCourse: Course = {
       id: 'dk-m1',
       title: 'Контейнеры и образы',
       lessons: [
-        {
+{
           id: 'dk-l1',
           title: 'Что такое контейнер',
           minutes: 20,
@@ -130,6 +130,47 @@ export const dockerCourse: Course = {
                 explanation:
                   'namespaces — «что видит процесс». cgroups — «сколько ресурсов может взять». seccomp — какие syscalls разрешены. Docker Engine — демон, который всем этим управляет.',
               },
+            },
+            {
+              id: 'dk-l1-s6',
+              title: 'Практика в терминале: первый запуск контейнера',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'devops@host:~$',
+                    task: 'Запустите контейнер nginx в фоновом режиме (-d) с пробросом порта 8080:80 и именем web, проверьте список запущенных контейнеров и посмотрите логи контейнера web.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Запустите образ nginx в фоне (-d), на порту 8080:80 (-p 8080:80) с именем web (--name web)',
+                        acceptedPatterns: [
+                          '^docker\\s+run\\s+(?=.*-d)(?=.*-p\\s+8080:80)(?=.*--name\\s+web).*\\s+nginx(:latest)?$',
+                        ],
+                        commonMistakes: [
+                          {
+                            pattern: '^docker\\s+run\\s+(?!.*-d).*nginx',
+                            output: 'Подсказка: вы забыли флаг фонового режима -d (detached), без него контейнер заблокирует терминал.',
+                          },
+                        ],
+                        output: 'e4f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1',
+                      },
+                      {
+                        instruction: 'Шаг 2: Проверьте список работающих контейнеров',
+                        acceptedPatterns: ['^docker\\s+(ps|container\\s+ls)$'],
+                        output: 'CONTAINER ID   IMAGE     COMMAND                  STATUS          PORTS                  NAMES\ne4f1a2b3c4d5   nginx     "/docker-entrypoint.…"   Up 4 seconds    0.0.0.0:8080->80/tcp   web',
+                      },
+                      {
+                        instruction: 'Шаг 3: Выведите логи контейнера web (docker logs)',
+                        acceptedPatterns: ['^docker\\s+logs\\s+(-f\\s+)?web$'],
+                        output: '/docker-entrypoint.sh: Configuration complete; ready for start up\n2025/10/28 12:00:01 [notice] 1#1: start worker processes',
+                      },
+                    ],
+                    solution: 'docker run -d -p 8080:80 --name web nginx\ndocker ps\ndocker logs web',
+                    hint: 'Используйте docker run -d -p 8080:80 --name web nginx, затем docker ps и docker logs web.',
+                  },
+                },
+              ],
             },
           ],
         },

@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
-import { CheckCircle2, Loader2, Play } from 'lucide-react';
-import type { PyodideInterface } from 'pyodide';
+import { useEffect, useState } from 'react';
+import { CheckCircle2, Loader2, Play, Square } from 'lucide-react';
 import type { PythonBlock } from '@/data/types';
 import type { QuizResult } from '@/lib/progress';
 import {
-  getPyodide,
-  runPython,
+  initPythonWorker,
+  runPythonInWorker,
+  terminatePythonWorker,
   checkPythonResult,
   checkForbidden,
   type PythonRunResult,
@@ -20,8 +20,8 @@ interface Props {
 }
 
 export function PythonView({ python, onResult }: Props) {
-  const pyRef = useRef<PyodideInterface | null>(null);
   const [loading, setLoading] = useState(true);
+  const [running, setRunning] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
   const [code, setCode] = useState(python.starterCode ?? '');
   const [result, setResult] = useState<PythonRunResult | null>(null);
@@ -34,9 +34,8 @@ export function PythonView({ python, onResult }: Props) {
     let cancelled = false;
     (async () => {
       try {
-        const py = await getPyodide();
+        await initPythonWorker();
         if (cancelled) return;
-        pyRef.current = py;
         setLoading(false);
       } catch (e) {
         if (cancelled) return;
@@ -49,19 +48,31 @@ export function PythonView({ python, onResult }: Props) {
     };
   }, []);
 
+  function handleStop() {
+    terminatePythonWorker();
+    setRunning(false);
+    setResult({
+      stdout: '',
+      stderr: '',
+      error: 'Выполнение принудительно остановлено пользователем.',
+      namespace: null,
+    });
+  }
+
   async function handleRun() {
-    if (!pyRef.current || !code.trim()) return;
+    if (!code.trim() || running) return;
     setCheck(null);
-    const r = await runPython(pyRef.current, code);
+    setRunning(true);
     try {
-      setResult({ ...r, namespace: null });
+      const r = await runPythonInWorker(code, python.expected);
+      setResult(r);
     } finally {
-      r.namespace?.destroy(); // <-- Гарантированно уничтожаем
+      setRunning(false);
     }
   }
 
   async function handleCheck() {
-    if (!pyRef.current || !code.trim()) return;
+    if (!code.trim() || running) return;
 
     const forbiddenError = checkForbidden(code, python.forbidden);
     if (forbiddenError) {
@@ -72,9 +83,10 @@ export function PythonView({ python, onResult }: Props) {
       return;
     }
 
-    const r = await runPython(pyRef.current, code);
+    setRunning(true);
     try {
-      setResult({ ...r, namespace: null });
+      const r = await runPythonInWorker(code, python.expected);
+      setResult(r);
       const ok = checkPythonResult(r, python.expected);
       setCheck(ok ? 'ok' : 'fail');
       if (ok) onResult?.('ok');
@@ -83,7 +95,7 @@ export function PythonView({ python, onResult }: Props) {
         onResult?.('fail');
       }
     } finally {
-      r.namespace?.destroy(); // <-- Гарантированно уничтожаем
+      setRunning(false);
     }
   }
 
@@ -92,7 +104,7 @@ export function PythonView({ python, onResult }: Props) {
       <div className="my-6 flex items-center gap-3 rounded-xl border border-border bg-card p-5">
         <Loader2 className="h-5 w-5 animate-spin text-primary" />
         <span className="text-sm text-muted-foreground">
-          Загружаем Python (первый раз ~10–15 сек)…
+          Загружаем Python в фоновом потоке (первый раз ~10–15 сек)…
         </span>
       </div>
     );
@@ -130,12 +142,19 @@ export function PythonView({ python, onResult }: Props) {
         />
 
         <div className="flex flex-wrap gap-2">
-          <Button onClick={handleRun} variant="outline" disabled={!code.trim()}>
-            <Play className="h-4 w-4" /> Выполнить
+          <Button onClick={handleRun} variant="outline" disabled={!code.trim() || running}>
+            {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+            Выполнить
           </Button>
-          <Button onClick={handleCheck} disabled={!code.trim()}>
-            <CheckCircle2 className="h-4 w-4" /> Проверить
+          <Button onClick={handleCheck} disabled={!code.trim() || running}>
+            {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+            Проверить
           </Button>
+          {running && (
+            <Button variant="destructive" onClick={handleStop}>
+              <Square className="h-4 w-4" /> Остановить
+            </Button>
+          )}
           {failed >= 2 && !showSolution && (
             <Button variant="ghost" onClick={() => setShowSolution(true)}>
               Показать решение

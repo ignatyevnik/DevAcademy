@@ -1202,7 +1202,7 @@ Set-Cookie: session=def456; HttpOnly
             },
           ],
         },
-        {
+{
           id: 'nw-l10',
           title: 'Диагностика: curl, traceroute, tcpdump',
           minutes: 35,
@@ -1216,7 +1216,7 @@ Set-Cookie: session=def456; HttpOnly
                   type: 'code',
                   lang: 'bash',
                   caption: 'curl для отладки',
-                  code: `# -v — verbose: показать DNS, TCP, TLS, HTTP\ncurl -v https://api.example.com/users\n\n# -I — только заголовки ответа\ncurl -I https://example.com\n\n# -i — заголовки + тело\ncurl -i https://example.com\n\n# Показать время каждого этапа\ncurl -w "DNS: %{time_namelookup}s, TCP: %{time_connect}s, TLS: %{time_appconnect}s, Total: %{time_total}s\\n" -o /dev/null -s https://example.com\n\n# POST с JSON\ncurl -X POST https://api.example.com/users \\\n  -H "Content-Type: application/json" \\\n  -H "Authorization: Bearer TOKEN" \\\n  -d '{"name": "Anna"}'\n\n# Следовать редиректам\ncurl -L https://example.com\n\n# Игнорировать ошибки TLS (только для отладки!)\ncurl -k https://self-signed.local\n\n# Проверить, что сертификат валиден\ncurl --fail --silent --show-error https://example.com || echo "ОШИБКА"\n\n# HTTP-код только\ncurl -s -o /dev/null -w "%{http_code}" https://example.com/health`,
+                  code: '# -v — verbose: показать DNS, TCP, TLS, HTTP\ncurl -v https://api.example.com/users\n\n# -I — только заголовки ответа\ncurl -I https://example.com\n\n# -i — заголовки + тело\ncurl -i https://example.com\n\n# Показать время каждого этапа\ncurl -w "DNS: %{time_namelookup}s, TCP: %{time_connect}s, TLS: %{time_appconnect}s, Total: %{time_total}s\\n" -o /dev/null -s https://example.com\n\n# POST с JSON\ncurl -X POST https://api.example.com/users \\\n  -H "Content-Type: application/json" \\\n  -H "Authorization: Bearer TOKEN" \\\n  -d \'{"name": "Anna"}\'\n\n# Следовать редиректам\ncurl -L https://example.com\n\n# Игнорировать ошибки TLS (только для отладки!)\ncurl -k https://self-signed.local\n\n# Проверить, что сертификат валиден\ncurl --fail --silent --show-error https://example.com || echo "ОШИБКА"\n\n# HTTP-код только\ncurl -s -o /dev/null -w "%{http_code}" https://example.com/health',
                 },
                 { type: 'note', text: 'curl -v — лучший друг при отладке API. Показывает: DNS-резолвинг, TCP-соединение, TLS-рукопожатие, отправленные заголовки, ответ сервера. Если «API не работает» — сначала curl -v с сервера, потом уже смотреть в код.' },
               ],
@@ -1230,13 +1230,13 @@ Set-Cookie: session=def456; HttpOnly
                   type: 'code',
                   lang: 'bash',
                   caption: 'traceroute и mtr',
-                  code: `# Путь пакета до сервера (какие роутеры проходит)\ntraceroute google.com\ntraceroute -T -p 443 google.com    # через TCP на 443 (обходит блокировки ICMP)\n\n# mtr — traceroute + ping в одном, обновляется\nmtr google.com\nmtr --report google.com            # однократный отчёт\n\n# Где теряются пакеты, где растёт задержка — видно сразу`,
+                  code: '# Путь пакета до сервера (какие роутеры проходит)\ntraceroute google.com\ntraceroute -T -p 443 google.com    # через TCP на 443 (обходит блокировки ICMP)\n\n# mtr — traceroute + ping в одном, обновляется\nmtr google.com\nmtr --report google.com            # однократный отчёт\n\n# Где теряются пакеты, где растёт задержка — видно сразу',
                 },
                 {
                   type: 'code',
                   lang: 'bash',
                   caption: 'tcpdump',
-                  code: `# Весь трафик на порт 443\nsudo tcpdump -i any port 443\n\n# Только к конкретному хосту\nsudo tcpdump -i any host 8.8.8.8\n\n# С записью в файл (для разбора в Wireshark)\nsudo tcpdump -i any port 80 -w capture.pcap\n\n# Показать содержимое (не только заголовки)\nsudo tcpdump -i any -A port 80\n\n# Фильтры: tcp, udp, icmp, port, host, net\nsudo tcpdump -i any 'tcp port 443 and host api.example.com'`,
+                  code: '# Весь трафик на порт 443\nsudo tcpdump -i any port 443\n\n# Только к конкретному хосту\nsudo tcpdump -i any host 8.8.8.8\n\n# С записью в файл (для разбора в Wireshark)\nsudo tcpdump -i any port 80 -w capture.pcap\n\n# Показать содержимое (не только заголовки)\nsudo tcpdump -i any -A port 80\n\n# Фильтры: tcp, udp, icmp, port, host, net\nsudo tcpdump -i any \'tcp port 443 and host api.example.com\'',
                 },
                 { type: 'note', text: 'tcpdump требует root (или CAP_NET_RAW). На macOS — /usr/sbin/tcpdump. На Windows — WinDump или Wireshark. pcap-файл из tcpdump открывается в Wireshark: там видно каждый пакет, каждый TLS-handshake, каждый HTTP-заголовок.' },
               ],
@@ -1269,7 +1269,7 @@ Set-Cookie: session=def456; HttpOnly
                   type: 'code',
                   lang: 'text',
                   caption: 'Алгоритм диагностики по слоям',
-                  code: `1. DNS: имя → IP\ndig example.com\n→ нет ответа: проблема с DNS-сервером или доменом\n→ есть IP: идём дальше\n\n2. TCP: открыт ли порт?\nnc -zv example.com 443\ntelnet example.com 443\n→ Connection refused: сервис не слушает (упал)\n→ Timeout: firewall блокирует\n→ Connected: идём дальше\n\n3. TLS: рукопожатие и сертификат\nopenssl s_client -connect example.com:443 -servername example.com\ncurl -vI https://example.com\n→ certificate expired: обновить сертификат\n→ self-signed: недоверенный CA\n→ OK: идём дальше\n\n4. HTTP: что возвращает сервер?\ncurl -v https://example.com/health\n→ 200 OK: сервер работает, проблема в клиенте\n→ 500: ошибка приложения, смотреть логи\n→ 502: nginx не достучался до бэкенда\n→ 504: nginx достучался, бэкенд не ответил вовремя`,
+                  code: '1. DNS: имя → IP\ndig example.com\n→ нет ответа: проблема с DNS-сервером или доменом\n→ есть IP: идём дальше\n\n2. TCP: открыт ли порт?\nnc -zv example.com 443\ntelnet example.com 443\n→ Connection refused: сервис не слушает (упал)\n→ Timeout: firewall блокирует\n→ Connected: идём дальше\n\n3. TLS: рукопожатие и сертификат\nopenssl s_client -connect example.com:443 -servername example.com\ncurl -vI https://example.com\n→ certificate expired: обновить сертификат\n→ self-signed: недоверенный CA\n→ OK: идём дальше\n\n4. HTTP: что возвращает сервер?\ncurl -v https://example.com/health\n→ 200 OK: сервер работает, проблема в клиенте\n→ 500: ошибка приложения, смотреть логи\n→ 502: nginx не достучался до бэкенда\n→ 504: nginx достучался, бэкенд не ответил вовремя',
                 },
                 {
                   type: 'list',
@@ -1301,6 +1301,45 @@ Set-Cookie: session=def456; HttpOnly
                 explanation:
                   'Каждый симптом — на своём слое. DNS → dig. TCP → nc/telnet. TLS → openssl s_client. HTTP → curl. Правильный порядок: сверху вниз (DNS → TCP → TLS → HTTP). Не «перезапустить и надеяться», а проверить каждый слой.',
               },
+            },
+            {
+              id: 'nw-l10-s6',
+              title: 'Практика в терминале: диагностика по слоям',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'netops@diag:~$',
+                    task: 'Проведите пошаговую диагностику сервиса api.example.com: узнайте его IP через dig, проверьте доступность TCP-порта 443 утилитой nc -zv и выполните подробный запрос curl -v к https://api.example.com/health.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Узнайте A-запись домена api.example.com с помощью dig',
+                        acceptedPatterns: [
+                          '^dig\\s+(\\+short\\s+)?api\\.example\\.com(\\s+A)?$',
+                        ],
+                        output: '93.184.216.34',
+                      },
+                      {
+                        instruction: 'Шаг 2: Проверьте, открыт ли порт 443 на api.example.com с помощью nc -zv',
+                        acceptedPatterns: [
+                          '^nc\\s+-(zv|vz)\\s+api\\.example\\.com\\s+443$',
+                        ],
+                        output: 'Connection to api.example.com (93.184.216.34) 443 port [tcp/https] succeeded!',
+                      },
+                      {
+                        instruction: 'Шаг 3: Выполните запрос с флагом -v (или -I) к https://api.example.com/health',
+                        acceptedPatterns: [
+                          '^curl\\s+-(v|I|vI|Iv)\\s+https://api\\.example\\.com/health$',
+                        ],
+                        output: '* Connected to api.example.com (93.184.216.34) port 443\n* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384\n< HTTP/2 200\n< content-type: application/json\n{"status":"ok"}',
+                      },
+                    ],
+                    solution: 'dig +short api.example.com\nnc -zv api.example.com 443\ncurl -v https://api.example.com/health',
+                    hint: 'Последовательность: dig api.example.com → nc -zv api.example.com 443 → curl -v https://api.example.com/health.',
+                  },
+                },
+              ],
             },
           ],
         },

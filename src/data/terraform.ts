@@ -137,7 +137,7 @@ export const terraformBasicsCourse: Course = {
             },
           ],
         },
-        {
+{
           id: 'tf-l2',
           title: 'Первый запуск: init, plan, apply',
           minutes: 25,
@@ -241,6 +241,50 @@ export const terraformBasicsCourse: Course = {
                 explanation:
                   '`-/+` — replace: Terraform удалит старый ресурс и создаст новый (например, при смене immutable-поля). Для RDS/S3 с данными это критично — данные могут потеряться. Всегда читайте plan перед apply.',
               },
+            },
+            {
+              id: 'tf-l2-s6',
+              title: 'Практика в терминале: цикл init → validate → plan → apply',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'infra@cloud:~/envs/prod$',
+                    task: 'Выполните полный цикл работы с Terraform: инициализируйте проект, проверьте валидность конфигурации, сохраните план в файл tfplan и примените этот сохранённый план.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Инициализируйте директорию Terraform и скачайте провайдеры',
+                        acceptedPatterns: ['^terraform\\s+init$'],
+                        output: 'Initializing the backend...\nInitializing provider plugins...\n- Installed hashicorp/aws v5.40.0\nTerraform has been successfully initialized!',
+                      },
+                      {
+                        instruction: 'Шаг 2: Проверьте синтаксис и валидность конфигурации',
+                        acceptedPatterns: ['^terraform\\s+validate$'],
+                        output: 'Success! The configuration is valid.',
+                      },
+                      {
+                        instruction: 'Шаг 3: Постройте план и сохраните его в файл tfplan (-out=tfplan)',
+                        acceptedPatterns: ['^terraform\\s+plan\\s+-out=tfplan$'],
+                        commonMistakes: [
+                          {
+                            pattern: '^terraform\\s+plan$',
+                            output: 'Plan: 1 to add, 0 to change, 0 to destroy.\n(Подсказка: сохраните план в файл с помощью флага -out=tfplan)',
+                          },
+                        ],
+                        output: 'Plan: 1 to add, 0 to change, 0 to destroy.\nSaved the plan to: tfplan',
+                      },
+                      {
+                        instruction: 'Шаг 4: Примените сохранённый план tfplan',
+                        acceptedPatterns: ['^terraform\\s+apply\\s+tfplan$'],
+                        output: 'aws_s3_bucket.demo: Creating...\naws_s3_bucket.demo: Creation complete after 2s [id=my-terraform-demo-bucket-12345]\nApply complete! Resources: 1 added, 0 changed, 0 destroyed.',
+                      },
+                    ],
+                    solution: 'terraform init\nterraform validate\nterraform plan -out=tfplan\nterraform apply tfplan',
+                    hint: 'Последовательность: terraform init → terraform validate → terraform plan -out=tfplan → terraform apply tfplan.',
+                  },
+                },
+              ],
             },
           ],
         },

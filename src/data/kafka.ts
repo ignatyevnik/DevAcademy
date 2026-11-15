@@ -1432,137 +1432,161 @@ max.in.flight.requests.per.connection=5   # ≤5 — идемпотентнос�
       id: 'kf-m4',
       title: 'Экосистема',
       lessons: [
-        {
-          id: 'kf-l12',
-          title: 'Kafka Connect',
+{
+          id: 'kf-l2',
+          title: 'Topics, partitions, offsets',
           minutes: 25,
           steps: [
             {
-              id: 'kf-l12-s1',
-              title: 'Что такое Kafka Connect',
+              id: 'kf-l2-s1',
+              title: 'Три фундаментальные абстракции',
               type: 'theory',
               blocks: [
                 {
                   type: 'p',
-                  text: 'Kafka Connect — фреймворк для «перекачки данных» между Kafka и внешними системами без кода. Source connector: внешняя система → Kafka (CDC из Postgres, S3 → Kafka). Sink connector: Kafka → внешняя система (Kafka → S3, Kafka → Elasticsearch). Готовые коннекторы на сотни систем.',
+                  text: 'Topic — логический поток («orders.created», «payments.processed»). Partition — физический шард топика, единица параллелизма и репликации. Offset — порядковый номер сообщения в партиции (монотонно растёт, начиная с 0). Consumer group читает партиции, запоминая свой offset.',
                 },
                 {
                   type: 'mermaid',
-                  caption: 'Connect: source и sink',
-                  code: `graph LR
-                    PG[("Postgres")] -->|"Debezium source"| K[("Kafka topics")]
-                    K -->|"S3 sink"| S3[("S3")]
-                    K -->|"Elasticsearch sink"| ES[("Elasticsearch")]
-                    K -->|"Snowflake sink"| SF[("Snowflake")]`,
-                },
-                {
-                  type: 'code',
-                  lang: 'json',
-                  caption: 'Конфиг коннектора (Debezium PostgreSQL)',
-                  code: `{
-  "name": "orders-cdc",
-  "config": {
-    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
-    "database.hostname": "postgres",
-    "database.port": "5432",
-    "database.user": "debezium",
-    "database.password": "secret",
-    "database.dbname": "app",
-    "table.include.list": "public.orders",
-    "topic.prefix": "cdc"
-  }
-}`,
+                  caption: 'Topic с 3 partitions',
+                  code: 'graph TD\n                    T["topic: orders.created"] --> P0["partition 0<br/>offset 0,1,2,3"]\n                    T --> P1["partition 1<br/>offset 0,1"]\n                    T --> P2["partition 2<br/>offset 0,1,2"]',
                 },
                 {
                   type: 'list',
                   items: [
-                    'Debezium — стандарт CDC (Change Data Capture) из БД в Kafka',
-                    'Source: внешняя система → Kafka',
-                    'Sink: Kafka → внешняя система',
-                    'REST API для управления коннекторами',
-                    'Distributed mode: несколько worker-ов, коннекторы распределяются',
+                    'Topic — «категория событий», у топика N партиций',
+                    'Partition — единица параллелизма: каждый consumer читает свою партицию',
+                    'Offset — позиция сообщения внутри партиции, уникальна в партиции',
+                    'Порядок гарантирован только внутри партиции, не между партициями',
+                    'Partition — единица репликации: у каждой партиции есть лидер и фолловеры',
                   ],
                 },
                 {
                   type: 'note',
-                  text: 'Kafka Connect — «ETL без кода». Debezium читает WAL Postgres и отправляет каждое изменение (INSERT/UPDATE/DELETE) в Kafka. Классика: микросервисы слушают изменения БД, аналитика получает поток в S3 без нагрузки на прод-БД.',
+                  text: 'Количество партиций задаёт максимальный параллелизм: 12 партиций = максимум 12 consumer-ов в группе (больше — простой). Начинают с 6–12 и увеличивают, если упираетесь в throughput. Уменьшить партиции нельзя — только пересоздать топик.',
                 },
               ],
             },
             {
-              id: 'kf-l12-s2',
-              title: 'Проверь себя: Connect',
+              id: 'kf-l2-s2',
+              title: 'Управление offset и retention',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'kafka-topics.sh',
+                  code: '# Создать топик\nkafka-topics.sh --create \\\n  --topic orders.created \\\n  --partitions 6 \\\n  --replication-factor 3 \\\n  --bootstrap-server localhost:9092\n\n# Список\nkafka-topics.sh --list --bootstrap-server localhost:9092\n\n# Описание (partitions, replicas, ISR)\nkafka-topics.sh --describe --topic orders.created --bootstrap-server localhost:9092\n\n# Увеличить партиции (нельзя уменьшить!)\nkafka-topics.sh --alter --topic orders.created --partitions 12 --bootstrap-server localhost:9092',
+                },
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'Управление consumer offsets',
+                  code: '# Позиции consumer groups\nkafka-consumer-groups.sh --describe \\\n  --group orders-service --bootstrap-server localhost:9092\n\n# Перемотать group на начало\nkafka-consumer-groups.sh --reset-offsets --to-earliest \\\n  --group orders-service --topic orders.created --execute \\\n  --bootstrap-server localhost:9092\n\n# На конкретный offset\nkafka-consumer-groups.sh --reset-offsets --to-offset 42 \\\n  --group orders-service --topic orders.created --execute \\\n  --bootstrap-server localhost:9092',
+                },
+                {
+                  type: 'table',
+                  caption: 'retention',
+                  head: ['Параметр', 'Значение по умолчанию', 'Что значит'],
+                  rows: [
+                    ['retention.ms', '7 дней', 'Сколько хранить сообщения'],
+                    ['retention.bytes', '-1 (без лимита)', 'Максимальный размер партиции'],
+                    ['cleanup.policy', 'delete', 'delete | compact | compact,delete'],
+                  ],
+                },
+                {
+                  type: 'note',
+                  text: '`--reset-offsets` работает только если группа неактивна (нет активных consumer-ов). Иначе — остановить consumer, перемотать, запустить заново. Replay — мощная штука: «перечитаем все события за неделю после исправления бага».',
+                },
+              ],
+            },
+            {
+              id: 'kf-l2-s3',
+              title: 'Проверь себя: offset',
               type: 'quiz',
               quiz: {
                 kind: 'single',
-                question: 'Что делает Debezium как source connector?',
+                question: 'Гарантирован ли порядок сообщений между разными партициями одного топика?',
                 options: [
-                  { id: 'a', text: 'Превращает Kafka в БД' },
-                  { id: 'b', text: 'Читает WAL/журнал БД и отправляет каждое изменение (INSERT/UPDATE/DELETE) в Kafka (CDC)' },
-                  { id: 'c', text: 'Шифрует сообщения' },
-                  { id: 'd', text: 'Сжимает топики' },
+                  { id: 'a', text: 'Да, Kafka гарантирует глобальный порядок' },
+                  { id: 'b', text: 'Нет, порядок гарантирован только внутри одной партиции' },
+                  { id: 'c', text: 'Только для одного consumer' },
+                  { id: 'd', text: 'Только с acks=all' },
                 ],
                 correct: ['b'],
                 explanation:
-                  'Debezium — CDC: читает WAL Postgres / binlog MySQL и публикует каждое изменение в Kafka. Не нагрузка на БД (читает журнал), не требует триггеров, ловит все изменения — включая удаления.',
+                  'Порядок гарантирован только внутри партиции. Разные партиции обрабатываются параллельно — глобального порядка нет. Если нужен порядок по ключу (например, по user_id) — все события этого ключа должны попадать в одну партицию (одинаковый key).',
               },
             },
             {
-  id: 'kf-l12-s3',
-  title: 'Source vs Sink, distributed mode',
-  type: 'theory',
-  blocks: [
-    { type: 'p', text: 'Два типа коннекторов и два режима работы Connect. Понимание разницы — половина успеха при выборе.' },
-    {
-      type: 'table',
-      caption: 'Типы коннекторов и режимы',
-      head: ['Понятие', 'Что значит'],
-      rows: [
-        ['Source connector', 'Внешняя система → Kafka (CDC, файлы, API)'],
-        ['Sink connector', 'Kafka → внешняя система (S3, ES, Snowflake)'],
-        ['Standalone mode', 'Один процесс Connect — для dev/тестов'],
-        ['Distributed mode', 'Несколько worker-ов, коннекторы распределяются — для прода'],
-      ],
-    },
-    { type: 'note', text: 'Distributed mode — стандарт прода: несколько worker-ов, при падении одного коннекторы переезжают на живой. Конфиг хранится в Kafka-топиках (connect-configs, connect-offsets, connect-status).' },
-  ],
-},
-{
-  id: 'kf-l12-s4',
-  title: 'Проверь себя: Connect vs свой код',
-  type: 'quiz',
-  quiz: {
-    kind: 'single',
-    question: 'Когда стоит использовать Kafka Connect, а не писать свой producer/consumer?',
-    options: [
-      { id: 'a', text: 'Всегда — Connect быстрее' },
-      { id: 'b', text: 'Когда нужна стандартная «перекачка» (БД ↔ Kafka, S3 → Kafka), а не кастомная логика' },
-      { id: 'c', text: 'Только для S3' },
-      { id: 'd', text: 'Только если у вас Java' },
-    ],
-    correct: ['b'],
-    explanation:
-      'Connect — для «трубы» (источник → Kafka → приёмник). Если логика кастомная (трансформация, обогащение, вызовы API) — свой код. Готовые коннекторы: Debezium, S3, Elasticsearch, JDBC, Snowflake.',
-  },
-},
-{
-  id: 'kf-l12-s5',
-  title: 'Проверь себя: Debezium',
-  type: 'quiz',
-  quiz: {
-    kind: 'single',
-    question: 'Как Debezium читает изменения из PostgreSQL, не создавая нагрузку на прод-БД?',
-    options: [
-      { id: 'a', text: 'Триггерами на каждой таблице' },
-      { id: 'b', text: 'Читает WAL (write-ahead log) — журнал транзакций Postgres' },
-      { id: 'c', text: 'Периодическим SELECT * FROM table' },
-      { id: 'd', text: 'Через pg_dump каждые 5 минут' },
-    ],
-    correct: ['b'],
-    explanation:
-      'Debezium читает WAL — журнал, куда Postgres пишет все изменения. Это не нагрузка на таблицы (только чтение журнала), не требует триггеров, ловит все изменения включая DELETE. Стандарт CDC.',
-  },
-},
+              id: 'kf-l2-s4',
+              title: 'Проверь себя: партиции',
+              type: 'quiz',
+              quiz: {
+                kind: 'number',
+                question: 'У топика 6 партиций. Какое максимальное количество consumer-ов в одной группе будет работать параллельно?',
+                correct: 6,
+                explanation:
+                  'Каждая партиция читается одним consumer-ом в группе. 6 партиций → максимум 6 активных consumer-ов. Седьмой будет простаивать. Больше партиций = больше параллелизма, но и больше overhead на брокере.',
+              },
+            },
+            {
+              id: 'kf-l2-s5',
+              title: 'Проверь себя: retention-политики',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'В чём разница между `cleanup.policy=delete` и `cleanup.policy=compact`?',
+                options: [
+                  { id: 'a', text: 'delete удаляет старые сегменты целиком, compact оставляет только последнее значение по каждому ключу' },
+                  { id: 'b', text: 'delete — быстрее, compact — медленнее' },
+                  { id: 'c', text: 'delete работает только в KRaft, compact — только в ZooKeeper' },
+                  { id: 'd', text: 'Это синонимы' },
+                ],
+                correct: ['a'],
+                explanation:
+                  'delete — старая стратегия: сегменты старше retention.ms удаляются. compact — «сжатие»: для каждого ключа остаётся только последнее значение. Для event-sourcing — delete, для «таблицы состояния» (последний статус заказа) — compact.',
+              },
+            },
+            {
+              id: 'kf-l2-s6',
+              title: 'Практика в терминале: управление топиками и группами',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'kafka@broker:~$',
+                    task: 'Выведите список всех топиков на брокере localhost:9092, посмотрите детальную конфигурацию топика orders.created (--describe) и проверьте отставание (LAG) группы orders-service.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Выведите список топиков через kafka-topics.sh --list --bootstrap-server localhost:9092',
+                        acceptedPatterns: [
+                          '^kafka-topics\\.sh\\s+(?=.*--list)(?=.*--bootstrap-server\\s+localhost:9092).*$',
+                        ],
+                        output: '__consumer_offsets\norders.created\npayments.processed',
+                      },
+                      {
+                        instruction: 'Шаг 2: Выведите описание топика orders.created (--describe --topic orders.created --bootstrap-server localhost:9092)',
+                        acceptedPatterns: [
+                          '^kafka-topics\\.sh\\s+(?=.*--describe)(?=.*--topic\\s+orders\\.created)(?=.*--bootstrap-server\\s+localhost:9092).*$',
+                        ],
+                        output: 'Topic: orders.created\tPartitionCount: 3\tReplicationFactor: 3\tConfigs: min.insync.replicas=2\n\tTopic: orders.created\tPartition: 0\tLeader: 1\tReplicas: 1,2,3\tIsr: 1,2,3',
+                      },
+                      {
+                        instruction: 'Шаг 3: Проверьте LAG консьюмер-группы orders-service через kafka-consumer-groups.sh',
+                        acceptedPatterns: [
+                          '^kafka-consumer-groups\\.sh\\s+(?=.*--describe)(?=.*--group\\s+orders-service)(?=.*--bootstrap-server\\s+localhost:9092).*$',
+                        ],
+                        output: 'GROUP           TOPIC           PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG\norders-service  orders.created  0          1520            1520            0\norders-service  orders.created  1          2100            2105            5',
+                      },
+                    ],
+                    solution: 'kafka-topics.sh --list --bootstrap-server localhost:9092\nkafka-topics.sh --describe --topic orders.created --bootstrap-server localhost:9092\nkafka-consumer-groups.sh --describe --group orders-service --bootstrap-server localhost:9092',
+                    hint: 'Используйте kafka-topics.sh с флагами --list и --describe, а затем kafka-consumer-groups.sh --describe.',
+                  },
+                },
+              ],
+            },
           ],
         },
         {

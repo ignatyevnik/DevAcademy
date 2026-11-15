@@ -386,117 +386,159 @@ export const ansibleBasicsCourse: Course = {
   ],
 },
 {
-  id: 'ans-l4',
-  title: 'Первый playbook',
-  minutes: 25,
-  steps: [
-    {
-      id: 'ans-l4-s1',
-      title: 'Структура playbook',
-      type: 'theory',
-      blocks: [
-        {
-          type: 'p',
-          text: 'Playbook — YAML-файл со списком **plays**. Каждый play — «на какой группе хостов выполнить какие tasks». Внутри play — `hosts`, `become`, `vars`, `tasks`, `handlers`, `roles`.',
-        },
-        {
-          type: 'code',
-          lang: 'yaml',
-          caption: 'site.yml — простой playbook',
-          code: '---\n- name: Настроить web-серверы\n  hosts: web\n  become: true\n  vars:\n    http_port: 80\n\n  tasks:\n    - name: Установить nginx\n      apt:\n        name: nginx\n        state: present\n\n    - name: Запустить nginx\n      service:\n        name: nginx\n        state: started\n        enabled: true\n\n    - name: Открыть порт 80 в ufw\n      ufw:\n        rule: allow\n        port: "{{ http_port }}"\n        proto: tcp',
-        },
-        {
-          type: 'code',
-          lang: 'bash',
-          caption: 'Запуск',
-          code: '# Проверка синтаксиса\nansible-playbook -i inventory.ini site.yml --syntax-check\n\n# Dry-run (ничего не меняет, но показывает, что было бы сделано)\nansible-playbook -i inventory.ini site.yml --check\n\n# С diff (что именно изменится в файлах)\nansible-playbook -i inventory.ini site.yml --check --diff\n\n# Реальный запуск\nansible-playbook -i inventory.ini site.yml\n\n# С логированием\nansible-playbook -i inventory.ini site.yml -v     # verbose\nansible-playbook -i inventory.ini site.yml -vvv   # очень подробно',
-        },
-      ],
-    },
-    {
-      id: 'ans-l4-s2',
-      title: 'Результаты: ok, changed, failed',
-      type: 'theory',
-      blocks: [
-        {
-          type: 'table',
-          caption: 'Что значит каждый статус',
-          head: ['Статус', 'Значение'],
-          rows: [
-            ['ok', 'Желаемое состояние уже достигнуто, ничего не изменилось'],
-            ['changed', 'Состояние отличалось — Ansible привёл к желаемому'],
-            ['failed', 'Задача упала (ошибка), выполнение playbook остановлено (если не `ignore_errors`)'],
-            ['skipped', 'Задача пропущена (например, по `when`)'],
-            ['unreachable', 'Хост не отвечает по SSH'],
+          id: 'ans-l4',
+          title: 'Первый playbook',
+          minutes: 25,
+          steps: [
+            {
+              id: 'ans-l4-s1',
+              title: 'Структура playbook',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Playbook — YAML-файл со списком **plays**. Каждый play — «на какой группе хостов выполнить какие tasks». Внутри play — `hosts`, `become`, `vars`, `tasks`, `handlers`, `roles`.',
+                },
+                {
+                  type: 'code',
+                  lang: 'yaml',
+                  caption: 'site.yml — простой playbook',
+                  code: '---\n- name: Настроить web-серверы\n  hosts: web\n  become: true\n  vars:\n    http_port: 80\n\n  tasks:\n    - name: Установить nginx\n      apt:\n        name: nginx\n        state: present\n\n    - name: Запустить nginx\n      service:\n        name: nginx\n        state: started\n        enabled: true\n\n    - name: Открыть порт 80 в ufw\n      ufw:\n        rule: allow\n        port: "{{ http_port }}"\n        proto: tcp',
+                },
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'Запуск',
+                  code: '# Проверка синтаксиса\nansible-playbook -i inventory.ini site.yml --syntax-check\n\n# Dry-run (ничего не меняет, но показывает, что было бы сделано)\nansible-playbook -i inventory.ini site.yml --check\n\n# С diff (что именно изменится в файлах)\nansible-playbook -i inventory.ini site.yml --check --diff\n\n# Реальный запуск\nansible-playbook -i inventory.ini site.yml\n\n# С логированием\nansible-playbook -i inventory.ini site.yml -v     # verbose\nansible-playbook -i inventory.ini site.yml -vvv   # очень подробно',
+                },
+              ],
+            },
+            {
+              id: 'ans-l4-s2',
+              title: 'Результаты: ok, changed, failed',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'table',
+                  caption: 'Что значит каждый статус',
+                  head: ['Статус', 'Значение'],
+                  rows: [
+                    ['ok', 'Желаемое состояние уже достигнуто, ничего не изменилось'],
+                    ['changed', 'Состояние отличалось — Ansible привёл к желаемому'],
+                    ['failed', 'Задача упала (ошибка), выполнение playbook остановлено (если не `ignore_errors`)'],
+                    ['skipped', 'Задача пропущена (например, по `when`)'],
+                    ['unreachable', 'Хост не отвечает по SSH'],
+                  ],
+                },
+                {
+                  type: 'code',
+                  lang: 'text',
+                  caption: 'PLAY RECAP — итог',
+                  code: 'PLAY RECAP *****************************************\nweb1.example.com  : ok=5 changed=2 unreachable=0 failed=0 skipped=0 rescued=0 ignored=0\nweb2.example.com  : ok=5 changed=0 unreachable=0 failed=0 skipped=0 rescued=0 ignored=0\n\ndb1.example.com   : ok=3 changed=1 unreachable=0 failed=0 skipped=0 rescued=0 ignored=0',
+                },
+                {
+                  type: 'note',
+                  text: '`changed=0` при повторном запуске — признак идемпотентности. Если changed > 0 при каждом запуске, где не должно быть изменений — где-то `shell`/`command` без `creates`/`changed_when`. Это классическая ошибка новичков.',
+                },
+              ],
+            },
+            {
+              id: 'ans-l4-s3',
+              title: 'Проверь себя: playbook',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Что делает флаг `--check` в `ansible-playbook`?',
+                options: [
+                  { id: 'a', text: 'Проверяет синтаксис YAML' },
+                  { id: 'b', text: 'Dry-run: показывает, что было бы сделано, но не меняет систему' },
+                  { id: 'c', text: 'Включает подробный вывод' },
+                  { id: 'd', text: 'Останавливается на первой ошибке' },
+                ],
+                correct: ['b'],
+                explanation:
+                  '`--check` — dry-run: задачи симулируются, но реальных изменений нет. Полезно перед `apply` на проде. Синтаксис — `--syntax-check`. Подробный вывод — `-v`/`-vv`/`-vvv`.',
+              },
+            },
+            {
+              id: 'ans-l4-s4',
+              title: 'Проверь себя: статусы',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте статус и значение',
+                pairs: [
+                  { left: 'ok', right: 'Уже в желаемом состоянии' },
+                  { left: 'changed', right: 'Состояние изменено' },
+                  { left: 'failed', right: 'Задача упала с ошибкой' },
+                  { left: 'skipped', right: 'Задача пропущена по when' },
+                ],
+                explanation:
+                  '`changed=0` при повторном запуске — идемпотентность. `failed` останавливает play (если не `ignore_errors`). `skipped` — пропущено по условию. `unreachable` — SSH не дошёл.',
+              },
+            },
+            {
+              id: 'ans-l4-s5',
+              title: 'Проверь себя: PLAY RECAP',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: '`web2.example.com : ok=5 changed=0 failed=0`. Что это значит при повторном запуске идемпотентного playbook?',
+                options: [
+                  { id: 'a', text: 'Ошибка: changed=0 при повторном запуске' },
+                  { id: 'b', text: 'Всё правильно: 5 задач уже были в желаемом состоянии, ничего не менялось' },
+                  { id: 'c', text: 'Задачи не выполнились' },
+                  { id: 'd', text: 'Хост недоступен' },
+                ],
+                correct: ['b'],
+                explanation:
+                  '`changed=0` — идемпотентность в действии: система уже в желаемом состоянии, все 5 задач вернули `ok`. Если бы `changed` был > 0 на каждом запуске — где-то `shell`/`command` без `creates`, и playbook не идемпотентен.',
+              },
+            },
+            {
+              id: 'ans-l4-s6',
+              title: 'Практика в терминале: проверка и раскатка playbook',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'ansible@control:~/infra$',
+                    task: 'Проверьте доступность всех хостов в inventory.ini модулем ping, выполните пробный прогон (--check) плейбука site.yml с инвентарём inventory.ini, а затем запустите его в боевом режиме.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Пропингуйте все хосты (all) из inventory.ini с помощью модуля ping',
+                        acceptedPatterns: [
+                          '^ansible\\s+all\\s+-i\\s+inventory\\.ini\\s+-m\\s+ping$',
+                          '^ansible\\s+-i\\s+inventory\\.ini\\s+all\\s+-m\\s+ping$',
+                        ],
+                        output: 'web1.example.com | SUCCESS => {"changed": false, "ping": "pong"}\nweb2.example.com | SUCCESS => {"changed": false, "ping": "pong"}',
+                      },
+                      {
+                        instruction: 'Шаг 2: Запустите dry-run (--check) для site.yml с инвентарём inventory.ini',
+                        acceptedPatterns: [
+                          '^ansible-playbook\\s+-i\\s+inventory\\.ini\\s+site\\.yml\\s+--check(\\s+--diff)?$',
+                          '^ansible-playbook\\s+site\\.yml\\s+-i\\s+inventory\\.ini\\s+--check(\\s+--diff)?$',
+                        ],
+                        output: 'PLAY [Настроить web-серверы] ************************************\nPLAY RECAP ******************************************************\nweb1.example.com : ok=3 changed=1 unreachable=0 failed=0',
+                      },
+                      {
+                        instruction: 'Шаг 3: Выполните боевой запуск ansible-playbook для site.yml с inventory.ini',
+                        acceptedPatterns: [
+                          '^ansible-playbook\\s+-i\\s+inventory\\.ini\\s+site\\.yml$',
+                          '^ansible-playbook\\s+site\\.yml\\s+-i\\s+inventory\\.ini$',
+                        ],
+                        output: 'PLAY [Настроить web-серверы] ************************************\nPLAY RECAP ******************************************************\nweb1.example.com : ok=3 changed=1 unreachable=0 failed=0\nweb2.example.com : ok=3 changed=1 unreachable=0 failed=0',
+                      },
+                    ],
+                    solution: 'ansible all -i inventory.ini -m ping\nansible-playbook -i inventory.ini site.yml --check\nansible-playbook -i inventory.ini site.yml',
+                    hint: 'Сначала ansible all -i inventory.ini -m ping, затем ansible-playbook с --check и без него.',
+                  },
+                },
+              ],
+            },
           ],
         },
-        {
-          type: 'code',
-          lang: 'text',
-          caption: 'PLAY RECAP — итог',
-          code: 'PLAY RECAP *****************************************\nweb1.example.com  : ok=5 changed=2 unreachable=0 failed=0 skipped=0 rescued=0 ignored=0\nweb2.example.com  : ok=5 changed=0 unreachable=0 failed=0 skipped=0 rescued=0 ignored=0\n\ndb1.example.com   : ok=3 changed=1 unreachable=0 failed=0 skipped=0 rescued=0 ignored=0',
-        },
-        {
-          type: 'note',
-          text: '`changed=0` при повторном запуске — признак идемпотентности. Если changed > 0 при каждом запуске, где не должно быть изменений — где-то `shell`/`command` без `creates`/`changed_when`. Это классическая ошибка новичков.',
-        },
-      ],
-    },
-    {
-      id: 'ans-l4-s3',
-      title: 'Проверь себя: playbook',
-      type: 'quiz',
-      quiz: {
-        kind: 'single',
-        question: 'Что делает флаг `--check` в `ansible-playbook`?',
-        options: [
-          { id: 'a', text: 'Проверяет синтаксис YAML' },
-          { id: 'b', text: 'Dry-run: показывает, что было бы сделано, но не меняет систему' },
-          { id: 'c', text: 'Включает подробный вывод' },
-          { id: 'd', text: 'Останавливается на первой ошибке' },
-        ],
-        correct: ['b'],
-        explanation:
-          '`--check` — dry-run: задачи симулируются, но реальных изменений нет. Полезно перед `apply` на проде. Синтаксис — `--syntax-check`. Подробный вывод — `-v`/`-vv`/`-vvv`.',
-      },
-    },
-    {
-      id: 'ans-l4-s4',
-      title: 'Проверь себя: статусы',
-      type: 'quiz',
-      quiz: {
-        kind: 'matching',
-        question: 'Сопоставьте статус и значение',
-        pairs: [
-          { left: 'ok', right: 'Уже в желаемом состоянии' },
-          { left: 'changed', right: 'Состояние изменено' },
-          { left: 'failed', right: 'Задача упала с ошибкой' },
-          { left: 'skipped', right: 'Задача пропущена по when' },
-        ],
-        explanation:
-          '`changed=0` при повторном запуске — идемпотентность. `failed` останавливает play (если не `ignore_errors`). `skipped` — пропущено по условию. `unreachable` — SSH не дошёл.',
-      },
-    },
-    {
-      id: 'ans-l4-s5',
-      title: 'Проверь себя: PLAY RECAP',
-      type: 'quiz',
-      quiz: {
-        kind: 'single',
-        question: '`web2.example.com : ok=5 changed=0 failed=0`. Что это значит при повторном запуске идемпотентного playbook?',
-        options: [
-          { id: 'a', text: 'Ошибка: changed=0 при повторном запуске' },
-          { id: 'b', text: 'Всё правильно: 5 задач уже были в желаемом состоянии, ничего не менялось' },
-          { id: 'c', text: 'Задачи не выполнились' },
-          { id: 'd', text: 'Хост недоступен' },
-        ],
-        correct: ['b'],
-        explanation:
-          '`changed=0` — идемпотентность в действии: система уже в желаемом состоянии, все 5 задач вернули `ok`. Если бы `changed` был > 0 на каждом запуске — где-то `shell`/`command` без `creates`, и playbook не идемпотентен.',
-      },
-    },
-  ],
-},
 {
   id: 'ans-l5',
   title: 'Модули, handlers и notify',

@@ -2124,7 +2124,7 @@ spec:
             },
           ],
         },
-        {
+{
           id: 'k8-l28',
           title: 'Управление релизами (install, upgrade, rollback)',
           minutes: 30,
@@ -2138,26 +2138,7 @@ spec:
                   type: 'code',
                   lang: 'bash',
                   caption: 'Жизненный цикл релиза',
-                  code: `# Установка из локальной папки
-helm install myapp ./mychart -n production --create-namespace
-
-# С override values
-helm install myapp ./mychart -n production \\
-  --set image.tag=1.4.3 \\
-  -f prod-values.yaml
-
-# Обновление
-helm upgrade myapp ./mychart -n production -f prod-values.yaml
-
-# Install or upgrade (идемпотентно — для CI)
-helm upgrade --install myapp ./mychart -n production
-
-# История и откат
-helm history myapp -n production
-helm rollback myapp 1 -n production
-
-# Удаление
-helm uninstall myapp -n production`,
+                  code: '# Установка из локальной папки\nhelm install myapp ./mychart -n production --create-namespace\n\n# С override values\nhelm install myapp ./mychart -n production \\\n  --set image.tag=1.4.3 \\\n  -f prod-values.yaml\n\n# Обновление\nhelm upgrade myapp ./mychart -n production -f prod-values.yaml\n\n# Install or upgrade (идемпотентно — для CI)\nhelm upgrade --install myapp ./mychart -n production\n\n# История и откат\nhelm history myapp -n production\nhelm rollback myapp 1 -n production\n\n# Удаление\nhelm uninstall myapp -n production',
                 },
                 {
                   type: 'list',
@@ -2199,18 +2180,7 @@ helm uninstall myapp -n production`,
                   type: 'code',
                   lang: 'bash',
                   caption: 'Сухой прогон',
-                  code: `# Отрендерить YAML с values
-helm template myapp ./mychart -f prod-values.yaml > rendered.yaml
-
-# То же, но с реальными values из кластера (учёт --set из прошлого релиза)
-helm template myapp ./mychart -n production --debug > rendered.yaml
-
-# Diff между текущим релизом и новым (нужен плагин helm-diff)
-helm plugin install https://github.com/databus23/helm-diff
-helm diff upgrade myapp ./mychart -n production -f prod-values.yaml
-
-# Lint чарта (проверка синтаксиса и практик)
-helm lint ./mychart`,
+                  code: '# Отрендерить YAML с values\nhelm template myapp ./mychart -f prod-values.yaml > rendered.yaml\n\n# То же, но с реальными values из кластера (учёт --set из прошлого релиза)\nhelm template myapp ./mychart -n production --debug > rendered.yaml\n\n# Diff между текущим релизом и новым (нужен плагин helm-diff)\nhelm plugin install https://github.com/databus23/helm-diff\nhelm diff upgrade myapp ./mychart -n production -f prod-values.yaml\n\n# Lint чарта (проверка синтаксиса и практик)\nhelm lint ./mychart',
                 },
                 {
                   type: 'list',
@@ -2253,18 +2223,7 @@ helm lint ./mychart`,
                   type: 'code',
                   lang: 'bash',
                   caption: 'Публикация и установка OCI-чарта',
-                  code: `# Логин в registry
-helm registry login ghcr.io -u myuser --password-stdin < token.txt
-
-# Упаковать и запушить
-helm package ./mychart
-helm push mychart-1.4.2.tgz oci://ghcr.io/myorg/charts
-
-# Установить из OCI
-helm install myapp oci://ghcr.io/myorg/charts/mychart --version 1.4.2 -n production
-
-# В CI — GitHub Actions
-# helm push mychart-*.tgz oci://ghcr.io/\${{ github.repository_owner }}/charts`,
+                  code: '# Логин в registry\nhelm registry login ghcr.io -u myuser --password-stdin < token.txt\n\n# Упаковать и запушить\nhelm package ./mychart\nhelm push mychart-1.4.2.tgz oci://ghcr.io/myorg/charts\n\n# Установить из OCI\nhelm install myapp oci://ghcr.io/myorg/charts/mychart --version 1.4.2 -n production\n\n# В CI — GitHub Actions\n# helm push mychart-*.tgz oci://ghcr.io/${{ github.repository_owner }}/charts',
                 },
                 {
                   type: 'list',
@@ -2277,6 +2236,41 @@ helm install myapp oci://ghcr.io/myorg/charts/mychart --version 1.4.2 -n product
                   ],
                 },
                 { type: 'note', text: 'OCI-registry для Helm — стандарт 2025. Отдельный Helm-репозиторий (ChartMuseum) — legacy. GitHub Actions + ghcr.io — самый простой путь: один registry для образов и чартов. На собеседовании middle: «где хранить чарты?» — «OCI registry».' },
+              ],
+            },
+            {
+              id: 'k8-l28-s6',
+              title: 'Практика в терминале: работа с Helm-релизом',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'helm@k8s:~$',
+                    task: 'Проверьте чарт ./mychart линтером (helm lint), выполните идемпотентный деплой релиза myapp из ./mychart (helm upgrade --install myapp ./mychart), а затем откатите релиз myapp к ревизии 1.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Проверьте чарт ./mychart с помощью helm lint',
+                        acceptedPatterns: ['^helm\\s+lint\\s+(\\./)?mychart/?$'],
+                        output: '==> Linting ./mychart\n[INFO] Chart.yaml: icon is recommended\n1 chart(s) linted, 0 chart(s) failed',
+                      },
+                      {
+                        instruction: 'Шаг 2: Выполните helm upgrade --install для релиза myapp из ./mychart',
+                        acceptedPatterns: [
+                          '^helm\\s+upgrade\\s+--install\\s+myapp\\s+(\\./)?mychart/?$',
+                        ],
+                        output: 'Release "myapp" has been upgraded. Happy Helming!\nNAME: myapp\nSTATUS: deployed\nREVISION: 2',
+                      },
+                      {
+                        instruction: 'Шаг 3: Откатите релиз myapp к ревизии 1 (helm rollback)',
+                        acceptedPatterns: ['^helm\\s+rollback\\s+myapp\\s+1$'],
+                        output: 'Rollback was a success! Happy Helming!',
+                      },
+                    ],
+                    solution: 'helm lint ./mychart\nhelm upgrade --install myapp ./mychart\nhelm rollback myapp 1',
+                    hint: 'Используйте helm lint, затем helm upgrade --install и helm rollback myapp 1.',
+                  },
+                },
               ],
             },
           ],

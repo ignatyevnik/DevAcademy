@@ -87,8 +87,8 @@ export default function LessonPage() {
 
 const hasSandbox =
   step?.type === "theory" &&
-  step.blocks.some((b) => b.type === "sandbox" || b.type === "python");
-
+  step.blocks.some((b) => b.type === "sandbox" || b.type === "python" || b.type === "terminal");
+  
 useEffect(() => {
   if (
     course &&

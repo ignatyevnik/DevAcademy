@@ -158,7 +158,7 @@ kubectl delete pod web-xxx          # удалить (деплоймент пе�
             },
           ],
         },
-        {
+{
           id: 'k8-l2',
           title: 'Deployment: желаемое состояние приложения',
           minutes: 30,
@@ -172,32 +172,7 @@ kubectl delete pod web-xxx          # удалить (деплоймент пе�
                   type: 'code',
                   lang: 'yaml',
                   caption: 'deployment.yaml',
-                  code: `apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: web
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: web
-  template:
-    metadata:
-      labels:
-        app: web
-    spec:
-      containers:
-        - name: web
-          image: registry.example.com/web:1.4.0
-          ports:
-            - containerPort: 8000
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 500m
-              memory: 256Mi`,
+                  code: 'apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: web\n  template:\n    metadata:\n      labels:\n        app: web\n    spec:\n      containers:\n        - name: web\n          image: registry.example.com/web:1.4.0\n          ports:\n            - containerPort: 8000\n          resources:\n            requests:\n              cpu: 100m\n              memory: 128Mi\n            limits:\n              cpu: 500m\n              memory: 256Mi',
                 },
                 { type: 'p', text: 'Применяем манифест командой kubectl apply -f deployment.yaml. Kubernetes создаст 3 пода с меткой app: web. Selector связывает деплоймент с его подами по этим меткам.' },
                 { type: 'h3', text: 'Requests и limits — обязательны' },
@@ -214,10 +189,7 @@ spec:
                   type: 'code',
                   lang: 'bash',
                   caption: 'Выкатка и откат',
-                  code: `kubectl set image deployment/web web=registry.example.com/web:1.5.0
-kubectl rollout status deployment/web
-kubectl rollout history deployment/web
-kubectl rollout undo deployment/web        # откат на прошлую версию`,
+                  code: 'kubectl set image deployment/web web=registry.example.com/web:1.5.0\nkubectl rollout status deployment/web\nkubectl rollout history deployment/web\nkubectl rollout undo deployment/web        # откат на прошлую версию',
                 },
                 { type: 'note', text: 'Readiness probe говорит, готов ли под принимать трафик. Без неё запросы могут уйти в ещё не прогретый контейнер — классический источник ошибок при выкатке.' },
               ],
@@ -249,16 +221,7 @@ kubectl rollout undo deployment/web        # откат на прошлую ве
                 {
                   type: 'mermaid',
                   caption: 'Selector связывает Deployment с подами по labels',
-                  code: `graph LR
-                    Dep["Deployment web<br/>selector: app=web"]
-                    Pod1["Pod<br/>labels: app=web"]
-                    Pod2["Pod<br/>labels: app=web"]
-                    Pod3["Pod<br/>labels: app=web"]
-                    Pod4["Pod<br/>labels: app=api"]
-                    Dep -.->|"управляет"| Pod1
-                    Dep -.->|"управляет"| Pod2
-                    Dep -.->|"управляет"| Pod3
-                    Dep -.->|"НЕ управляет"| Pod4`,
+                  code: 'graph LR\n                    Dep["Deployment web<br/>selector: app=web"]\n                    Pod1["Pod<br/>labels: app=web"]\n                    Pod2["Pod<br/>labels: app=web"]\n                    Pod3["Pod<br/>labels: app=web"]\n                    Pod4["Pod<br/>labels: app=api"]\n                    Dep -.->|"управляет"| Pod1\n                    Dep -.->|"управляет"| Pod2\n                    Dep -.->|"управляет"| Pod3\n                    Dep -.->|"НЕ управляет"| Pod4',
                 },
                 {
                   type: 'list',
@@ -290,6 +253,43 @@ kubectl rollout undo deployment/web        # откат на прошлую ве
                 explanation:
                   'В стандартном Deployment только RollingUpdate и Recreate. BlueGreen и Canary — это паттерны поверх (Ingress, Service, Argo Rollouts, Flagger), не «strategy.type». На собеседовании middle DevOps: «как сделать blue-green в K8s?» — «через два Deployment + Service с selector, или Argo Rollouts».',
               },
+            },
+            {
+              id: 'k8-l2-s6',
+              title: 'Практика в терминале: деплой и откат Deployment',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'k8s@cluster:~$',
+                    task: 'Примените манифест deployment.yaml, проверьте статус выкатки деплоймента web, а затем выполните откат (rollout undo) к предыдущей ревизии.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Примените манифест deployment.yaml через kubectl apply',
+                        acceptedPatterns: ['^kubectl\\s+apply\\s+-f\\s+deployment\\.ya?ml$'],
+                        output: 'deployment.apps/web configured',
+                      },
+                      {
+                        instruction: 'Шаг 2: Проверьте статус выкатки deployment/web',
+                        acceptedPatterns: [
+                          '^kubectl\\s+rollout\\s+status\\s+deployment(/|\\s+)web$',
+                        ],
+                        output: 'Waiting for deployment "web" rollout to finish: 1 out of 3 new replicas have been updated...\ndeployment "web" successfully rolled out',
+                      },
+                      {
+                        instruction: 'Шаг 3: Откатите deployment/web на предыдущую версию',
+                        acceptedPatterns: [
+                          '^kubectl\\s+rollout\\s+undo\\s+deployment(/|\\s+)web$',
+                        ],
+                        output: 'deployment.apps/web rolled back',
+                      },
+                    ],
+                    solution: 'kubectl apply -f deployment.yaml\nkubectl rollout status deployment/web\nkubectl rollout undo deployment/web',
+                    hint: 'Используйте kubectl apply -f, затем kubectl rollout status и kubectl rollout undo.',
+                  },
+                },
+              ],
             },
           ],
         },

@@ -8,7 +8,8 @@ export type TextBlock =
   | { type: 'image'; src: string; alt: string; caption?: string }
   | { type: 'mermaid'; code: string; caption?: string }
   | { type: 'python'; python: PythonBlock }
-  | { type: 'sandbox'; sandbox: SandboxBlock }; 
+  | { type: 'sandbox'; sandbox: SandboxBlock }
+  | { type: 'terminal'; terminal: TerminalBlock };
 
 export interface QuizBase {
   question: string;
@@ -195,3 +196,29 @@ export interface PythonBlock {
   caption?: string;
 }
 
+export interface TerminalStepRule {
+  /** Заголовок/подсказка текущего шага сценария (опционально) */
+  instruction?: string;
+  /** Массив regex-паттернов, любой из которых засчитывает команду */
+  acceptedPatterns: string[];
+  /** Вывод в терминал при успешном вводе команды */
+  output?: string;
+  /** Частые ошибки: если команда совпала с regex, показать кастомный вывод/подсказку без зачёта шага */
+  commonMistakes?: {
+    pattern: string;
+    output: string;
+  }[];
+}
+
+export interface TerminalBlock {
+  /** Приглашение командной строки, по умолчанию "student@devacademy:~$" */
+  prompt?: string;
+  /** Общее задание для пользователя */
+  task: string;
+  /** Шаги сценария (может быть 1 шаг или цепочка команд, например: git add -> git commit) */
+  commands: TerminalStepRule[];
+  /** Эталонное решение (показывается после 2 неудачных попыток) */
+  solution: string;
+  hint?: string;
+  caption?: string;
+}

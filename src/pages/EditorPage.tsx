@@ -443,7 +443,7 @@ export default function EditorPage() {
                               />
                             ))}
                             <div className="flex flex-wrap gap-1">
-{(['p', 'h3', 'list', 'code', 'note', 'table', 'image', 'mermaid', 'sandbox', 'python'] as const).map((t) => (
+{(['p', 'h3', 'list', 'code', 'note', 'table', 'image', 'mermaid', 'sandbox', 'python', 'terminal'] as const).map((t) => (
   <Button key={t} variant="outline" size="sm" onClick={() => {
     const newBlock: any = { type: t };
     if (t === 'p' || t === 'h3' || t === 'note') newBlock.text = '';
@@ -462,14 +462,28 @@ export default function EditorPage() {
         solution: 'SELECT email FROM users;',
       };
     }
-    else if (t === "python") {
-        newBlock.python = {
-          starterCode: "# ваш код\n",
-          task: "Напечатайте Hello, World!",
-          solution: "print('Hello, World!')",
-          expected: { type: "stdout", value: "Hello, World!" },
-        };
-      }
+    else if (t === 'python') {
+      newBlock.python = {
+        starterCode: '# ваш код\n',
+        task: 'Напечатайте Hello, World!',
+        solution: "print('Hello, World!')",
+        expected: { type: 'stdout', value: 'Hello, World!' },
+      };
+    }
+    else if (t === 'terminal') {
+      newBlock.terminal = {
+        prompt: 'student@devacademy:~$',
+        task: 'Выведите подробный список всех файлов (включая скрытые) в текущей директории.',
+        commands: [
+          {
+            instruction: 'Введите ls с флагами -la',
+            acceptedPatterns: ['^ls\\s+-(la|al)$'],
+            output: 'drwxr-xr-x 2 student student 4096 .bashrc',
+          },
+        ],
+        solution: 'ls -la',
+      };
+    }
     const n = [...course.modules];
     (n[mIdx].lessons[lIdx].steps[sIdx] as any).blocks.push(newBlock);
     setCourse({ ...course, modules: n });

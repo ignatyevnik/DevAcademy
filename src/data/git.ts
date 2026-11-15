@@ -157,7 +157,7 @@ export const gitCourse: Course = {
             },
           ],
         },
-        {
+{
           id: 'git-l2',
           title: 'Первый репозиторий',
           minutes: 25,
@@ -171,7 +171,7 @@ export const gitCourse: Course = {
                   type: 'code',
                   lang: 'bash',
                   caption: 'Создание репозитория с нуля',
-                  code: `# Инициализация — создаёт папку .git в текущей директории\ngit init\n\n# Настройка автора (один раз на машину)\ngit config --global user.name "Анна Иванова"\ngit config --global user.email "anna@example.com"\n\n# Проверить, что происходит\ngit status\n\n# Добавить все файлы в staging\ngit add .\n\n# Зафиксировать\ngit commit -m "Initial commit"\n\n# Посмотреть историю\ngit log\ngit log --oneline --graph`,
+                  code: '# Инициализация — создаёт папку .git в текущей директории\ngit init\n\n# Настройка автора (один раз на машину)\ngit config --global user.name "Анна Иванова"\ngit config --global user.email "anna@example.com"\n\n# Проверить, что происходит\ngit status\n\n# Добавить все файлы в staging\ngit add .\n\n# Зафиксировать\ngit commit -m "Initial commit"\n\n# Посмотреть историю\ngit log\ngit log --oneline --graph',
                 },
                 {
                   type: 'list',
@@ -196,7 +196,7 @@ export const gitCourse: Course = {
                   type: 'code',
                   lang: 'text',
                   caption: '.gitignore',
-                  code: `# Зависимости\nnode_modules/\nvenv/\n__pycache__/\n\n# Артефакты сборки\ndist/\nbuild/\n*.pyc\n\n# Локальные настройки и секреты\n.env\n.env.local\n*.log\n\n# IDE\n.vscode/\n.idea/\n.DS_Store`,
+                  code: '# Зависимости\nnode_modules/\nvenv/\n__pycache__/\n\n# Артефакты сборки\ndist/\nbuild/\n*.pyc\n\n# Локальные настройки и секреты\n.env\n.env.local\n*.log\n\n# IDE\n.vscode/\n.idea/\n.DS_Store',
                 },
                 { type: 'note', text: 'Если файл уже закоммичен, добавление в .gitignore его не уберёт. Нужно: git rm --cached <file>, затем git commit. .gitignore не «удаляет» — только перестаёт отслеживать новые изменения.' },
                 {
@@ -217,7 +217,7 @@ export const gitCourse: Course = {
                   type: 'code',
                   lang: 'text',
                   caption: 'Conventional Commits — стандарт',
-                  code: `feat: add password reset via email\nfix: redirect to login after session timeout\ndocs: update README installation steps\nrefactor: extract DiscountCalculator from Order\nchore: bump requests to 2.32.3\ntest: cover IDOR scenario for /api/orders\n\n# Формат: <type>(<scope>): <subject>\n# type: feat, fix, docs, style, refactor, test, chore\n# scope (опционально): auth, orders, ui\n# subject: до 50 символов, повелительное наклонение`,
+                  code: 'feat: add password reset via email\nfix: redirect to login after session timeout\ndocs: update README installation steps\nrefactor: extract DiscountCalculator from Order\nchore: bump requests to 2.32.3\ntest: cover IDOR scenario for /api/orders\n\n# Формат: <type>(<scope>): <subject>\n# type: feat, fix, docs, style, refactor, test, chore\n# scope (опционально): auth, orders, ui\n# subject: до 50 символов, повелительное наклонение',
                 },
                 {
                   type: 'list',
@@ -266,17 +266,42 @@ export const gitCourse: Course = {
             },
             {
               id: 'git-l2-s6',
-              title: 'Практика: первый коммит',
+              title: 'Практика в терминале: первый коммит',
               type: 'theory',
               blocks: [
-                { type: 'p', text: 'Соберём типичный сценарий: создать файл, добавить в staging, закоммитить. Это тот же цикл, что и в реальной работе — просто с одним файлом.' },
+                { type: 'p', text: 'Пройдите базовый цикл работы с Git в терминале: инициализируйте репозиторий, добавьте файл README.md в индекс (staging) и создайте первый коммит.' },
                 {
-                  type: 'code',
-                  lang: 'bash',
-                  caption: 'Полный цикл',
-                  code: `git init my-project && cd my-project\necho "# My Project" > README.md\n\ngit status                 # untracked: README.md\ngit add README.md\ngit status                 # staged: README.md\ngit commit -m "docs: add README"\n\ngit log --oneline\n# a3f4d2e docs: add README`,
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'dev@laptop:~/my-project$',
+                    task: 'Инициализируйте Git-репозиторий в текущей папке, проиндексируйте файл README.md и зафиксируйте изменения с любым осмысленным сообщением (git commit -m "...").',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Инициализируйте пустой Git-репозиторий',
+                        acceptedPatterns: ['^git\\s+init$'],
+                        output: 'Initialized empty Git repository in /home/dev/my-project/.git/',
+                      },
+                      {
+                        instruction: 'Шаг 2: Добавьте файл README.md (или все файлы через .) в staging',
+                        acceptedPatterns: ['^git\\s+add\\s+(README\\.md|\\.|-A|--all)$'],
+                        output: 'Файл README.md добавлен в индекс (staging area).',
+                      },
+                      {
+                        instruction: 'Шаг 3: Сделайте коммит с флагом -m и сообщением в кавычках',
+                        acceptedPatterns: ['^git\\s+commit\\s+-m\\s+["\'].+["\']$'],
+                        commonMistakes: [
+                          {
+                            pattern: '^git\\s+commit$',
+                            output: 'Подсказка: передайте сообщение коммита сразу через флаг -m, например: git commit -m "docs: add README"',
+                          },
+                        ],
+                        output: '[main (root-commit) a3f4d2e] docs: add README\n 1 file changed, 1 insertion(+)\n create mode 100644 README.md',
+                      },
+                    ],
+                    solution: 'git init\ngit add README.md\ngit commit -m "docs: add README"',
+                    hint: 'Последовательность: git init → git add README.md → git commit -m "docs: add README"',
+                  },
                 },
-                { type: 'note', text: 'После `git init` Git ещё «не знает» про файлы. `git status` покажет их как untracked. `git add` переводит в staging. `git commit` фиксирует снимок. Каждый шаг явный — можно остановиться и посмотреть, что получилось.' },
               ],
             },
           ],
@@ -373,7 +398,7 @@ export const gitCourse: Course = {
             },
           ],
         },
-        {
+{
           id: 'git-l4',
           title: 'Ветки: branch, switch, merge',
           minutes: 30,
@@ -388,7 +413,7 @@ export const gitCourse: Course = {
                   type: 'code',
                   lang: 'bash',
                   caption: 'Работа с ветками',
-                  code: `# Создать ветку (но не переключаться)\ngit branch feature/login\n\n# Создать и сразу переключиться\ngit switch -c feature/login\n# (или старое: git checkout -b feature/login)\n\n# Посмотреть все ветки\ngit branch\n\n# Переключиться на существующую\ngit switch main\n\n# Слить ветку feature/login в текущую (main)\ngit switch main\ngit merge feature/login\n\n# Удалить слитую ветку\ngit branch -d feature/login`,
+                  code: '# Создать ветку (но не переключаться)\ngit branch feature/login\n\n# Создать и сразу переключиться\ngit switch -c feature/login\n# (или старое: git checkout -b feature/login)\n\n# Посмотреть все ветки\ngit branch\n\n# Переключиться на существующую\ngit switch main\n\n# Слить ветку feature/login в текущую (main)\ngit switch main\ngit merge feature/login\n\n# Удалить слитую ветку\ngit branch -d feature/login',
                 },
                 { type: 'note', text: 'git switch (2019) — новая команда специально для переключения веток. Старая git checkout делает то же, но ещё и «восстанавливает файлы» — путаница. В новом коде используйте switch, а checkout оставьте для отката файлов.' },
               ],
@@ -411,15 +436,7 @@ export const gitCourse: Course = {
                 {
                   type: 'mermaid',
                   caption: 'Fast-forward merge',
-                  code: `gitGraph
-                    commit id: "A"
-                    commit id: "B"
-                    branch feature
-                    checkout feature
-                    commit id: "C"
-                    commit id: "D"
-                    checkout main
-                    merge feature`,
+                  code: 'gitGraph\n                    commit id: "A"\n                    commit id: "B"\n                    branch feature\n                    checkout feature\n                    commit id: "C"\n                    commit id: "D"\n                    checkout main\n                    merge feature',
                 },
                 { type: 'note', text: 'Fast-forward «чище» — линейная история. Three-way merge сохраняет факт ветвления, но добавляет «шум» в граф. git merge --no-ff заставляет всегда создавать merge-commit, даже если можно fast-forward — так делают в некоторых командах, чтобы видеть, где была ветка.' },
               ],
@@ -433,11 +450,7 @@ export const gitCourse: Course = {
                 {
                   type: 'mermaid',
                   caption: 'Почему появляется конфликт',
-                  code: `graph LR
-                    Base["общий предок<br/>line 5: print('Hello')"] --> A["ветка A<br/>line 5: print('Hi')"]
-                    Base --> B["ветка B<br/>line 5: print('Hey')"]
-                    A -->|"merge"| Conflict["КОНФЛИКТ:<br/>обе изменили line 5"]
-                    B -->|"merge"| Conflict`,
+                  code: 'graph LR\n                    Base["общий предок<br/>line 5: print(\'Hello\')"] --> A["ветка A<br/>line 5: print(\'Hi\')"]\n                    Base --> B["ветка B<br/>line 5: print(\'Hey\')"]\n                    A -->|"merge"| Conflict["КОНФЛИКТ:<br/>обе изменили line 5"]\n                    B -->|"merge"| Conflict',
                 },
                 {
                   type: 'list',
@@ -460,7 +473,7 @@ export const gitCourse: Course = {
                   type: 'code',
                   lang: 'bash',
                   caption: 'Два полезных флага',
-                  code: `# --no-ff: всегда создавать merge-commit, даже если можно fast-forward\n# Сохраняет «след ветки» в истории — видно, что была feature/login\ngit merge --no-ff feature/login\n\n# --abort: отменить merge и вернуться в исходное состояние\ngit merge --abort\n\n# Когда полезен --no-ff:\n#  - хотите видеть в графе, какие коммиты — из какой ветки\n#  - release-ветки, hotfix — важно «отделить» их\n#\n# Когда полезен --abort:\n#  - запутались в конфликтах\n#  - поняли, что мержить не надо (не та ветка, не то время)`,
+                  code: '# --no-ff: всегда создавать merge-commit, даже если можно fast-forward\n# Сохраняет «след ветки» в истории — видно, что была feature/login\ngit merge --no-ff feature/login\n\n# --abort: отменить merge и вернуться в исходное состояние\ngit merge --abort\n\n# Когда полезен --no-ff:\n#  - хотите видеть в графе, какие коммиты — из какой ветки\n#  - release-ветки, hotfix — важно «отделить» их\n#\n# Когда полезен --abort:\n#  - запутались в конфликтах\n#  - поняли, что мержить не надо (не та ветка, не то время)',
                 },
                 { type: 'note', text: 'В большинстве современных команд выбирают стратегию один раз: либо «всегда --no-ff» (видно ветки), либо «всегда ff, если возможно» (линейно). Главное — одинаково у всей команды, тогда граф читается.' },
               ],
@@ -499,6 +512,47 @@ export const gitCourse: Course = {
                 explanation:
                   'Ветка в Git — это ссылка на commit (файл в .git/refs/heads/ с хэшем). Создание = запись одного хэша. В SVN ветка = копирование каталога (медленно, занимает место). Это одна из причин, почему в Git «дешёвые ветки» и их используют активнее.',
               },
+            },
+            {
+              id: 'git-l4-s7',
+              title: 'Практика в терминале: создание и слияние ветки',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'dev@laptop:~/repo (main)$',
+                    task: 'Создайте новую ветку feature/login и сразу переключитесь на неё, затем вернитесь в ветку main и влейте в неё feature/login.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Создайте ветку feature/login и переключитесь на неё (git switch -c или git checkout -b)',
+                        acceptedPatterns: [
+                          '^git\\s+(switch\\s+-c|checkout\\s+-b)\\s+feature/login$',
+                        ],
+                        commonMistakes: [
+                          {
+                            pattern: '^git\\s+branch\\s+feature/login$',
+                            output: 'Подсказка: git branch только создаёт ветку, но не переключается на неё. Используйте git switch -c feature/login',
+                          },
+                        ],
+                        output: 'Switched to a new branch \'feature/login\'',
+                      },
+                      {
+                        instruction: 'Шаг 2: Переключитесь обратно на ветку main',
+                        acceptedPatterns: ['^git\\s+(switch|checkout)\\s+main$'],
+                        output: 'Switched to branch \'main\'',
+                      },
+                      {
+                        instruction: 'Шаг 3: Влейте ветку feature/login в текущую ветку main',
+                        acceptedPatterns: ['^git\\s+merge\\s+(--no-ff\\s+)?feature/login$'],
+                        output: 'Updating a3f4d2e..b7c8e1d\nFast-forward\n auth.py | 15 +++++++++++++++\n 1 file changed, 15 insertions(+)',
+                      },
+                    ],
+                    solution: 'git switch -c feature/login\ngit switch main\ngit merge feature/login',
+                    hint: 'Используйте git switch -c для создания ветки с переключением и git merge для слияния.',
+                  },
+                },
+              ],
             },
           ],
         },

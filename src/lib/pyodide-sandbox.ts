@@ -2,6 +2,8 @@ import type { PyodideInterface } from 'pyodide';
 import type { PythonBlock } from '@/data/types';
 
 let pyodidePromise: Promise<PyodideInterface> | null = null;
+let worker: Worker | null = null;
+let workerInitPromise: Promise<void> | null = null;
 
 export async function getPyodide(): Promise<PyodideInterface> {
   if (!pyodidePromise) {
@@ -11,7 +13,6 @@ export async function getPyodide(): Promise<PyodideInterface> {
         indexURL: `${import.meta.env.BASE_URL}assets/pyodide/`,
       });
     })().catch((e) => {
-      // Сбросить, чтобы следующая попытка могла загрузить заново
       pyodidePromise = null;
       throw e;
     });
@@ -25,8 +26,10 @@ export interface PythonRunResult {
   stdout: string;
   stderr: string;
   error: string | null;
-  /** Отдельный namespace запуска. Уничтожать после использования: result.namespace?.destroy() */
+  /** Отдельный namespace запуска (для прямого запуска без воркера). */
   namespace: PyProxy | null;
+  /** Извлечённые переменные при запуске через Web Worker. */
+  variables?: Record<string, string>;
 }
 
 export async function runPython(
@@ -75,7 +78,7 @@ export function checkForbidden(code: string, forbidden: string[] = []): string |
         return `Код содержит запрещённую конструкцию (${pattern}).`;
       }
     } catch {
-      // некорректный regex в forbidden — игнорируем, это баг автора шага
+      // некорректный regex в forbidden — игнорируем
     }
   }
   return null;
@@ -94,7 +97,12 @@ export function checkPythonResult(
     );
   }
 
-  // variable
+  // 1. Если запуск был в Web Worker — проверяем сериализованный словарь variables
+  if (result.variables && expected.name in result.variables) {
+    return result.variables[expected.name] === String(expected.value);
+  }
+
+  // 2. Fallback для прямого запуска с PyProxy namespace
   if (!result.namespace) return false;
   try {
     const actual = result.namespace.get(expected.name);
@@ -102,4 +110,79 @@ export function checkPythonResult(
   } catch {
     return false;
   }
+}
+
+function getWorker(): Worker {
+  if (!worker) {
+    worker = new Worker(new URL('./pyodide.worker.ts', import.meta.url), {
+      type: 'module',
+    });
+  }
+  return worker;
+}
+
+export function terminatePythonWorker(): void {
+  if (worker) {
+    worker.terminate();
+    worker = null;
+    workerInitPromise = null;
+  }
+}
+
+export function initPythonWorker(): Promise<void> {
+  if (!workerInitPromise) {
+    workerInitPromise = new Promise<void>((resolve, reject) => {
+      const w = getWorker();
+      const id = `init-${Math.random().toString(36).slice(2)}`;
+
+      const handler = (e: MessageEvent) => {
+        if (e.data.id !== id) return;
+        w.removeEventListener('message', handler);
+        if (e.data.ok) resolve();
+        else {
+          workerInitPromise = null;
+          reject(new Error(e.data.error || 'Ошибка инициализации Pyodide Worker'));
+        }
+      };
+
+      w.addEventListener('message', handler);
+      w.postMessage({ id, type: 'init' });
+    });
+  }
+  return workerInitPromise;
+}
+
+export function runPythonInWorker(
+  code: string,
+  expected?: PythonBlock['expected'],
+  timeoutMs = 5000,
+): Promise<PythonRunResult> {
+  return new Promise((resolve) => {
+    const w = getWorker();
+    const id = `run-${Math.random().toString(36).slice(2)}`;
+    const varName = expected?.type === 'variable' ? expected.name : undefined;
+
+    const timer = setTimeout(() => {
+      terminatePythonWorker();
+      resolve({
+        stdout: '',
+        stderr: '',
+        error: `TimeoutError: Выполнение превысило лимит ${timeoutMs / 1000} сек. Проверьте код на бесконечные циклы.`,
+        namespace: null,
+      });
+    }, timeoutMs);
+
+    const handler = (e: MessageEvent) => {
+      if (e.data.id !== id) return;
+      clearTimeout(timer);
+      w.removeEventListener('message', handler);
+      resolve({
+        ...e.data.result,
+        namespace: null,
+      });
+    };
+
+    w.addEventListener('message', handler);
+    w.postMessage({ id, type: 'run', code, varName });
+  });
 }

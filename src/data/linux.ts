@@ -805,7 +805,7 @@ cd -                   # → назад (куда был до этого)`,
             },
           ],
         },
-        {
+{
           id: 'ln-l7',
           title: 'Навигация: pwd, cd, ls, find',
           minutes: 30,
@@ -819,19 +819,7 @@ cd -                   # → назад (куда был до этого)`,
                   type: 'code',
                   lang: 'bash',
                   caption: 'Где я и как перейти',
-                  code: `pwd                    # print working directory — где я сейчас
-# /home/anna/projects
-
-cd /etc                # перейти в /etc (абсолютный путь)
-cd nginx               # перейти в подпапку nginx (относительный)
-cd ..                  # на уровень вверх
-cd ~                   # в домашнюю
-cd                     # тоже в домашнюю (cd без аргумента)
-cd -                   # в предыдущую директорию
-
-# Если путь с пробелами — кавычки или экранирование:
-cd "My Documents"
-cd My\\ Documents`,
+                  code: 'pwd                    # print working directory — где я сейчас\n# /home/anna/projects\n\ncd /etc                # перейти в /etc (абсолютный путь)\ncd nginx               # перейти в подпапку nginx (относительный)\ncd ..                  # на уровень вверх\ncd ~                   # в домашнюю\ncd                     # тоже в домашнюю (cd без аргумента)\ncd -                   # в предыдущую директорию\n\n# Если путь с пробелами — кавычки или экранирование:\ncd "My Documents"\ncd My\\ Documents',
                 },
                 {
                   type: 'note',
@@ -848,20 +836,7 @@ cd My\\ Documents`,
                   type: 'code',
                   lang: 'bash',
                   caption: 'ls и его опции',
-                  code: `ls                     # файлы и папки в текущей директории
-ls /etc                # в конкретной директории
-
-ls -l                  # long format: права, владелец, размер, дата, имя
-ls -a                  # all: включая скрытые файлы (.gitignore, .env)
-ls -la                 # объединили: -l и -a
-ls -lh                 # human-readable: размер в KB/MB/GB
-
-ls -R                  # рекурсивно: все подпапки
-ls -t                  # сортировка по времени (новые сверху)
-ls -S                  # сортировка по размеру
-ls -r                  # обратный порядок
-
-ls -la /var/log | head -5   # первые 5 строк через pipe`,
+                  code: 'ls                     # файлы и папки в текущей директории\nls /etc                # в конкретной директории\n\nls -l                  # long format: права, владелец, размер, дата, имя\nls -a                  # all: включая скрытые файлы (.gitignore, .env)\nls -la                 # объединили: -l и -a\nls -lh                 # human-readable: размер в KB/MB/GB\n\nls -R                  # рекурсивно: все подпапки\nls -t                  # сортировка по времени (новые сверху)\nls -S                  # сортировка по размеру\nls -r                  # обратный порядок\n\nls -la /var/log | head -5   # первые 5 строк через pipe',
                 },
                 {
                   type: 'code',
@@ -884,24 +859,7 @@ ls -la /var/log | head -5   # первые 5 строк через pipe`,
                   type: 'code',
                   lang: 'bash',
                   caption: 'find — самый мощный поиск',
-                  code: `# Найти все .log файлы в /var/log
-find /var/log -name "*.log"
-
-# Найти все файлы размером больше 100 МБ
-find / -size +100M 2>/dev/null
-
-# Найти все файлы, изменённые за последние 7 дней
-find /home -mtime -7
-
-# Найти все папки (не файлы)
-find / -type d -name "nginx"
-
-# Найти файлы и выполнить команду
-find . -name "*.tmp" -delete
-find . -name "*.py" -exec wc -l {} \\;    # посчитать строки
-
-# Только в текущей директории, без подпапок
-find . -maxdepth 1 -name "*.txt"`,
+                  code: '# Найти все .log файлы в /var/log\nfind /var/log -name "*.log"\n\n# Найти все файлы размером больше 100 МБ\nfind / -size +100M 2>/dev/null\n\n# Найти все файлы, изменённые за последние 7 дней\nfind /home -mtime -7\n\n# Найти все папки (не файлы)\nfind / -type d -name "nginx"\n\n# Найти файлы и выполнить команду\nfind . -name "*.tmp" -delete\nfind . -name "*.py" -exec wc -l {} \\;    # посчитать строки\n\n# Только в текущей директории, без подпапок\nfind . -maxdepth 1 -name "*.txt"',
                 },
                 {
                   type: 'list',
@@ -952,6 +910,51 @@ find . -maxdepth 1 -name "*.txt"`,
                   'ls -lah = -l (long, подробно) + -a (all, включая скрытые) + -h (human-readable, размеры в KB/MB). -R — отдельная опция для рекурсии, не входит в -lah. -lah — самая частая комбинация в работе.',
               },
             },
+            {
+              id: 'ln-l7-s6',
+              title: 'Практика в терминале: навигация и поиск',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'anna@ubuntu:~$',
+                    task: 'Пройдите сценарий из трёх шагов: перейдите в директорию /var/log, выведите подробный список всех файлов (включая скрытые), а затем найдите все файлы с расширением .log через find.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Перейдите в директорию /var/log',
+                        acceptedPatterns: ['^cd\\s+/var/log/?$'],
+                        output: 'Текущая директория изменена на /var/log',
+                      },
+                      {
+                        instruction: 'Шаг 2: Выведите подробный список всех файлов, включая скрытые (ls с флагами -l и -a)',
+                        acceptedPatterns: [
+                          '^ls\\s+-(la|al|lah|alh|lha|hla)(\\s+\\.)?$',
+                          '^ls\\s+-l\\s+-a(\\s+-h)?$',
+                          '^ls\\s+-a\\s+-l(\\s+-h)?$',
+                        ],
+                        commonMistakes: [
+                          {
+                            pattern: '^ls(\\s+-l)?$',
+                            output: 'syslog  auth.log  nginx\n(Подсказка: вы не указали флаг -a для показа скрытых файлов или -l для подробного формата. Используйте ls -la)',
+                          },
+                        ],
+                        output: 'drwxrwxr-x 12 root syslog  4096 окт 28 10:00 .\ndrwxr-xr-x 14 root root    4096 окт 10 09:00 ..\n-rw-r-----  1 syslog adm  18420 окт 28 10:15 auth.log\n-rw-r-----  1 syslog adm  94120 окт 28 10:16 syslog\ndrwxr-xr-x  2 www-data adm 4096 окт 28 08:00 nginx',
+                      },
+                      {
+                        instruction: 'Шаг 3: Найдите все файлы с именем "*.log" в /var/log (или текущей папке .) с помощью find',
+                        acceptedPatterns: [
+                          '^find\\s+(/var/log|\\.)\\s+-name\\s+["\']\\*\\.log["\']$',
+                        ],
+                        output: '/var/log/auth.log\n/var/log/syslog\n/var/log/nginx/access.log\n/var/log/nginx/error.log',
+                      },
+                    ],
+                    solution: 'cd /var/log\nls -la\nfind /var/log -name "*.log"',
+                    hint: 'Не забывайте брать шаблон "*.log" в кавычки при вызове find.',
+                  },
+                },
+              ],
+            },
           ],
         },
       ],
@@ -960,7 +963,7 @@ find . -maxdepth 1 -name "*.txt"`,
       id: 'ln-m3',
       title: 'Файлы и права доступа',
       lessons: [
-        {
+{
           id: 'ln-l8',
           title: 'Файлы: создание, копирование, удаление',
           minutes: 25,
@@ -974,30 +977,7 @@ find . -maxdepth 1 -name "*.txt"`,
                   type: 'code',
                   lang: 'bash',
                   caption: 'touch, mkdir, cp, mv, rm',
-                  code: `# Создать пустой файл (или обновить время изменения)
-touch file.txt
-touch file1.txt file2.txt file3.txt
-
-# Создать директорию
-mkdir myproject
-mkdir -p parent/child/grandchild   # -p создаст всю цепочку
-
-# Копировать файл
-cp source.txt dest.txt
-cp -r mydir backup/                # -r рекурсивно (для папок)
-cp -i source.txt dest.txt          # -i спрашивать при перезаписи
-cp -v source.txt dest.txt          # -v показать, что делает
-
-# Переместить / переименовать
-mv file.txt newname.txt            # переименовать
-mv file.txt /tmp/                  # переместить
-mv -i source.txt dest.txt          # спрашивать
-
-# Удалить
-rm file.txt                        # файл
-rm -r mydir                        # папку рекурсивно
-rm -rf mydir                       # принудительно, без вопросов (ОПАСНО)
-rm -i file.txt                     # спрашивать`,
+                  code: '# Создать пустой файл (или обновить время изменения)\ntouch file.txt\ntouch file1.txt file2.txt file3.txt\n\n# Создать директорию\nmkdir myproject\nmkdir -p parent/child/grandchild   # -p создаст всю цепочку\n\n# Копировать файл\ncp source.txt dest.txt\ncp -r mydir backup/                # -r рекурсивно (для папок)\ncp -i source.txt dest.txt          # -i спрашивать при перезаписи\ncp -v source.txt dest.txt          # -v показать, что делает\n\n# Переместить / переименовать\nmv file.txt newname.txt            # переименовать\nmv file.txt /tmp/                  # переместить\nmv -i source.txt dest.txt          # спрашивать\n\n# Удалить\nrm file.txt                        # файл\nrm -r mydir                        # папку рекурсивно\nrm -rf mydir                       # принудительно, без вопросов (ОПАСНО)\nrm -i file.txt                     # спрашивать',
                 },
                 {
                   type: 'note',
@@ -1007,15 +987,7 @@ rm -i file.txt                     # спрашивать`,
                   type: 'code',
                   lang: 'bash',
                   caption: 'Безопасная привычка',
-                  code: `# Перед rm -rf — посмотрите, что собираетесь удалить:
-ls -la mydir/                # что там?
-echo rm -rf mydir            # "примерка" команды (ничего не удалит)
-rm -rf mydir                 # только после проверки
-
-# Алиас для «безопасного rm» (добавить в ~/.bashrc):
-alias rm='rm -I --preserve-root'
-# -I — спросит один раз перед рекурсивным удалением
-# --preserve-root — защитит / от случайного удаления`,
+                  code: '# Перед rm -rf — посмотрите, что собираетесь удалить:\nls -la mydir/                # что там?\necho rm -rf mydir            # "примерка" команды (ничего не удалит)\nrm -rf mydir                 # только после проверки\n\n# Алиас для «безопасного rm» (добавить в ~/.bashrc):\nalias rm=\'rm -I --preserve-root\'\n# -I — спросит один раз перед рекурсивным удалением\n# --preserve-root — защитит / от случайного удаления',
                 },
               ],
             },
@@ -1090,9 +1062,54 @@ alias rm='rm -I --preserve-root'
                   '`rm -rf` — необратимо. Привычка: сначала `ls -la` (что там?) и `echo rm -rf ...` (примерка — ничего не удалит), потом уже `rm -rf`. `sudo` (c) — опаснее, а не безопаснее.',
               },
             },
+            {
+              id: 'ln-l8-s6',
+              title: 'Практика в терминале: структура проекта и бэкап',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'anna@ubuntu:~/workspace$',
+                    task: 'Создайте структуру директорий app/config одной командой, создайте внутри неё пустой файл settings.ini и сделайте полную копию папки app в папку app-backup.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Создайте вложенную структуру папок app/config одной командой',
+                        acceptedPatterns: ['^mkdir\\s+-p\\s+app/config/?$'],
+                        commonMistakes: [
+                          {
+                            pattern: '^mkdir\\s+app/config/?$',
+                            output: 'mkdir: cannot create directory ‘app/config’: No such file or directory\n(Подсказка: добавьте флаг -p для создания родительских директорий)',
+                          },
+                        ],
+                        output: 'Создана цепочка директорий app/config',
+                      },
+                      {
+                        instruction: 'Шаг 2: Создайте пустой файл app/config/settings.ini с помощью touch',
+                        acceptedPatterns: ['^touch\\s+app/config/settings\\.ini$'],
+                        output: 'Файл app/config/settings.ini создан',
+                      },
+                      {
+                        instruction: 'Шаг 3: Скопируйте всю папку app рекурсивно в app-backup',
+                        acceptedPatterns: ['^cp\\s+-(r|R|a)\\s+app/?\\s+app-backup/?$'],
+                        commonMistakes: [
+                          {
+                            pattern: '^cp\\s+app/?\\s+app-backup/?$',
+                            output: 'cp: -r not specified; omitting directory \'app\'\n(Подсказка: для копирования директории нужен флаг -r)',
+                          },
+                        ],
+                        output: 'Директория app успешно скопирована в app-backup',
+                      },
+                    ],
+                    solution: 'mkdir -p app/config\ntouch app/config/settings.ini\ncp -r app app-backup',
+                    hint: 'Используйте mkdir -p для вложенных папок и cp -r для рекурсивного копирования.',
+                  },
+                },
+              ],
+            },
           ],
         },
-        {
+{
           id: 'ln-l9',
           title: 'Права доступа: chmod, chown',
           minutes: 35,
@@ -1120,11 +1137,11 @@ alias rm='rm -I --preserve-root'
                   type: 'code',
                   lang: 'text',
                   caption: 'Как читать права',
-                  code: `-rwxr-xr-x  1 anna developers  1234 окт 15 10:30 app.sh\n │││││││││\n │││└┴┴┴─ r-x: остальные (others) — читать и запускать, не менять\n │└┴┴───── r-x: группа (developers) — читать и запускать\n └──────── rwx: владелец (anna) — читать, менять, запускать\n\nЧисловая запись:\n  rwx = 4+2+1 = 7\n  r-x = 4+0+1 = 5\n  r-x = 5\n  → 755 (rwxr-xr-x)\n\n  rw- = 4+2+0 = 6\n  r-- = 4\n  r-- = 4\n  → 644 (rw-r--r--)`,
+                  code: '-rwxr-xr-x  1 anna developers  1234 окт 15 10:30 app.sh\n │││││││││\n │││└┴┴┴─ r-x: остальные (others) — читать и запускать, не менять\n │└┴┴───── r-x: группа (developers) — читать и запускать\n └──────── rwx: владелец (anna) — читать, менять, запускать\n\nЧисловая запись:\n  rwx = 4+2+1 = 7\n  r-x = 4+0+1 = 5\n  r-x = 5\n  → 755 (rwxr-xr-x)\n\n  rw- = 4+2+0 = 6\n  r-- = 4\n  r-- = 4\n  → 644 (rw-r--r--)',
                 },
                 {
                   type: 'note',
-                  text: `Типичные комбинации: 644 (rw-r--r--) — обычные файлы, владелец читает/пишет, остальные читают. 755 (rwxr-xr-x) — исполняемые файлы и папки. 600 (rw-------) — приватные файлы (ключи, .env). 777 — «всем всё можно», антипаттерн.`,
+                  text: 'Типичные комбинации: 644 (rw-r--r--) — обычные файлы, владелец читает/пишет, остальные читают. 755 (rwxr-xr-x) — исполняемые файлы и папки. 600 (rw-------) — приватные файлы (ключи, .env). 777 — «всем всё можно», антипаттерн.',
                 },
               ],
             },
@@ -1137,21 +1154,7 @@ alias rm='rm -I --preserve-root'
                   type: 'code',
                   lang: 'bash',
                   caption: 'Два способа',
-                  code: `# 1. Числовой (восьмеричный) — «поставить все права сразу»
-chmod 644 file.txt           # rw-r--r--
-chmod 755 script.sh          # rwxr-xr-x
-chmod 600 ~/.ssh/id_rsa      # rw------- (приватный ключ)
-chmod -R 750 mydir/          # рекурсивно
-
-# 2. Символьный — «изменить конкретное право»
-chmod +x script.sh           # добавить execute всем
-chmod u+x script.sh          # добавить execute владельцу (u = user)
-chmod g-w file.txt           # убрать write у группы (g = group)
-chmod o-rwx secret.txt       # убрать все права у остальных (o = others)
-chmod a+r file.txt           # добавить read всем (a = all)
-
-# Несколько изменений через запятую:
-chmod u+x,g-w,o-rwx file.sh`,
+                  code: '# 1. Числовой (восьмеричный) — «поставить все права сразу»\nchmod 644 file.txt           # rw-r--r--\nchmod 755 script.sh          # rwxr-xr-x\nchmod 600 ~/.ssh/id_rsa      # rw------- (приватный ключ)\nchmod -R 750 mydir/          # рекурсивно\n\n# 2. Символьный — «изменить конкретное право»\nchmod +x script.sh           # добавить execute всем\nchmod u+x script.sh          # добавить execute владельцу (u = user)\nchmod g-w file.txt           # убрать write у группы (g = group)\nchmod o-rwx secret.txt       # убрать все права у остальных (o = others)\nchmod a+r file.txt           # добавить read всем (a = all)\n\n# Несколько изменений через запятую:\nchmod u+x,g-w,o-rwx file.sh',
                 },
                 {
                   type: 'list',
@@ -1178,19 +1181,7 @@ chmod u+x,g-w,o-rwx file.sh`,
                   type: 'code',
                   lang: 'bash',
                   caption: 'Смена владельца и группы',
-                  code: `# Сменить владельца
-sudo chown anna file.txt
-sudo chown anna:developers file.txt    # владелец:группа
-sudo chown :developers file.txt        # только группа
-
-# Сменить группу отдельно (то же, что chgrp)
-sudo chgrp developers file.txt
-
-# Рекурсивно (для папок)
-sudo chown -R anna:developers /var/www/myapp
-
-# Частая задача: дать www-data (nginx/apache) доступ к папке
-sudo chown -R www-data:www-data /var/www/html`,
+                  code: '# Сменить владельца\nsudo chown anna file.txt\nsudo chown anna:developers file.txt    # владелец:группа\nsudo chown :developers file.txt        # только группа\n\n# Сменить группу отдельно (то же, что chgrp)\nsudo chgrp developers file.txt\n\n# Рекурсивно (для папок)\nsudo chown -R anna:developers /var/www/myapp\n\n# Частая задача: дать www-data (nginx/apache) доступ к папке\nsudo chown -R www-data:www-data /var/www/html',
                 },
                 {
                   type: 'note',
@@ -1200,13 +1191,7 @@ sudo chown -R www-data:www-data /var/www/html`,
                   type: 'code',
                   lang: 'bash',
                   caption: 'umask: права по умолчанию',
-                  code: `umask                    # 0022 (на большинстве систем)
-# 022 значит: из «полных» прав (777) вычитаем 022 → 755 для папок
-#             из 666 для файлов → 644
-# То есть новые файлы создаются с 644, папки — с 755.
-
-umask 077                # «только я»: файлы 600, папки 700
-# Удобно для ~/.ssh и приватных данных.`,
+                  code: 'umask                    # 0022 (на большинстве систем)\n# 022 значит: из «полных» прав (777) вычитаем 022 → 755 для папок\n#             из 666 для файлов → 644\n# То есть новые файлы создаются с 644, папки — с 755.\n\numask 077                # «только я»: файлы 600, папки 700\n# Удобно для ~/.ssh и приватных данных.',
                 },
               ],
             },
@@ -1242,9 +1227,58 @@ umask 077                # «только я»: файлы 600, папки 700
                   'chmod u+x deploy.sh — добавит execute только владельцу (user). chmod +x deploy.sh — добавит всем (u, g, o) — тоже работает, но менее точечно. Для приватных скриптов лучше u+x.',
               },
             },
+            {
+              id: 'ln-l9-s6',
+              title: 'Практика в терминале: защита ключей и запуск скрипта',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'anna@prod-srv:~$',
+                    task: 'Обезопасьте приватный SSH-ключ id_ed25519 (права 600 — чтение и запись только владельцу), сделайте скрипт backup.sh исполняемым и смените владельца папки /var/www/app на www-data:www-data рекурсивно.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Задайте права 600 для файла id_ed25519',
+                        acceptedPatterns: ['^chmod\\s+600\\s+(\\./)?id_ed25519$'],
+                        commonMistakes: [
+                          {
+                            pattern: '^chmod\\s+(644|755|777)\\s+id_ed25519$',
+                            output: 'WARNING: UNPROTECTED PRIVATE KEY FILE!\nPermissions for \'id_ed25519\' are too open.\n(Подсказка: приватный ключ должен иметь права 600)',
+                          },
+                        ],
+                        output: '-rw------- 1 anna anna 411 окт 28 11:00 id_ed25519',
+                      },
+                      {
+                        instruction: 'Шаг 2: Сделайте скрипт backup.sh исполняемым (chmod +x или chmod 755)',
+                        acceptedPatterns: [
+                          '^chmod\\s+(u?\\+x|755|700)\\s+(\\./)?backup\\.sh$',
+                        ],
+                        output: '-rwxr-xr-x 1 anna anna 1024 окт 28 11:01 backup.sh',
+                      },
+                      {
+                        instruction: 'Шаг 3: Рекурсивно смените владельца и группу папки /var/www/app на www-data:www-data (через sudo chown -R)',
+                        acceptedPatterns: [
+                          '^sudo\\s+chown\\s+-R\\s+www-data:www-data\\s+/var/www/app/?$',
+                        ],
+                        commonMistakes: [
+                          {
+                            pattern: '^chown\\s+-R\\s+www-data:www-data\\s+/var/www/app/?$',
+                            output: 'chown: changing ownership of \'/var/www/app\': Operation not permitted\n(Подсказка: смена владельца требует привилегий root — добавьте sudo)',
+                          },
+                        ],
+                        output: 'Владелец /var/www/app рекурсивно изменён на www-data:www-data',
+                      },
+                    ],
+                    solution: 'chmod 600 id_ed25519\nchmod +x backup.sh\nsudo chown -R www-data:www-data /var/www/app',
+                    hint: 'Для приватного ключа — 600, для скрипта — +x, для смены владельца папки — sudo chown -R.',
+                  },
+                },
+              ],
+            },
           ],
         },
-        {
+{
           id: 'ln-l10',
           title: 'Чтение файлов и поиск по тексту',
           minutes: 25,
@@ -1258,24 +1292,7 @@ umask 077                # «только я»: файлы 600, папки 700
                   type: 'code',
                   lang: 'bash',
                   caption: 'Четыре способа посмотреть файл',
-                  code: `# cat — вывести всё содержимое (для маленьких файлов)
-cat file.txt
-
-# less — постраничный просмотр (для больших)
-less /var/log/syslog
-# q — выход, /pattern — поиск, g — в начало, G — в конец
-
-# head — первые N строк (по умолчанию 10)
-head file.txt
-head -n 20 file.txt
-
-# tail — последние N строк (по умолчанию 10)
-tail file.txt
-tail -n 50 /var/log/syslog      # последние 50 строк
-
-# tail -f — «следить» за файлом (для логов!)
-tail -f /var/log/nginx/access.log
-# Ctrl+C — выйти`,
+                  code: '# cat — вывести всё содержимое (для маленьких файлов)\ncat file.txt\n\n# less — постраничный просмотр (для больших)\nless /var/log/syslog\n# q — выход, /pattern — поиск, g — в начало, G — в конец\n\n# head — первые N строк (по умолчанию 10)\nhead file.txt\nhead -n 20 file.txt\n\n# tail — последние N строк (по умолчанию 10)\ntail file.txt\ntail -n 50 /var/log/syslog      # последние 50 строк\n\n# tail -f — «следить» за файлом (для логов!)\ntail -f /var/log/nginx/access.log\n# Ctrl+C — выйти',
                 },
                 {
                   type: 'note',
@@ -1292,32 +1309,7 @@ tail -f /var/log/nginx/access.log
                   type: 'code',
                   lang: 'bash',
                   caption: 'grep — самый популярный инструмент',
-                  code: `# Найти строки, содержащие "ERROR"
-grep "ERROR" /var/log/syslog
-
-# Игнорировать регистр
-grep -i "error" file.txt      # найдёт ERROR, Error, error
-
-# Показать номера строк
-grep -n "ERROR" file.txt
-
-# Рекурсивно во всех файлах папки
-grep -r "TODO" src/
-
-# Показать только имена файлов (не строки)
-grep -rl "ERROR" /var/log/
-
-# Инвертировать: строки БЕЗ "ERROR"
-grep -v "INFO" file.txt
-
-# Регулярное выражение (extended)
-grep -E "^[0-9]+\\." file.txt    # строки, начинающиеся с числа и точки
-
-# Несколько паттернов
-grep -E "ERROR|FATAL" file.txt
-
-# Контекст: 2 строки до и после
-grep -B 2 -A 2 "ERROR" file.txt`,
+                  code: '# Найти строки, содержащие "ERROR"\ngrep "ERROR" /var/log/syslog\n\n# Игнорировать регистр\ngrep -i "error" file.txt      # найдёт ERROR, Error, error\n\n# Показать номера строк\ngrep -n "ERROR" file.txt\n\n# Рекурсивно во всех файлах папки\ngrep -r "TODO" src/\n\n# Показать только имена файлов (не строки)\ngrep -rl "ERROR" /var/log/\n\n# Инвертировать: строки БЕЗ "ERROR"\ngrep -v "INFO" file.txt\n\n# Регулярное выражение (extended)\ngrep -E "^[0-9]+\\." file.txt    # строки, начинающиеся с числа и точки\n\n# Несколько паттернов\ngrep -E "ERROR|FATAL" file.txt\n\n# Контекст: 2 строки до и после\ngrep -B 2 -A 2 "ERROR" file.txt',
                 },
                 {
                   type: 'list',
@@ -1385,6 +1377,44 @@ grep -B 2 -A 2 "ERROR" file.txt`,
                 explanation:
                   '`-i` — без регистра (a), `-r` — по папке (b), `-v` — инверсия (c). `grep` работает и с несколькими файлами (`grep "x" *.log`), и с рекурсией — не только один файл (d — неверно).',
               },
+            },
+            {
+              id: 'ln-l10-s6',
+              title: 'Практика в терминале: анализ логов с grep и tail',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'devops@srv:/var/log$',
+                    task: 'Найдите все строки со словом ERROR (без учёта регистра, флаг -i) в файле app.log, а затем найдите рекурсивно слово TODO в папке /opt/app.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Найдите строки с "error" без учёта регистра (-i) в файле app.log',
+                        acceptedPatterns: [
+                          '^grep\\s+-i\\s+["\']?(error|ERROR)["\']?\\s+app\\.log$',
+                        ],
+                        commonMistakes: [
+                          {
+                            pattern: '^grep\\s+["\']?(error|ERROR)["\']?\\s+app\\.log$',
+                            output: '(Подсказка: добавьте флаг -i для поиска без учёта регистра)',
+                          },
+                        ],
+                        output: '2025-10-28 10:12:01 [ERROR] Database connection timeout\n2025-10-28 10:14:55 [Error] Failed to parse payload',
+                      },
+                      {
+                        instruction: 'Шаг 2: Рекурсивно (-r) найдите "TODO" в директории /opt/app',
+                        acceptedPatterns: [
+                          '^grep\\s+-(r|rn|nr)\\s+["\']?TODO["\']?\\s+/opt/app/?$',
+                        ],
+                        output: '/opt/app/main.py:# TODO: add retry logic\n/opt/app/auth.py:# TODO: rotate JWT secret',
+                      },
+                    ],
+                    solution: 'grep -i "error" app.log\ngrep -r "TODO" /opt/app',
+                    hint: 'Флаг -i игнорирует регистр, флаг -r включает рекурсивный обход директории.',
+                  },
+                },
+              ],
             },
           ],
         },
@@ -1902,7 +1932,7 @@ disown`,
             },
           ],
         },
-        {
+{
           id: 'ln-l14',
           title: 'systemd: управление сервисами',
           minutes: 30,
@@ -1914,15 +1944,15 @@ disown`,
               blocks: [
                 {
                   type: 'p',
-                  text: `systemd — система инициализации и менеджер сервисов. С 2015 года — стандарт в большинстве дистрибутивов (Ubuntu, Debian, Fedora, RHEL, Alma, РЕД ОС). Пришёл на смену SysV init, потому что умеет: параллельный запуск сервисов (быстрее загрузка), перезапуск упавших, логи через journald, таймеры вместо cron, cgroups для ограничения ресурсов.`,
+                  text: 'systemd — система инициализации и менеджер сервисов. С 2015 года — стандарт в большинстве дистрибутивов (Ubuntu, Debian, Fedora, RHEL, Alma, РЕД ОС). Пришёл на смену SysV init, потому что умеет: параллельный запуск сервисов (быстрее загрузка), перезапуск упавших, логи через journald, таймеры вместо cron, cgroups для ограничения ресурсов.',
                 },
                 {
                   type: 'p',
-                  text: `Единица работы systemd — unit (юнит). Основные типы: .service (сервис — nginx, sshd), .timer (замена cron), .mount (точка монтирования), .target (группа юнитов, аналог runlevel).`,
+                  text: 'Единица работы systemd — unit (юнит). Основные типы: .service (сервис — nginx, sshd), .timer (замена cron), .mount (точка монтирования), .target (группа юнитов, аналог runlevel).',
                 },
                 {
                   type: 'note',
-                  text: `«Systemd — это зло» — популярный спор в сообществе (сравнивают с BSD и Alpine/OpenRC). Но факт: 90% Linux-серверов используют systemd. Для работы нужно знать systemctl и journalctl — это как воздух в Linux-администрировании.`,
+                  text: '«Systemd — это зло» — популярный спор в сообществе (сравнивают с BSD и Alpine/OpenRC). Но факт: 90% Linux-серверов используют systemd. Для работы нужно знать systemctl и journalctl — это как воздух в Linux-администрировании.',
                 },
               ],
             },
@@ -1935,53 +1965,13 @@ disown`,
                   type: 'code',
                   lang: 'bash',
                   caption: 'Управление сервисами',
-                  code: `# Запустить / остановить / перезапустить
-sudo systemctl start nginx
-sudo systemctl stop nginx
-sudo systemctl restart nginx
-
-# Перечитать конфиг без остановки (graceful)
-sudo systemctl reload nginx
-
-# Статус (работает ли, с какими ошибками)
-systemctl status nginx
-
-# Включить автозапуск при загрузке
-sudo systemctl enable nginx
-sudo systemctl disable nginx
-
-# Включить И сразу запустить
-sudo systemctl enable --now nginx
-
-# Список всех сервисов
-systemctl list-units --type=service
-systemctl list-units --type=service --state=running   # только работающие
-
-# Список упавших
-systemctl --failed
-
-# Показать, что входит в target (например, multi-user.target)
-systemctl list-dependencies multi-user.target`,
+                  code: '# Запустить / остановить / перезапустить\nsudo systemctl start nginx\nsudo systemctl stop nginx\nsudo systemctl restart nginx\n\n# Перечитать конфиг без остановки (graceful)\nsudo systemctl reload nginx\n\n# Статус (работает ли, с какими ошибками)\nsystemctl status nginx\n\n# Включить автозапуск при загрузке\nsudo systemctl enable nginx\nsudo systemctl disable nginx\n\n# Включить И сразу запустить\nsudo systemctl enable --now nginx\n\n# Список всех сервисов\nsystemctl list-units --type=service\nsystemctl list-units --type=service --state=running   # только работающие\n\n# Список упавших\nsystemctl --failed\n\n# Показать, что входит в target (например, multi-user.target)\nsystemctl list-dependencies multi-user.target',
                 },
                 {
                   type: 'code',
                   lang: 'bash',
                   caption: 'Как читать systemctl status nginx',
-                  code: `● nginx.service - A high performance web server and a reverse proxy server
-     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; preset: enabled)
-     Active: active (running) since Mon 2025-10-28 10:30:15 MSK; 2 days ago
-       Docs: man:nginx(8)
-   Main PID: 1234 (nginx)
-      Tasks: 5 (limit: 9418)
-     Memory: 8.5M
-        CPU: 245ms
-     CGroup: /system.slice/nginx.service
-             ├─1234 "nginx: master process /usr/sbin/nginx"
-             └─1235 "nginx: worker process"
-
-Loaded: enabled — автозапуск включён
-Active: active (running) — работает сейчас
-Main PID — PID главного процесса`,
+                  code: '● nginx.service - A high performance web server and a reverse proxy server\n     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; preset: enabled)\n     Active: active (running) since Mon 2025-10-28 10:30:15 MSK; 2 days ago\n       Docs: man:nginx(8)\n   Main PID: 1234 (nginx)\n      Tasks: 5 (limit: 9418)\n     Memory: 8.5M\n        CPU: 245ms\n     CGroup: /system.slice/nginx.service\n             ├─1234 "nginx: master process /usr/sbin/nginx"\n             └─1235 "nginx: worker process"\n\nLoaded: enabled — автозапуск включён\nActive: active (running) — работает сейчас\nMain PID — PID главного процесса',
                 },
                 {
                   type: 'list',
@@ -1995,7 +1985,7 @@ Main PID — PID главного процесса`,
                 },
                 {
                   type: 'note',
-                  text: `Частая путаница: enable и start — разные вещи. enable — «включить в автозапуск» (симлинк в /etc/systemd/system/multi-user.target.wants/), но не запускает. start — «запустить сейчас», но не добавит в автозагрузку. enable --now делает оба.`,
+                  text: 'Частая путаница: enable и start — разные вещи. enable — «включить в автозапуск» (симлинк в /etc/systemd/system/multi-user.target.wants/), но не запускает. start — «запустить сейчас», но не добавит в автозагрузку. enable --now делает оба.',
                 },
               ],
             },
@@ -2006,44 +1996,18 @@ Main PID — PID главного процесса`,
               blocks: [
                 {
                   type: 'p',
-                  text: `Любой долгоживущий процесс можно превратить в сервис. Создаём unit-файл в /etc/systemd/system/myapp.service.`,
+                  text: 'Любой долгоживущий процесс можно превратить в сервис. Создаём unit-файл в /etc/systemd/system/myapp.service.',
                 },
                 {
                   type: 'mermaid',
                   caption: 'Как systemd запускает и перезапускает сервис',
-                  code: `graph LR
-                    Boot["Boot"] --> Systemd["systemd"]
-                    Systemd --> Unit["myapp.service"]
-                    Unit --> Run["Запуск процесса"]
-                    Run --> Check{"Упал?"}
-                    Check -->|"Да"| Restart["Restart=on-failure<br/>через 5 сек"]
-                    Restart --> Run
-                    Check -->|"Нет"| Working["Работает"]`
+                  code: 'graph LR\n                    Boot["Boot"] --> Systemd["systemd"]\n                    Systemd --> Unit["myapp.service"]\n                    Unit --> Run["Запуск процесса"]\n                    Run --> Check{"Упал?"}\n                    Check -->|"Да"| Restart["Restart=on-failure<br/>через 5 сек"]\n                    Restart --> Run\n                    Check -->|"Нет"| Working["Работает"]',
                 },
                 {
                   type: 'code',
                   lang: 'ini',
                   caption: '/etc/systemd/system/myapp.service',
-                  code: `[Unit]
-Description=My Application
-After=network.target postgresql.service
-Wants=network-online.target
-
-[Service]
-Type=simple
-User=www-data
-Group=www-data
-WorkingDirectory=/opt/myapp
-ExecStart=/opt/myapp/venv/bin/python main.py
-Restart=on-failure
-RestartSec=5
-StandardOutput=journal
-StandardError=journal
-Environment="APP_ENV=production"
-EnvironmentFile=/etc/myapp/env
-
-[Install]
-WantedBy=multi-user.target`,
+                  code: '[Unit]\nDescription=My Application\nAfter=network.target postgresql.service\nWants=network-online.target\n\n[Service]\nType=simple\nUser=www-data\nGroup=www-data\nWorkingDirectory=/opt/myapp\nExecStart=/opt/myapp/venv/bin/python main.py\nRestart=on-failure\nRestartSec=5\nStandardOutput=journal\nStandardError=journal\nEnvironment="APP_ENV=production"\nEnvironmentFile=/etc/myapp/env\n\n[Install]\nWantedBy=multi-user.target',
                 },
                 {
                   type: 'list',
@@ -2061,22 +2025,11 @@ WantedBy=multi-user.target`,
                   type: 'code',
                   lang: 'bash',
                   caption: 'Установка и запуск сервиса',
-                  code: `# 1. Создать unit-файл
-sudo nano /etc/systemd/system/myapp.service
-
-# 2. Перечитать конфиг systemd
-sudo systemctl daemon-reload
-
-# 3. Включить и запустить
-sudo systemctl enable --now myapp
-
-# 4. Проверить
-systemctl status myapp
-sudo journalctl -u myapp -f     # следить за логами`,
+                  code: '# 1. Создать unit-файл\nsudo nano /etc/systemd/system/myapp.service\n\n# 2. Перечитать конфиг systemd\nsudo systemctl daemon-reload\n\n# 3. Включить и запустить\nsudo systemctl enable --now myapp\n\n# 4. Проверить\nsystemctl status myapp\nsudo journalctl -u myapp -f     # следить за логами',
                 },
                 {
                   type: 'note',
-                  text: `Restart=on-failure + RestartSec=5 — «автоматический перезапуск». Если приложение упало — systemd поднимет через 5 секунд. Это и есть главное преимущество systemd перед nohup. Для production: Restart=always, чтобы перезапускать даже после «успешного» выхода (сервис не должен «заканчиваться»).`,
+                  text: 'Restart=on-failure + RestartSec=5 — «автоматический перезапуск». Если приложение упало — systemd поднимет через 5 секунд. Это и есть главное преимущество systemd перед nohup. Для production: Restart=always, чтобы перезапускать даже после «успешного» выхода (сервис не должен «заканчиваться»).',
                 },
               ],
             },
@@ -2114,6 +2067,49 @@ sudo journalctl -u myapp -f     # следить за логами`,
                 explanation:
                   'status — диагностика, reload — «мягкий» перезапуск (если поддерживается), restart — жёсткий, --failed — что сломалось. reload предпочтительнее restart для nginx: не рвёт соединения.',
               },
+            },
+            {
+              id: 'ln-l14-s6',
+              title: 'Практика в терминале: управление systemd-сервисом',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'admin@prod-web:~$',
+                    task: 'Вы изменили unit-файл сервиса myapp.service. Перечитайте конфигурацию демона systemd, включите сервис в автозагрузку с немедленным запуском (enable --now) и проверьте его статус.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Перечитайте конфигурацию systemd после правки unit-файла',
+                        acceptedPatterns: ['^sudo\\s+systemctl\\s+daemon-reload$'],
+                        output: 'Конфигурация systemd успешно перечитана.',
+                      },
+                      {
+                        instruction: 'Шаг 2: Включите автозапуск и сразу запустите сервис myapp одной командой',
+                        acceptedPatterns: [
+                          '^sudo\\s+systemctl\\s+enable\\s+--now\\s+myapp(\\.service)?$',
+                        ],
+                        commonMistakes: [
+                          {
+                            pattern: '^sudo\\s+systemctl\\s+enable\\s+myapp(\\.service)?$',
+                            output: 'Created symlink /etc/systemd/system/multi-user.target.wants/myapp.service.\n(Подсказка: вы включили автозапуск, но не запустили сервис сейчас. Добавьте флаг --now)',
+                          },
+                        ],
+                        output: 'Created symlink /etc/systemd/system/multi-user.target.wants/myapp.service → /etc/systemd/system/myapp.service.',
+                      },
+                      {
+                        instruction: 'Шаг 3: Проверьте статус сервиса myapp',
+                        acceptedPatterns: [
+                          '^(sudo\\s+)?systemctl\\s+status\\s+myapp(\\.service)?$',
+                        ],
+                        output: '● myapp.service - My Application\n     Loaded: loaded (/etc/systemd/system/myapp.service; enabled)\n     Active: active (running) since Mon 2025-10-28 12:00:01 MSK; 2s ago\n   Main PID: 4120 (python)',
+                      },
+                    ],
+                    solution: 'sudo systemctl daemon-reload\nsudo systemctl enable --now myapp\nsystemctl status myapp',
+                    hint: 'Используйте daemon-reload после правки unit-файлов и enable --now для одновременного включения и старта.',
+                  },
+                },
+              ],
             },
           ],
         },
@@ -2547,7 +2543,7 @@ sudo chown -R anna:developers /var/www/myapp    # и владельца, и гр
       id: 'ln-m6',
       title: 'Сеть: диагностика и удалённый доступ',
       lessons: [
-        {
+{
           id: 'ln-l18',
           title: 'Диагностика сети: ip, ss, ping, dig',
           minutes: 25,
@@ -2559,31 +2555,17 @@ sudo chown -R anna:developers /var/www/myapp    # и владельца, и гр
               blocks: [
                 {
                   type: 'p',
-                  text: `Раньше для сети использовали ifconfig, route, netstat. Сейчас — современный набор iproute2: ip (вместо ifconfig/route), ss (вместо netstat). Старые команды ещё работают, но считаются устаревшими.`,
+                  text: 'Раньше для сети использовали ifconfig, route, netstat. Сейчас — современный набор iproute2: ip (вместо ifconfig/route), ss (вместо netstat). Старые команды ещё работают, но считаются устаревшими.',
                 },
                 {
                   type: 'code',
                   lang: 'bash',
                   caption: 'ip — адреса, маршруты, интерфейсы',
-                  code: `# Все сетевые интерфейсы и их адреса
-ip addr
-ip a                          # короткая форма
-ip a show eth0                # только eth0
-
-# Маршрутизация (куда идёт трафик)
-ip route
-ip r                          # короткая форма
-
-# Поднять/опустить интерфейс
-sudo ip link set eth0 up
-sudo ip link set eth0 down
-
-# Добавить IP
-sudo ip addr add 192.168.1.100/24 dev eth0`,
+                  code: '# Все сетевые интерфейсы и их адреса\nip addr\nip a                          # короткая форма\nip a show eth0                # только eth0\n\n# Маршрутизация (куда идёт трафик)\nip route\nip r                          # короткая форма\n\n# Поднять/опустить интерфейс\nsudo ip link set eth0 up\nsudo ip link set eth0 down\n\n# Добавить IP\nsudo ip addr add 192.168.1.100/24 dev eth0',
                 },
                 {
                   type: 'note',
-                  text: `eth0, ens33, enp0s3 — имена интерфейсов. Раньше были eth0/eth1, сейчас — «предсказуемые» имена по PCI-слоту. lo — loopback (127.0.0.1), всегда есть. wlan0/wlp2s0 — Wi-Fi. docker0 — мост Docker.`,
+                  text: 'eth0, ens33, enp0s3 — имена интерфейсов. Раньше были eth0/eth1, сейчас — «предсказуемые» имена по PCI-слоту. lo — loopback (127.0.0.1), всегда есть. wlan0/wlp2s0 — Wi-Fi. docker0 — мост Docker.',
                 },
               ],
             },
@@ -2596,33 +2578,17 @@ sudo ip addr add 192.168.1.100/24 dev eth0`,
                   type: 'code',
                   lang: 'bash',
                   caption: 'ping — «жив ли хост»',
-                  code: `ping google.com
-ping -c 4 google.com          # 4 пакета и выйти
-ping -i 0.5 google.com        # интервал 0.5 сек (нужен root, если < 0.2)
-ping -W 2 google.com          # таймаут 2 сек
-
-# IPv6
-ping -6 google.com
-ping6 google.com`,
+                  code: 'ping google.com\nping -c 4 google.com          # 4 пакета и выйти\nping -i 0.5 google.com        # интервал 0.5 сек (нужен root, если < 0.2)\nping -W 2 google.com          # таймаут 2 сек\n\n# IPv6\nping -6 google.com\nping6 google.com',
                 },
                 {
                   type: 'code',
                   lang: 'bash',
                   caption: 'dig — DNS-запросы',
-                  code: `dig google.com                # A-запись
-dig google.com MX             # почтовые серверы
-dig google.com TXT            # TXT-записи
-dig @8.8.8.8 google.com       # через конкретный DNS
-
-dig +short google.com         # только ответ (для скриптов)
-
-# host и nslookup — старые альтернативы, но ещё используются
-host google.com
-nslookup google.com`,
+                  code: 'dig google.com                # A-запись\ndig google.com MX             # почтовые серверы\ndig google.com TXT            # TXT-записи\ndig @8.8.8.8 google.com       # через конкретный DNS\n\ndig +short google.com         # только ответ (для скриптов)\n\n# host и nslookup — старые альтернативы, но ещё используются\nhost google.com\nnslookup google.com',
                 },
                 {
                   type: 'note',
-                  text: `ping может не работать, даже если хост жив: ICMP-пакеты блокируются файрволом на многих серверах. Это нормально. Если ping не проходит, но curl на порт 443 работает — хост жив, просто не отвечает на ICMP.`,
+                  text: 'ping может не работать, даже если хост жив: ICMP-пакеты блокируются файрволом на многих серверах. Это нормально. Если ping не проходит, но curl на порт 443 работает — хост жив, просто не отвечает на ICMP.',
                 },
               ],
             },
@@ -2635,48 +2601,17 @@ nslookup google.com`,
                   type: 'code',
                   lang: 'bash',
                   caption: 'ss — какие порты слушаются',
-                  code: `# Слушающие TCP-порты (LISTEN)
-ss -tlnp
-# -t TCP, -l listening, -n порты числами (не имена), -p показать процесс
-
-ss -tlnp | grep :80            # кто слушает 80
-
-# Все соединения
-ss -tunap
-# -u UDP, -a все
-
-# Старый netstat (то же самое, но устарел)
-netstat -tlnp`,
+                  code: '# Слушающие TCP-порты (LISTEN)\nss -tlnp\n# -t TCP, -l listening, -n порты числами (не имена), -p показать процесс\n\nss -tlnp | grep :80            # кто слушает 80\n\n# Все соединения\nss -tunap\n# -u UDP, -a все\n\n# Старый netstat (то же самое, но устарел)\nnetstat -tlnp',
                 },
                 {
                   type: 'code',
                   lang: 'bash',
                   caption: 'curl — HTTP-запросы',
-                  code: `# GET
-curl https://api.example.com/users
-
-# С заголовками
-curl -H "Authorization: Bearer TOKEN" https://api.example.com/users
-
-# POST с JSON
-curl -X POST https://api.example.com/users \\
-  -H "Content-Type: application/json" \\
-  -d '{"name": "Anna", "email": "anna@example.com"}'
-
-# Показать только заголовки ответа
-curl -I https://example.com
-
-# Скачать файл
-curl -O https://example.com/file.tar.gz
-curl -L https://example.com/redirect -o file.txt   # -L следовать редиректам
-
-# Проверить, что сервис отвечает (для health-check)
-curl -s -o /dev/null -w "%{http_code}" https://example.com/health
-# 200`,
+                  code: '# GET\ncurl https://api.example.com/users\n\n# С заголовками\ncurl -H "Authorization: Bearer TOKEN" https://api.example.com/users\n\n# POST с JSON\ncurl -X POST https://api.example.com/users \\\n  -H "Content-Type: application/json" \\\n  -d \'{"name": "Anna", "email": "anna@example.com"}\'\n\n# Показать только заголовки ответа\ncurl -I https://example.com\n\n# Скачать файл\ncurl -O https://example.com/file.tar.gz\ncurl -L https://example.com/redirect -o file.txt   # -L следовать редиректам\n\n# Проверить, что сервис отвечает (для health-check)\ncurl -s -o /dev/null -w "%{http_code}" https://example.com/health\n# 200',
                 },
                 {
                   type: 'note',
-                  text: `curl — главный инструмент отладки API. Если API «не работает», первым делом curl с сервера: так вы отделяете проблему «фронтенд/сеть» от «сервер сломан». С -s -o /dev/null -w "%{http_code}" — удобный health-check для скриптов.`,
+                  text: 'curl — главный инструмент отладки API. Если API «не работает», первым делом curl с сервера: так вы отделяете проблему «фронтенд/сеть» от «сервер сломан». С -s -o /dev/null -w "%{http_code}" — удобный health-check для скриптов.',
                 },
               ],
             },
@@ -2714,6 +2649,44 @@ curl -s -o /dev/null -w "%{http_code}" https://example.com/health
                 explanation:
                   'ip — сеть, dig — DNS, curl — HTTP, ss — порты. Четыре главных инструмента диагностики. На собеседовании junior DevOps это база.',
               },
+            },
+            {
+              id: 'ln-l18-s6',
+              title: 'Практика в терминале: диагностика портов и HTTP',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'sre@gateway:~$',
+                    task: 'Проверьте список слушающих TCP-портов с указанием процессов (ss -tlnp), а затем запросите только HTTP-заголовки с локального сервиса http://localhost:8080 с помощью curl.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Выведите все слушающие TCP-порты с номерами портов и процессами',
+                        acceptedPatterns: [
+                          '^(sudo\\s+)?ss\\s+-(tlnp|tlpn|ntlp|nlpt|ptln|pltn)$',
+                        ],
+                        output: 'State   Recv-Q  Send-Q  Local Address:Port   Peer Address:Port  Process\nLISTEN  0       511           0.0.0.0:8080        0.0.0.0:*      users:(("nginx",pid=1042,fd=6))',
+                      },
+                      {
+                        instruction: 'Шаг 2: Получите только HTTP-заголовки (флаг -I) от http://localhost:8080',
+                        acceptedPatterns: [
+                          '^curl\\s+-I\\s+http://localhost:8080/?$',
+                        ],
+                        commonMistakes: [
+                          {
+                            pattern: '^curl\\s+http://localhost:8080/?$',
+                            output: '<html><body>Welcome to nginx!</body></html>\n(Подсказка: вы вывели тело ответа, а нужны только заголовки — добавьте флаг -I)',
+                          },
+                        ],
+                        output: 'HTTP/1.1 200 OK\nServer: nginx/1.24.0\nContent-Type: text/html\nConnection: keep-alive',
+                      },
+                    ],
+                    solution: 'ss -tlnp\ncurl -I http://localhost:8080',
+                    hint: 'Используйте ss -tlnp для портов и curl -I для просмотра заголовков ответа.',
+                  },
+                },
+              ],
             },
           ],
         },

@@ -84,6 +84,35 @@ z.object({
     caption: z.string().optional(),
   }),
 }),
+z.object({
+    type: z.literal('terminal'),
+    terminal: z.object({
+      prompt: z.string().optional(),
+      task: z.string().min(1, 'terminal.task пустой'),
+      commands: z
+        .array(
+          z.object({
+            instruction: z.string().optional(),
+            acceptedPatterns: z
+              .array(z.string().min(1))
+              .min(1, 'terminal.commands: нужен хотя бы 1 acceptedPattern'),
+            output: z.string().optional(),
+            commonMistakes: z
+              .array(
+                z.object({
+                  pattern: z.string().min(1),
+                  output: z.string().min(1),
+                }),
+              )
+              .optional(),
+          }),
+        )
+        .min(1, 'terminal.commands: нужен хотя бы 1 шаг'),
+      solution: z.string().min(1, 'terminal.solution пустой'),
+      hint: z.string().optional(),
+      caption: z.string().optional(),
+    }),
+  }),
 ]);
 
 // ─────────────────────────────────────────────

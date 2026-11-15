@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { useTheme } from '@/lib/theme';
 import { SandboxView } from '@/components/SandboxView';
 import { PythonView } from '@/components/PythonView';
+import { TerminalView } from '@/components/TerminalView';
 import { useExamMode } from '@/lib/exam-mode';
 
 type ResultType = 'ok' | 'partial' | 'fail';
@@ -200,11 +201,12 @@ export function TextBlocks({
             );
           case 'mermaid':
             return <MermaidDiagram key={i} code={b.code} caption={b.caption} />;
-
           case 'sandbox':
             return <SandboxView key={i} sandbox={b.sandbox} onResult={onResult} />;
           case 'python':
-          return <PythonView key={i} python={b.python} onResult={onResult} />;
+            return <PythonView key={i} python={b.python} onResult={onResult} />;
+          case 'terminal':
+            return <TerminalView key={i} terminal={b.terminal} onResult={onResult} />;
         }
       })}
     </div>
