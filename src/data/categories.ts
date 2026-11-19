@@ -49,13 +49,13 @@ export const courseCategory: Record<string, CategoryId> = {
   'docker-basics': 'containers',
   'kubernetes-basics': 'containers',
   'kubernetes-advanced': 'containers',
-  'observability': 'containers',
 
   'terraform-basics': 'iac',
   'ansible-basics': 'iac',
 
   'cicd-basics': 'delivery',
   'gitops': 'delivery',
+  'observability': 'delivery',
   'kafka-basics': 'delivery',
 
   'ai-agents': 'ai',
