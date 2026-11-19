@@ -95,7 +95,9 @@ export type CourseIcon =
   | 'qa-automation'
   | 'qa-senior'
   | 'cs'
-  | 'observability';
+  | 'observability'
+  | 'ai'
+  | 'proxy';
 
 export interface Course {
   slug: string;

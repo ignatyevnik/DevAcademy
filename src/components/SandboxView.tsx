@@ -1,21 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 import { CheckCircle2, Eye, Loader2, Play } from 'lucide-react';
-import type { Database } from 'sql.js';
 import type { SandboxBlock } from '@/data/types';
 import type { QuizResult } from '@/lib/progress';
 import {
-  getSql,
+  createSandbox,
+  closeSandbox,
+  evaluateWithSchema,
   pickResult,
   resultsMatch,
   runQuery,
   type RunResult,
+  type SandboxHandle,
 } from '@/lib/sql-sandbox';
 import { Button } from '@/components/ui/button';
 import { LazyCodeMirror } from '@/components/LazyCodeMirror';
 import { useTheme } from '@/lib/theme';
-
-const DANGEROUS =
-  /\b(DROP|DELETE|UPDATE|INSERT|ALTER|ATTACH|DETACH|PRAGMA|VACUUM|REINDEX)\b/i;
 
 interface Props {
   sandbox: SandboxBlock;
@@ -23,7 +22,7 @@ interface Props {
 }
 
 export function SandboxView({ sandbox, onResult }: Props) {
-  const dbRef = useRef<Database | null>(null);
+  const handleRef = useRef<SandboxHandle | null>(null);
   const [loading, setLoading] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
 
@@ -39,52 +38,37 @@ export function SandboxView({ sandbox, onResult }: Props) {
     let cancelled = false;
     (async () => {
       try {
-        const SQL = await getSql();
-        if (cancelled) return;
-        const db = new SQL.Database();
-        db.run(sandbox.schema);
-        dbRef.current = db;
+        const handle = await createSandbox(sandbox.schema);
+        if (cancelled) {
+          closeSandbox(handle).catch(() => { });
+          return;
+        }
+        handleRef.current = handle;
         setLoading(false);
       } catch (e) {
         if (cancelled) return;
-        setInitError(e instanceof Error ? e.message : 'Не удалось загрузить SQL-движок');
+        setInitError(
+          e instanceof Error ? e.message : 'Не удалось загрузить SQL-движок',
+        );
         setLoading(false);
       }
     })();
     return () => {
       cancelled = true;
-      if (dbRef.current) {
-        dbRef.current.close();
-        dbRef.current = null;
+      if (handleRef.current) {
+        closeSandbox(handleRef.current).catch(() => { });
+        handleRef.current = null;
       }
     };
   }, [sandbox.schema]);
 
-  function assertSafe(text: string) {
-    if (DANGEROUS.test(text)) {
-      throw new Error('В песочнице разрешены только SELECT-запросы (без DDL/DML).');
-    }
-
-    // Запрещаем CREATE TABLE, но разрешаем CREATE TEMP TABLE
-    const createTableRegex = /\bCREATE\s+(?!TEMP(ORARY)?\s+TABLE)\w+/i;
-    if (createTableRegex.test(text)) {
-      throw new Error('Создание постоянных таблиц запрещено. Используйте CREATE TEMP TABLE.');
-    }
-
-    for (const pattern of sandbox.forbidden ?? []) {
-      if (new RegExp(pattern, 'i').test(text)) {
-        throw new Error('Запрос содержит запрещённую конструкцию.');
-      }
-    }
-  }
-
-  function handleRun() {
+  async function handleRun() {
     setRunError(null);
     setCheck(null);
-    if (!dbRef.current || !sql.trim()) return;
+    const handle = handleRef.current;
+    if (!handle || !sql.trim()) return;
     try {
-      assertSafe(sql);
-      const results = runQuery(dbRef.current, sql);
+      const results = await runQuery(handle, sql, sandbox.forbidden);
       setResult(pickResult(results));
     } catch (e) {
       setResult(null);
@@ -93,30 +77,33 @@ export function SandboxView({ sandbox, onResult }: Props) {
   }
 
   async function handleCheck() {
-    if (!dbRef.current || !sql.trim()) return;
+    const handle = handleRef.current;
+    if (!handle || !sql.trim()) return;
     setRunError(null);
     try {
-      assertSafe(sql);
-      const actual = pickResult(runQuery(dbRef.current, sql));
+      const results = await runQuery(handle, sql, sandbox.forbidden);
+      const actual = pickResult(results);
       if (!actual) {
         setCheck('fail');
         setRunError('Запрос не вернул результата. Нужен SELECT.');
         return;
       }
 
-      let expected = sandbox.expected;
+      let expected: (RunResult & { order?: 'order' | 'set' }) | null =
+        sandbox.expected ?? null;
+
       if (!expected) {
-        const SQL = await getSql();
-        const solDb = new SQL.Database();
-        solDb.run(sandbox.schema);
-        const sol = pickResult(runQuery(solDb, sandbox.solution));
-        solDb.close();
+        const solResults = await evaluateWithSchema(
+          sandbox.schema,
+          sandbox.solution,
+        );
+        const sol = pickResult(solResults);
         if (!sol) {
           setCheck('fail');
           setRunError('Не удалось вычислить эталонный результат.');
           return;
         }
-        expected = { columns: sol.columns, rows: sol.rows };
+        expected = sol;
       }
 
       const ok = resultsMatch(actual, expected);

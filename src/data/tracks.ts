@@ -68,6 +68,7 @@ export const tracks: Track[] = [
       { slug: 'kubernetes-basics', label: 'K8s: основы' },
       { slug: 'kubernetes-advanced', label: 'K8s: продвинуто' },
       { slug: 'observability', label: 'Observability'},
+      { slug: 'nginx-envoy', label: 'Nginx и Envoy' },
       { slug: 'terraform-basics', label: 'Terraform: IaC' },
       { slug: 'ansible-basics', label: 'Ansible' },
       { slug: 'kafka-basics', label: 'Kafka' },
@@ -114,6 +115,7 @@ export const tracks: Track[] = [
       { slug: 'sql-advanced', label: 'SQL: продвинуто' },
       { slug: 'docker-basics', label: 'Docker' },
       { slug: 'ai-agents', label: 'AI-агенты' },
+      { slug: 'ai-practical', label: 'Практический ИИ' },
     ],
   },
 ];

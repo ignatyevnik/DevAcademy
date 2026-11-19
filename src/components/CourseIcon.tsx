@@ -424,5 +424,35 @@ export function CourseIcon({
           <GearBadge accent={accent} />
         </svg>
       );
+
+    case 'ai':
+      return (
+        <svg viewBox="0 0 48 48" className={cls} aria-hidden="true">
+          <rect x="4" y="4" width="40" height="40" rx="10" fill={accent} />
+          <g stroke="#fff" strokeWidth="2.2" fill="none" strokeLinecap="round">
+            <circle cx="24" cy="14" r="3.5" fill="#fff" />
+            <circle cx="14" cy="28" r="3.5" fill="#fff" />
+            <circle cx="34" cy="28" r="3.5" fill="#fff" />
+            <circle cx="24" cy="36" r="3.5" fill="#fff" />
+            <path d="M24 17.5v5.5M22 31l-5 3.5M26 31l5 3.5" />
+          </g>
+        </svg>
+      );
+
+    case 'proxy':
+      return (
+        <svg viewBox="0 0 48 48" className={cls} aria-hidden="true">
+          <rect x="4" y="4" width="40" height="40" rx="10" fill={accent} />
+          <g stroke="#fff" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="9" y="20" width="10" height="8" rx="2" />
+            <rect x="29" y="10" width="10" height="8" rx="2" />
+            <rect x="29" y="30" width="10" height="8" rx="2" />
+            <path d="M19 24h5" />
+            <path d="M24 14v20" />
+            <path d="M24 14h5" />
+            <path d="M24 34h5" />
+          </g>
+        </svg>
+      );
   }
 }

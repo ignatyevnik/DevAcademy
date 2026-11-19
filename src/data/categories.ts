@@ -56,9 +56,11 @@ export const courseCategory: Record<string, CategoryId> = {
   'cicd-basics': 'delivery',
   'gitops': 'delivery',
   'observability': 'delivery',
+  'nginx-envoy': 'delivery',
   'kafka-basics': 'delivery',
 
   'ai-agents': 'ai',
+  'ai-practical': 'ai',
 
   'design-patterns': 'architecture',
   'system-design': 'architecture',

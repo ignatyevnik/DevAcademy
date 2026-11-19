@@ -24,6 +24,8 @@ import { ansibleBasicsCourse } from './ansible';
 import { kafkaBasicsCourse } from './kafka';
 import { csBasicsCourse } from './cs-basics';
 import { observabilityCourse } from './observability';
+import { aiPracticalCourse } from './ai-practical';
+import { nginxEnvoyCourse } from './nginx-envoy';
 import { courseSchema } from './schemas'; // <-- импорт схемы для кастомных курсов
 
 // Базовые курсы, сгруппированные по темам (порядок = отображение в каталоге)
@@ -42,7 +44,7 @@ const baseCourses: Course[] = [
   // 3. Языки программирования
   pythonBasicsCourse,
   pythonAdvancedCourse,
-  observabilityCourse,
+
 
   // 4. QA
   qaFundamentalsCourse,
@@ -62,9 +64,12 @@ const baseCourses: Course[] = [
   // 7. CI/CD и доставка
   cicdBasicsCourse,
   gitopsCourse,
+  observabilityCourse,
+  nginxEnvoyCourse,
 
   // 8. AI
   agentsCourse,
+  aiPracticalCourse,
 
   // 9. Архитектура
   designCourse,

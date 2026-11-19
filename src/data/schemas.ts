@@ -391,10 +391,12 @@ export const courseSchema = z
         'qa-senior',
         'cs',
         'observability',
+        'ai',
+        'proxy',
       ],
       {
         message:
-          'icon должен быть: flask | docker | helm | helm-advanced | bot | python | python-advanced | git | ansible | kafka | linux | network | observability | cicd | gitops | terraform | sql | sql-advanced | design | system-design | qa-automation | qa-senior',
+          'icon должен быть: flask | docker | helm | helm-advanced | bot | python | python-advanced | git | proxy | ansible | kafka | linux | network | ai | observability | cicd | gitops | terraform | sql | sql-advanced | design | system-design | qa-automation | qa-senior',
       },
     ),
     modules: z.array(moduleSchema).min(1, 'course: нужен хотя бы 1 модуль'),
