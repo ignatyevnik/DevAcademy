@@ -1267,7 +1267,7 @@ export const cicdBasicsCourse: Course = {
       id: 'cd-b-m4',
       title: 'Практикум',
       lessons: [
-{
+        {
           id: 'cd-l8',
           title: 'Практика: пайплайны и деплой',
           minutes: 35,

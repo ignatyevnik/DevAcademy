@@ -235,7 +235,7 @@ export const qaAutomationCourse: Course = {
                   type: 'code',
                   lang: 'python',
                   caption: 'Зависимость между фикстурами + autouse',
-                  code: 'import pytest\n\n@pytest.fixture(scope="session")\ndef db():\n    conn = connect("test_db")\n    yield conn\n    conn.close()\n\n@pytest.fixture\ndef client(db):                       # ← зависит от db\n    return Client(db_connection=db)\n\n@pytest.fixture(autouse=True)         # ← срабатывает до каждого теста\n@pytest.fixture\ndef reset_cache():\n    cache.clear()\n    yield\n    cache.clear()',
+                  code: 'import pytest\n\n@pytest.fixture(scope="session")\ndef db():\n    conn = connect("test_db")\n    yield conn\n    conn.close()\n\n@pytest.fixture\ndef client(db):                       # ← зависит от db\n    return Client(db_connection=db)\n\n@pytest.fixture(autouse=True)         # ← срабатывает до каждого теста\ndef reset_cache():\n    cache.clear()\n    yield\n    cache.clear()',
                 },
                 {
                   type: 'list',
@@ -497,6 +497,111 @@ export const qaAutomationCourse: Course = {
                 ],
                 explanation:
                   'Статус — успех/ошибка. Схема — типы и обязательные поля. Негатив — поведение на «плохих» данных. OpenAPI — соответствие документации. Вместе — четыре уровня проверки контракта API, которые покрывают 90% регрессий.',
+              },
+            },
+          ],
+        },
+        {
+          id: 'qa-l20b',
+          title: 'Allure Report: шаги, вложения и аналитика в CI',
+          minutes: 25,
+          steps: [
+            {
+              id: 'qa-l20b-s1',
+              title: 'Зачем нужен Allure Report в автотестах',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Консольный вывод `pytest` удобен разработчику, но менеджеру, ручному тестировщику или лиду нужен наглядный интерактивный отчёт: какие бизнес-сценарии упали, на каком именно шаге произошёл сбой, как выглядит скриншот экрана и какие HTTP-запросы уходили в момент ошибки. **Allure Report** — индустриальный стандарт отчётности в Python/Java/TS.',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Жизненный цикл отчёта Allure в CI',
+                  code: 'graph LR\n  Pytest["pytest --alluredir=allure-results"] --> JSON["Сырые JSON/XML +<br/>скриншоты (.png)"]\n  JSON --> CLI["allure generate /<br/>allure serve"]\n  CLI --> HTML["Интерактивный HTML-отчёт<br/>(графики, шаги, история)"]',
+                },
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'Установка и генерация отчёта',
+                  code: 'pip install allure-pytest\n\n# 1. Прогон тестов с сохранением сырых результатов\npytest --alluredir=allure-results\n\n# 2. Открыть интерактивный отчёт в браузере (требует установленный Allure CLI)\nallure serve allure-results',
+                },
+              ],
+            },
+            {
+              id: 'qa-l20b-s2',
+              title: 'Декораторы @allure.step, @allure.title и attach скриншотов',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Чтобы отчёт читался как сценарий, методы Page Object и API-клиента оборачивают в `@allure.step`, а при падении UI-теста в хуке `pytest_runtest_makereport` прикрепляют скриншот и HTML-исходник страницы через `allure.attach`.',
+                },
+                {
+                  type: 'code',
+                  lang: 'python',
+                  caption: 'Оформление теста и Page Object с Allure',
+                  code: 'import allure\nfrom allure_commons.types import AttachmentType\n\nclass LoginPage:\n    def __init__(self, page):\n        self.page = page\n\n    @allure.step("Открыть страницу логина")\n    def open(self):\n        self.page.goto("/login")\n        return self\n\n    @allure.step("Войти под пользователем {email}")\n    def login(self, email: str, password: str):\n        self.page.get_by_label("Email").fill(email)\n        self.page.get_by_label("Password").fill(password)\n        self.page.get_by_role("button", name="Войти").click()\n        return self\n\n@allure.epic("Авторизация")\n@allure.feature("Вход по паролю")\n@allure.severity(allure.severity_level.BLOCKER)\n@allure.title("Успешный вход зарегистрированного пользователя")\ndef test_login_success(page):\n    LoginPage(page).open().login("anna@example.com", "secret")\n    with allure.step("Проверить переход в личный кабинет"):\n        assert "/dashboard" in page.url',
+                },
+                {
+                  type: 'code',
+                  lang: 'python',
+                  caption: 'Хук в conftest.py: автоматический скриншот при падении теста',
+                  code: 'import pytest\nimport allure\n\n@pytest.hookimpl(tryfirst=True, hookwrapper=True)\ndef pytest_runtest_makereport(item, call):\n    outcome = yield\n    rep = outcome.get_result()\n    if rep.when == "call" and rep.failed:\n        page = item.funcargs.get("page")\n        if page:\n            allure.attach(\n                page.screenshot(full_page=True),\n                name="screenshot_on_failure",\n                attachment_type=allure.attachment_type.PNG,\n            )',
+                },
+              ],
+            },
+            {
+              id: 'qa-l20b-s3',
+              title: 'Проверь себя: Allure-декораторы',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте декоратор или функцию Allure и её назначение',
+                pairs: [
+                  { left: '@allure.step("...")', right: 'Разбить метод или действие на вложенный читаемый шаг в отчёте' },
+                  { left: 'allure.attach(..., AttachmentType.PNG)', right: 'Прикрепить скриншот браузера или лог-файл к упавшему тесту' },
+                  { left: '@allure.severity(...)', right: 'Указать критичность теста (BLOCKER, CRITICAL, NORMAL, MINOR)' },
+                  { left: '--alluredir=allure-results', right: 'Флаг pytest для сохранения сырых файлов результатов' },
+                ],
+                explanation:
+                  '@allure.step структурирует действия, allure.attach прикрепляет артефакты (скриншоты, JSON, логи), @allure.severity задаёт важность, а --alluredir указывает папку для сбора результатов.',
+              },
+            },
+            {
+              id: 'qa-l20b-s4',
+              title: 'Проверь себя: этапы работы с отчётом',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Что именно создаёт команда `pytest --alluredir=allure-results`?',
+                options: [
+                  { id: 'a', text: 'Готовый единый index.html файл с графиками' },
+                  { id: 'b', text: 'Набор сырых JSON-файлов и вложений, из которых затем генерируется HTML-отчёт через Allure CLI' },
+                  { id: 'c', text: 'PDF-документ для отправки по почте' },
+                  { id: 'd', text: 'Docker-контейнер с веб-сервером' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'Плагин allure-pytest во время прогона пишет только сырые JSON-результаты и бинарные вложения (скриншоты/логи). Финальный интерактивный HTML-отчёт собирается командой `allure generate` или `allure serve`.',
+              },
+            },
+            {
+              id: 'qa-l20b-s5',
+              title: 'Проверь себя: вложения при падении',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие артефакты полезно автоматически прикреплять через `allure.attach` при падении E2E-теста?',
+                options: [
+                  { id: 'a', text: 'Скриншот страницы в момент падения (PNG)' },
+                  { id: 'b', text: 'Исходный код страницы (page.content()) и логи консоли браузера' },
+                  { id: 'c', text: 'Весь каталог node_modules проекта' },
+                  { id: 'd', text: 'Trace-архив Playwright или сетевые запросы (HAR)' },
+                ],
+                correct: ['a', 'b', 'd'],
+                explanation:
+                  'Скриншот, DOM-снимок, консольные ошибки и trace/HAR позволяют разработчику воспроизвести и починить падение без локального перезапуска теста.',
               },
             },
           ],
@@ -1523,6 +1628,112 @@ export const qaAutomationCourse: Course = {
                 ],
                 explanation:
                   'mask — маскирует динамику. max_diff_pixels — допускает антиалиасинг. animations — убирает движение. --update-snapshots — перезаписывает эталоны после осознанного изменения вёрстки.',
+              },
+            },
+          ],
+        },
+        {
+          id: 'qa-l28b',
+          title: 'Контрактное тестирование (Pact и OpenAPI)',
+          minutes: 30,
+          steps: [
+            {
+              id: 'qa-l28b-s1',
+              title: 'Зачем нужно контрактное тестирование между микросервисами',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Представьте классическую ситуацию: команда бэкенда переименовала поле `user_name` в `full_name` в ответе `/api/profile`. Unit-тесты бэкенда зелёные, моки фронтенда тоже зелёные, но на продакшене личный кабинет падает с белым экраном. Интеграционные E2E-тесты со всеми поднятыми сервисами долгие и дорогие. **Контрактное тестирование** решает эту проблему быстро и изолированно.',
+                },
+                {
+                  type: 'mermaid',
+                  caption: 'Consumer-Driven Contract Testing (Pact): клиент фиксирует ожидания, сервер их проверяет',
+                  code: 'graph LR\n  Consumer["Consumer (Frontend / API-клиент)"] -->|"1. Генерирует контракт<br/>(pact.json)"| Broker[("Pact Broker / Git")]\n  Broker -->|"2. Provider скачивает<br/>ожидания клиентов"| Provider["Provider (Backend API)"]\n  Provider -->|"3. Прогоняет проверку<br/>на своём CI"| Result{"Контракт<br/>соблюдён?"}\n  Result -->|"Нет"| Block["Блокируем деплой<br/>бэкенда!"]',
+                },
+                {
+                  type: 'table',
+                  caption: 'Два подхода к контрактному тестированию',
+                  head: ['Подход', 'Источник правды', 'Инструменты', 'Когда применять'],
+                  rows: [
+                    ['Consumer-Driven (CDC)', 'Ожидания потребителей (фронтенд или соседний микросервис) в виде JSON-контракта', 'Pact (`pact-python`)', 'Когда у API много внутренних потребителей и важно не сломать ни одного из них'],
+                    ['Provider-Driven (Schema-first)', 'Единая спецификация OpenAPI / Swagger или Protobuf-схема', 'Schemathesis, openapi-core', 'Публичные REST/gRPC API со строгой документацией'],
+                  ],
+                },
+              ],
+            },
+            {
+              id: 'qa-l28b-s2',
+              title: 'Consumer-Driven Contracts на Python с Pact',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'В подходе **Consumer-Driven Contracts (Pact)** тест потребителя запускает локальный mock-сервер Pact, описывает, какой запрос он отправит и какую структуру ответа ждёт (важны **типы полей**, а не конкретные значения), а на выходе получает файл контракта `consumer-provider.json`.',
+                },
+                {
+                  type: 'code',
+                  lang: 'python',
+                  caption: 'Тест потребителя (Consumer) с использованием Pact Matchers',
+                  code: 'from pact import Consumer, Provider, Like, Term\n\npact = Consumer("WebFrontend").has_pact_with(Provider("UserService"))\n\ndef test_get_user_contract():\n    # Описываем контракт: нам важны типы полей (Like), а не точное имя "Anna"\n    expected_body = {\n        "id": Like(1),\n        "email": Term(r"^.+@.+\\..+$", "anna@example.com"),\n        "is_active": Like(True),\n    }\n\n    (pact\n     .given("Пользователь с id=1 существует")\n     .upon_receiving("Запрос профиля пользователя 1")\n     .with_request("GET", "/api/users/1")\n     .will_respond_with(200, body=expected_body))\n\n    with pact:\n        result = user_api_client.get_user(1)\n        assert result["id"] == 1\n    # После выхода из блока with сгенерируется файл webfrontend-userservice.json',
+                },
+                {
+                  type: 'note',
+                  text: 'Обратите внимание на `Like(1)` и `Term(...)`: контрактный тест НЕ должен проверять бизнес-логику («у Анны баланс 500 рублей»). Он проверяет **форму контракта**: что поле `id` существует и является целым числом, а `email` соответствует формату почты.',
+                },
+              ],
+            },
+            {
+              id: 'qa-l28b-s3',
+              title: 'Property-based тестирование по OpenAPI: Schemathesis',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'Если у сервиса есть спецификация `openapi.yaml`, инструмент **Schemathesis** автоматически генерирует сотни валидных и граничных запросов (пустые строки, отрицательные числа, спецсимволы, пропущенные заголовки) на основе схемы и проверяет, что API не падает с `500 Internal Server Error` и отвечает строго по схеме.',
+                },
+                {
+                  type: 'code',
+                  lang: 'bash',
+                  caption: 'Автоматический фаззинг API по OpenAPI-схеме через Schemathesis',
+                  code: 'pip install schemathesis\n\n# Запустить проверку всех эндпоинтов из openapi.yaml против локального сервера\nschemathesis run http://localhost:8000/openapi.json --checks all',
+                },
+              ],
+            },
+            {
+              id: 'qa-l28b-s4',
+              title: 'Проверь себя: Pact и контрактные тесты',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'В чём главная идея Consumer-Driven Contract Testing (Pact)?',
+                options: [
+                  { id: 'a', text: 'Поднять в Docker одновременно все 30 микросервисов компании и прогнать UI-тесты' },
+                  { id: 'b', text: 'Потребитель (Consumer) фиксирует в контракте нужные ему поля и типы ответа, а поставщик (Provider) проверяет этот контракт в своём CI без запуска потребителя' },
+                  { id: 'c', text: 'Заменить все unit-тесты на проверку SQL-запросов' },
+                  { id: 'd', text: 'Проверить скорость ответа сервера под нагрузкой 10 000 RPS' },
+                ],
+                correct: ['b'],
+                explanation:
+                  'Контрактные тесты позволяют тестировать совместимость сервисов независимо друг от друга: потребитель публикует свои ожидания, а провайдер гарантирует, что не сломает их при рефакторинге.',
+              },
+            },
+            {
+              id: 'qa-l28b-s5',
+              title: 'Проверь себя: что проверяет контрактный тест',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие утверждения о контрактном тестировании (Pact / Schemathesis) верны?',
+                options: [
+                  { id: 'a', text: 'Контрактный тест проверяет наличие обязательных полей, их типы (Like) и форматы (Term), а не точные бизнес-значения в БД' },
+                  { id: 'b', text: 'Schemathesis умеет автоматически генерировать граничные тест-кейсы на основе OpenAPI / Swagger спецификации' },
+                  { id: 'c', text: 'Контрактные тесты полностью заменяют E2E-тесты пользовательских сценариев' },
+                  { id: 'd', text: 'Если бэкенд удалит поле, которое ожидает фронтенд в Pact-контракте, проверка провайдера упадёт до выкатки в прод' },
+                ],
+                correct: ['a', 'b', 'd'],
+                explanation:
+                  'Контрактные тесты страхуют от несовместимых изменений API (a, b, d), но не заменяют сквозную проверку бизнес-логики (E2E) и нагрузочное тестирование.',
               },
             },
           ],
@@ -4944,178 +5155,245 @@ INSERT INTO orders VALUES
       ],
     },
     {
-  id: 'qa-a-m9',
-  title: 'Практикум',
-  lessons: [
-    {
-      id: 'qa-l80',
-      title: 'Практика: pytest, Playwright, SQL, нагрузка, безопасность',
-      minutes: 35,
-      steps: [
+      id: 'qa-a-m9',
+      title: 'Практикум',
+      lessons: [
         {
-          id: 'qa-l80-s1',
-          title: 'Scope фикстуры',
-          type: 'quiz',
-          quiz: {
-            kind: 'single',
-            question: 'Какой scope выбрать для фикстуры, которая один раз подключается к тестовой БД на весь прогон?',
-            options: [
-              { id: 'a', text: 'function' },
-              { id: 'b', text: 'class' },
-              { id: 'c', text: 'module' },
-              { id: 'd', text: 'session' },
-            ],
-            correct: ['d'],
-            explanation: 'session создаёт подключение один раз на всю сессию pytest и закрывает в конце. function — на каждый тест (медленно, но изолированно). Для БД обычно session или module.',
-          },
-        },
-        {
-          id: 'qa-l80-s2',
-          title: 'Зачем мокать',
-          type: 'quiz',
-          quiz: {
-            kind: 'multiple',
-            question: 'Что стоит мокать в unit-тестах?',
-            options: [
-              { id: 'a', text: 'HTTP-запросы к внешнему API' },
-              { id: 'b', text: 'Собственную функцию сложения a + b' },
-              { id: 'c', text: 'Подключение к БД' },
-              { id: 'd', text: 'Текущее время (для детерминизма)' },
-            ],
-            correct: ['a', 'c', 'd'],
-            explanation: 'Мокаем всё внешнее и недетерминированное: сеть, БД, время. Свою функцию a + b мокать бессмысленно — её и тестируем.',
-          },
-        },
-        {
-          id: 'qa-l80-s3',
-          title: 'Лучший локатор Playwright',
-          type: 'quiz',
-          quiz: {
-            kind: 'single',
-            question: 'Какой локатор в Playwright самый устойчивый к изменениям вёрстки?',
-            options: [
-              { id: 'a', text: 'page.locator("div > button.submit")' },
-              { id: 'b', text: 'page.get_by_role("button", name="Отправить")' },
-              { id: 'c', text: 'page.locator("xpath=//button")' },
-              { id: 'd', text: 'page.locator(".btn-primary")' },
-            ],
-            correct: ['b'],
-            explanation: 'get_by_role ищет по ARIA-роли и доступному имени. Он не ломается при смене CSS-классов или структуры DOM. Если кнопку переименуют — тест сломается, но это и есть сигнал, что изменился UX.',
-          },
-        },
-        {
-          id: 'qa-l80-s4',
-          title: 'Почему sleep — плохо',
-          type: 'quiz',
-          quiz: {
-            kind: 'single',
-            question: 'Почему `time.sleep(2)` между действиями в Playwright — плохая практика?',
-            options: [
-              { id: 'a', text: 'Playwright не поддерживает sleep' },
-              { id: 'b', text: 'Тест становится медленным и всё равно нестабильным; expect умеет ждать сам' },
-              { id: 'c', text: 'sleep работает только на Linux' },
-              { id: 'd', text: 'Это замедляет CI' },
-            ],
-            correct: ['b'],
-            explanation: 'Фиксированная пауза делает тест медленным и не решает проблему таймингов. Playwright сам ждёт нужного состояния в expect/click/fill. Если тест нестабилен — используйте expect для явного ожидания.',
-          },
-        },
-        {
-          id: 'qa-l80-s5',
-          title: 'Playwright expect',
-          type: 'quiz',
-          quiz: {
-            kind: 'code',
-            question: 'Напишите проверку, что элемент с текстом «Добро пожаловать» виден. Используйте get_by_text и expect.',
-            starterCode: 'expect(',
-            mustInclude: [
-              { pattern: 'get_by_text', message: 'Нужен локатор get_by_text' },
-              { pattern: 'to_be_visible', message: 'Нужна проверка to_be_visible' },
-              { pattern: 'Добро пожаловать', message: 'Нужен текст «Добро пожаловать»' },
-            ],
-            explanation: 'expect(page.get_by_text("Добро пожаловать")).to_be_visible()',
-          },
-        },
-        {
-          id: 'qa-l80-s6',
-          title: 'SQL: агрегаты',
-          type: 'quiz',
-          quiz: {
-            kind: 'single',
-            question: 'В чём разница между `COUNT(*)` и `COUNT(email)`?',
-            options: [
-              { id: 'a', text: 'Никакой, это синонимы' },
-              { id: 'b', text: 'COUNT(*) считает все строки, COUNT(email) — только где email IS NOT NULL' },
-              { id: 'c', text: 'COUNT(*) быстрее' },
-              { id: 'd', text: 'COUNT(email) работает только в PostgreSQL' },
-            ],
-            correct: ['b'],
-            explanation: 'COUNT(*) — все строки. COUNT(email) — только не-NULL. Если из 100 пользователей у 10 нет email: COUNT(*) = 100, COUNT(email) = 90.',
-          },
-        },
-        {
-          id: 'qa-l80-s7',
-          title: 'SQL: поиск дублей',
-          type: 'quiz',
-          quiz: {
-            kind: 'code',
-            question: 'Напишите SQL-запрос, который найдёт email, встречающиеся в таблице users более одного раза.',
-            starterCode: 'SELECT email, COUNT(*)\nFROM users\n',
-            mustInclude: [
-              { pattern: 'GROUP BY email', message: 'Нужна группировка по email' },
-              { pattern: 'HAVING COUNT\\(\\*\\) > 1', message: 'Нужно условие HAVING COUNT(*) > 1' },
-            ],
-            explanation: 'SELECT email, COUNT(*) FROM users GROUP BY email HAVING COUNT(*) > 1;',
-          },
-        },
-        {
-          id: 'qa-l80-s8',
-          title: 'Little\'s Law',
-          type: 'quiz',
-          quiz: {
-            kind: 'number',
-            question: 'Система обрабатывает 300 RPS, средняя latency 0.2 сек. Сколько одновременных запросов «в полёте»? (L = λ × W)',
-            correct: 60,
-            explanation: 'L = 300 × 0.2 = 60. То есть одновременно в обработке находится 60 запросов. По этому числу планируют ресурсы серверов и connection pool.',
-          },
-        },
-        {
-          id: 'qa-l80-s9',
-          title: 'OWASP Top 10',
-          type: 'quiz',
-          quiz: {
-            kind: 'single',
-            question: 'Какая категория стоит на первом месте в OWASP Top 10 2021?',
-            options: [
-              { id: 'a', text: 'SQL Injection' },
-              { id: 'b', text: 'Broken Access Control' },
-              { id: 'c', text: 'Cryptographic Failures' },
-              { id: 'd', text: 'Security Misconfiguration' },
-            ],
-            correct: ['b'],
-            explanation: 'Broken Access Control — #1 в 2021. Это про авторизацию (кто что может), а не про инъекции. Самая частая и опасная дыра в реальных API.',
-          },
-        },
-        {
-          id: 'qa-l80-s10',
-          title: 'IDOR',
-          type: 'quiz',
-          quiz: {
-            kind: 'single',
-            question: 'Как проверить IDOR (Insecure Direct Object Reference)?',
-            options: [
-              { id: 'a', text: 'Нажать в UI на другой заказ и посмотреть' },
-              { id: 'b', text: 'Изменить id в запросе API на чужой и посмотреть ответ (200 = дыра, 403/404 = защита)' },
-              { id: 'c', text: 'Открыть сайт в другом браузере' },
-              { id: 'd', text: 'Перезагрузить страницу' },
-            ],
-            correct: ['b'],
-            explanation: 'IDOR проверяется на уровне API, а не UI: UI может скрывать чужие объекты, но API может их отдавать. Меняем /users/123 на /users/124 с тем же токеном. Если 200 с чужими данными — дыра.',
-          },
+          id: 'qa-l80',
+          title: 'Практика: pytest, Allure, Playwright, SQL, нагрузка и безопасность',
+          minutes: 35,
+          steps: [
+            {
+              id: 'qa-l80-s1',
+              title: 'Scope фикстуры',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Какой scope выбрать для фикстуры, которая один раз подключается к тестовой БД на весь прогон?',
+                options: [
+                  { id: 'a', text: 'function' },
+                  { id: 'b', text: 'class' },
+                  { id: 'c', text: 'module' },
+                  { id: 'd', text: 'session' },
+                ],
+                correct: ['d'],
+                explanation: 'session создаёт подключение один раз на всю сессию pytest и закрывает в конце. function — на каждый тест (медленно, но изолированно). Для БД обычно session или module.',
+              },
+            },
+            {
+              id: 'qa-l80-s2',
+              title: 'Жизненный цикл фикстуры с yield и Allure-отчёта',
+              type: 'quiz',
+              quiz: {
+                kind: 'sorting',
+                question: 'Расставьте этапы выполнения автотеста с фикстурой `yield` и генерацией Allure-отчёта в правильном порядке',
+                items: [
+                  'Выполнение setup-части фикстуры (код до ключевого слова yield)',
+                  'Выполнение тела теста и шагов @allure.step',
+                  'Выполнение teardown-части фикстуры (очистка данных после yield)',
+                  'Сохранение результатов в директорию --alluredir=allure-results',
+                  'Сборка интерактивного HTML-отчёта через allure generate / serve',
+                ],
+                correct: [
+                  'Выполнение setup-части фикстуры (код до ключевого слова yield)',
+                  'Выполнение тела теста и шагов @allure.step',
+                  'Выполнение teardown-части фикстуры (очистка данных после yield)',
+                  'Сохранение результатов в директорию --alluredir=allure-results',
+                  'Сборка интерактивного HTML-отчёта через allure generate / serve',
+                ],
+                explanation: 'Сначала отрабатывает setup до yield, затем сам тест, затем гарантированный teardown после yield, после чего формируется отчёт.',
+              },
+            },
+            {
+              id: 'qa-l80-s3',
+              title: 'Лучший локатор Playwright',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Какой локатор в Playwright самый устойчивый к изменениям вёрстки?',
+                options: [
+                  { id: 'a', text: 'page.locator("div > button.submit")' },
+                  { id: 'b', text: 'page.get_by_role("button", name="Отправить")' },
+                  { id: 'c', text: 'page.locator("xpath=//button")' },
+                  { id: 'd', text: 'page.locator(".btn-primary")' },
+                ],
+                correct: ['b'],
+                explanation: 'get_by_role ищет по ARIA-роли и доступному имени. Он не ломается при смене CSS-классов или структуры DOM.',
+              },
+            },
+            {
+              id: 'qa-l80-s4',
+              title: 'Перехват сети в Playwright (page.route)',
+              type: 'quiz',
+              quiz: {
+                kind: 'cloze',
+                question: 'Допишите код Playwright для перехвата запроса к `/api/orders` и возврата мокового ответа со статусом `500`:',
+                text: 'page.____("**/api/orders", lambda route: route.____(status=500))',
+                blanks: [
+                  { accepted: ['route'], hint: 'метод перехвата маршрута' },
+                  { accepted: ['fulfill'], hint: 'метод возврата подменённого ответа' },
+                ],
+                explanation: 'page.route() перехватывает сетевой запрос по шаблону URL, а route.fulfill() возвращает искусственный HTTP-ответ без обращения к реальному серверу.',
+              },
+            },
+            {
+              id: 'qa-l80-s5',
+              title: 'Playwright expect',
+              type: 'quiz',
+              quiz: {
+                kind: 'code',
+                question: 'Напишите проверку, что элемент с текстом «Добро пожаловать» виден. Используйте get_by_text и expect.',
+                starterCode: 'expect(',
+                mustInclude: [
+                  { pattern: 'get_by_text', message: 'Нужен локатор get_by_text' },
+                  { pattern: 'to_be_visible', message: 'Нужна проверка to_be_visible' },
+                  { pattern: 'Добро пожаловать', message: 'Нужен текст «Добро пожаловать»' },
+                ],
+                explanation: 'expect(page.get_by_text("Добро пожаловать")).to_be_visible()',
+              },
+            },
+            {
+              id: 'qa-l80-s6',
+              title: 'Инструменты и практики QA Automation',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте инструмент и задачу, которую он решает в автоматизации',
+                pairs: [
+                  { left: 'pytest-xdist (-n auto)', right: 'Параллельный запуск тестов в нескольких изолированных процессах' },
+                  { left: 'Playwright Trace Viewer', right: 'Пошаговая перемотка упавшего UI-теста с DOM-снимками, сетью и консолью' },
+                  { left: 'Pact / Schemathesis', right: 'Контрактное тестирование совместимости API между клиентом и сервером' },
+                  { left: 'axe-core + Playwright', right: 'Автоматический аудит доступности (WCAG / a11y) в CI/CD' },
+                ],
+                explanation: 'xdist параллелит прогон, Trace Viewer помогает разбирать падения UI, Pact/Schemathesis контролируют контракты API, а axe-core проверяет accessibility.',
+              },
+            },
+            {
+              id: 'qa-l80-s7',
+              title: 'Виды нагрузочного тестирования',
+              type: 'quiz',
+              quiz: {
+                kind: 'table',
+                question: 'Отметьте, какой вид нагрузочного тестирования соответствует каждому сценарию',
+                columns: ['Spike', 'Soak (Endurance)', 'Stress'],
+                rows: [
+                  { label: 'Мгновенный взрывной скачок пользователей в 10 раз за 10 секунд (эффект «Чёрной пятницы»)', correct: ['Spike'] },
+                  { label: 'Длительный прогон под штатной нагрузкой в течение 12–24 часов для поиска утечек памяти', correct: ['Soak (Endurance)'] },
+                  { label: 'Плавное повышение нагрузки выше пределов системы до точки отказа и проверка восстановления', correct: ['Stress'] },
+                ],
+                explanation: 'Spike проверяет реакцию на резкий скачок, Soak ищет накопительные утечки памяти и соединений за долгие часы, а Stress находит предел прочности.',
+              },
+            },
+            {
+              id: 'qa-l80-s8',
+              title: 'Little\'s Law',
+              type: 'quiz',
+              quiz: {
+                kind: 'number',
+                question: 'Система обрабатывает 300 RPS, средняя latency 0.2 сек. Сколько одновременных запросов «в полёте»? (L = λ × W)',
+                correct: 60,
+                explanation: 'L = 300 × 0.2 = 60. То есть одновременно в обработке находится 60 запросов. По этому числу планируют ресурсы серверов и connection pool.',
+              },
+            },
+            {
+              id: 'qa-l80-s9',
+              title: 'OWASP Top 10 и уязвимости',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Какие из перечисленных проверок относятся к тестированию безопасности веб-приложений?',
+                options: [
+                  { id: 'a', text: 'Подмена идентификатора в запросе GET /api/orders/124 для проверки IDOR (Broken Access Control)' },
+                  { id: 'b', text: 'Проверка флагов HttpOnly и SameSite у сессионных cookies' },
+                  { id: 'c', text: 'Ввод специальных символов и SQL-конструкций (\' OR 1=1 --) в поля поиска и логина' },
+                  { id: 'd', text: 'Измерение FPS при прокрутке главной страницы' },
+                ],
+                correct: ['a', 'b', 'c'],
+                explanation: 'Проверка IDOR, защита сессионных кук (от XSS и CSRF) и тестирование на инъекции — базовый чек-лист безопасности.',
+              },
+            },
+            {
+              id: 'qa-l80-s10',
+              title: 'IDOR',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Как проверить IDOR (Insecure Direct Object Reference)?',
+                options: [
+                  { id: 'a', text: 'Нажать в UI на другой заказ и посмотреть' },
+                  { id: 'b', text: 'Изменить id в запросе API на чужой и посмотреть ответ (200 = дыра, 403/404 = защита)' },
+                  { id: 'c', text: 'Открыть сайт в другом браузере' },
+                  { id: 'd', text: 'Перезагрузить страницу' },
+                ],
+                correct: ['b'],
+                explanation: 'IDOR проверяется на уровне API, а не UI: UI может скрывать чужие объекты, но API может их отдавать. Меняем /users/123 на /users/124 с тем же токеном.',
+              },
+            },
+            {
+              id: 'qa-l80-s11',
+              title: 'Песочница SQL: сверка целостности данных после E2E-теста',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'p',
+                  text: 'После прохождения автотеста оформления заказа нужно убедиться в БД, что в таблице `users` не появилось дубликатов `email`. Напишите SQL-запрос, который выведет `email` и количество повторений (`cnt`), встречающиеся больше 1 раза.',
+                },
+                {
+                  type: 'sandbox',
+                  sandbox: {
+                    schema:
+                      'CREATE TABLE users (id INTEGER, email TEXT);\nINSERT INTO users VALUES\n  (1, \'anna@test.com\'),\n  (2, \'boris@test.com\'),\n  (3, \'anna@test.com\'),\n  (4, \'vera@test.com\'),\n  (5, \'anna@test.com\');',
+                    task: 'Найдите дублирующиеся `email` в таблице `users` и выведите `email` и количество повторений (колонка `cnt`) для записей, где `COUNT(*) > 1`.',
+                    solution:
+                      'SELECT email, COUNT(*) AS cnt\nFROM users\nGROUP BY email\nHAVING COUNT(*) > 1;',
+                    expected: {
+                      columns: ['email', 'cnt'],
+                      rows: [['anna@test.com', 3]],
+                      order: 'order',
+                    },
+                    hint: 'Используйте GROUP BY email и HAVING COUNT(*) > 1.',
+                  },
+                },
+              ],
+            },
+            {
+              id: 'qa-l80-s12',
+              title: 'Тренажёр: параллельный запуск тестов с Allure и разбор Trace Playwright',
+              type: 'theory',
+              blocks: [
+                {
+                  type: 'terminal',
+                  terminal: {
+                    prompt: 'qa@autotests:~/project$',
+                    task: 'Запустите смоук-тесты (-m smoke) параллельно на всех ядрах (-n auto) с сохранением результатов в --alluredir=allure-results, откройте отчёт командой allure serve allure-results и запустите просмотрщик трассировки Playwright для файла trace.zip.',
+                    commands: [
+                      {
+                        instruction: 'Шаг 1: Запустите pytest с маркером -m smoke, параллельно -n auto и сбором отчёта в --alluredir=allure-results',
+                        acceptedPatterns: [
+                          '^pytest\\s+(?=.*-m\\s+["\']?smoke["\']?)(?=.*-n\\s+auto)(?=.*--alluredir(=|\\s+)allure-results).*$',
+                        ],
+                        output: '4 workers [12 items]\n............ [100%]\n12 passed in 3.40s',
+                      },
+                      {
+                        instruction: 'Шаг 2: Сгенерируйте и откройте HTML-отчёт командой allure serve allure-results',
+                        acceptedPatterns: ['^allure\\s+serve\\s+allure-results/?$'],
+                        output: 'Generating report to temp directory...\nReport successfully generated.\nStarting web server on http://127.0.0.1:52410',
+                      },
+                      {
+                        instruction: 'Шаг 3: Откройте трассировку Playwright для файла trace.zip (playwright show-trace trace.zip)',
+                        acceptedPatterns: ['^playwright\\s+show-trace\\s+trace\\.zip$'],
+                        output: 'Opening Playwright Trace Viewer for trace.zip...',
+                      },
+                    ],
+                    solution: 'pytest -m smoke -n auto --alluredir=allure-results\nallure serve allure-results\nplaywright show-trace trace.zip',
+                    hint: 'Используйте pytest -m smoke -n auto --alluredir=allure-results, затем allure serve allure-results и playwright show-trace trace.zip.',
+                  },
+                },
+              ],
+            },
+          ],
         },
       ],
     },
-  ],
-},
   ],
 };

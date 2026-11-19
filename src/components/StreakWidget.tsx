@@ -28,9 +28,9 @@ export function StreakWidget() {
           {todayMinutes} / {goalMinutes} мин
         </span>
         <div className="h-1.5 w-16 overflow-hidden rounded-full bg-secondary">
-          <div 
-            className="h-full bg-orange-500 transition-all duration-500" 
-            style={{ width: `${pct}%` }} 
+          <div
+            className="h-full bg-orange-500 transition-all duration-500"
+            style={{ width: `${pct}%` }}
           />
         </div>
       </div>

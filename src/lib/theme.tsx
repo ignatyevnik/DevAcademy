@@ -20,7 +20,7 @@ function getInitialTheme(): Theme {
   } catch {
     // 
   }
-  
+
   if (window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
   return 'light';
 }

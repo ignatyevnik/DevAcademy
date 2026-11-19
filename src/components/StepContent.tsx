@@ -101,16 +101,16 @@ function MermaidDiagram({ code, caption }: { code: string; caption?: string }) {
     let isMounted = true;
     const render = async () => {
       const mermaid = (await import('mermaid')).default;
-      
+
       // Инициализируем с нужной темой
-      mermaid.initialize({ 
-        startOnLoad: false, 
+      mermaid.initialize({
+        startOnLoad: false,
         theme: theme === 'dark' ? 'dark' : 'default',
         themeVariables: {
           fontFamily: 'inherit', // Чтобы шрифт был как в приложении
         }
       });
-      
+
       if (ref.current && isMounted) {
         try {
           const { svg } = await mermaid.render(`mermaid-${Math.random().toString(36).substr(2, 9)}`, code);
@@ -358,7 +358,7 @@ function ChoiceQuiz({
                 showState && active && !right && 'border-destructive bg-destructive/10',
                 showState && !active && right && 'border-primary/50 border-dashed',
                 (!showState || (!active && !right)) &&
-                  (active ? 'border-primary bg-accent/40' : 'border-border bg-card hover:border-primary/40 hover:bg-accent/20')
+                (active ? 'border-primary bg-accent/40' : 'border-border bg-card hover:border-primary/40 hover:bg-accent/20')
               )}
             >
               <span
@@ -383,8 +383,8 @@ function ChoiceQuiz({
           className={cn(
             'mt-4 rounded-lg border p-4 text-sm leading-relaxed',
             result === 'ok' ? 'border-primary/30 bg-accent/50' :
-            result === 'partial' ? 'border-amber-500/30 bg-amber-500/10' :
-            'border-destructive/30 bg-destructive/5'
+              result === 'partial' ? 'border-amber-500/30 bg-amber-500/10' :
+                'border-destructive/30 bg-destructive/5'
           )}
           role="status"
           aria-live="polite"
@@ -392,8 +392,8 @@ function ChoiceQuiz({
           <p className={cn(
             'font-bold',
             result === 'ok' ? 'text-primary' :
-            result === 'partial' ? 'text-amber-700 dark:text-amber-400' :
-            'text-destructive'
+              result === 'partial' ? 'text-amber-700 dark:text-amber-400' :
+                'text-destructive'
           )}>
             {result === 'ok' ? 'Верно!' : result === 'partial' ? 'Частично верно.' : 'Пока неверно.'}
           </p>
@@ -779,7 +779,7 @@ function ClozeStep({ slug, stepId, quiz, onResult }: { slug: string; stepId: str
   const parts = quiz.text.split('____');
 
   const check = () => {
-    const isOk = quiz.blanks.every((b, i) => 
+    const isOk = quiz.blanks.every((b, i) =>
       b.accepted.some(a => a.trim().toLowerCase() === vals[i].trim().toLowerCase())
     );
     setOk(isOk);

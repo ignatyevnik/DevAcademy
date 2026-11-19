@@ -28,11 +28,11 @@ export default function BookmarksPage() {
   items.sort((a, b) => {
     const keyA = `${a.course.slug}:${a.lesson.id}`;
     const keyB = `${b.course.slug}:${b.lesson.id}`;
-    
+
     // lastVisited хранит объект, нам нужно достать из него время (ts)
     const timeA = state.lastVisited[keyA]?.ts || 0;
     const timeB = state.lastVisited[keyB]?.ts || 0;
-    
+
     return timeB - timeA; // По убыванию (сначала новые)
   });
 
@@ -46,11 +46,11 @@ export default function BookmarksPage() {
         >
           <ArrowLeft className="h-4 w-4" /> На главную
         </button>
-        
+
         <h1 className="text-2xl font-extrabold tracking-tight mb-6 flex items-center gap-2">
           <Bookmark className="h-6 w-6 text-primary" /> Закладки
         </h1>
-        
+
         {items.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center">
             <p className="font-semibold">Закладок пока нет</p>

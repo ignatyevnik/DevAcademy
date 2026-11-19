@@ -32,7 +32,7 @@ const textBlockSchema = z.discriminatedUnion('type', [
     rows: z.array(z.array(z.string())).min(1, 'table: нужна хотя бы 1 строка'),
     caption: z.string().optional(),
   }),
-    z.object({
+  z.object({
     type: z.literal('image'),
     src: z.string().min(1),
     alt: z.string().min(1, 'Для изображения нужен alt-текст'),
@@ -43,48 +43,48 @@ const textBlockSchema = z.discriminatedUnion('type', [
     code: z.string().min(1, 'Нужен код диаграммы'),
     caption: z.string().optional(),
   }),
-z.object({
-  type: z.literal('sandbox'),
-  sandbox: z.object({
-    schema: z.string().min(1, 'sandbox.schema пустой'),
-    task: z.string().min(1, 'sandbox.task пустой'),
-    solution: z.string().min(1, 'sandbox.solution пустой'),
-    expected: z
-      .object({
-        columns: z.array(z.string().min(1)).min(1),
-        rows: z.array(z.array(z.union([z.string(), z.number(), z.null()]))),
-        order: z.enum(['order', 'set']).optional(),
-      })
-      .optional(),
-    forbidden: z.array(z.string()).optional(),
-    hint: z.string().optional(),
-    caption: z.string().optional(),
+  z.object({
+    type: z.literal('sandbox'),
+    sandbox: z.object({
+      schema: z.string().min(1, 'sandbox.schema пустой'),
+      task: z.string().min(1, 'sandbox.task пустой'),
+      solution: z.string().min(1, 'sandbox.solution пустой'),
+      expected: z
+        .object({
+          columns: z.array(z.string().min(1)).min(1),
+          rows: z.array(z.array(z.union([z.string(), z.number(), z.null()]))),
+          order: z.enum(['order', 'set']).optional(),
+        })
+        .optional(),
+      forbidden: z.array(z.string()).optional(),
+      hint: z.string().optional(),
+      caption: z.string().optional(),
+    }),
   }),
-}),
-z.object({
-  type: z.literal("python"),
-  python: z.object({
-    starterCode: z.string().optional(),
-    task: z.string().min(1, "python.task пустой"),
-    solution: z.string().min(1, "python.solution пустой"),
-    expected: z.discriminatedUnion("type", [
-      z.object({
-        type: z.literal("stdout"),
-        value: z.string(),
-        normalize: z.enum(["trim", "lines"]).optional(),
-      }),
-      z.object({
-        type: z.literal("variable"),
-        name: z.string().min(1),
-        value: z.union([z.string(), z.number(), z.boolean()]),
-      }),
-    ]),
-    hint: z.string().optional(),
-    forbidden: z.array(z.string()).optional(),
-    caption: z.string().optional(),
+  z.object({
+    type: z.literal("python"),
+    python: z.object({
+      starterCode: z.string().optional(),
+      task: z.string().min(1, "python.task пустой"),
+      solution: z.string().min(1, "python.solution пустой"),
+      expected: z.discriminatedUnion("type", [
+        z.object({
+          type: z.literal("stdout"),
+          value: z.string(),
+          normalize: z.enum(["trim", "lines"]).optional(),
+        }),
+        z.object({
+          type: z.literal("variable"),
+          name: z.string().min(1),
+          value: z.union([z.string(), z.number(), z.boolean()]),
+        }),
+      ]),
+      hint: z.string().optional(),
+      forbidden: z.array(z.string()).optional(),
+      caption: z.string().optional(),
+    }),
   }),
-}),
-z.object({
+  z.object({
     type: z.literal('terminal'),
     terminal: z.object({
       prompt: z.string().optional(),
@@ -366,36 +366,37 @@ export const courseSchema = z
     }),
     tags: z.array(z.string().min(1, 'tags: пустой тег')).min(1, 'tags: нужен хотя бы 1 тег'),
     accent: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'accent: hex-цвет формата #RRGGBB'),
-icon: z.enum(
-  [
-    'flask',
-    'docker',
-    'helm',
-    'helm-advanced',
-    'bot',
-    'python',
-    'python-advanced',
-    'git',
-    'linux',
-    'network',
-    'cicd', 
-    'gitops',
-    'terraform',
-    'ansible',
-    'kafka', 
-    'sql',
-    'sql-advanced',
-    'design',
-    'system-design',
-    'qa-automation',
-    'qa-senior',
-    'cs',
-  ],
-  {
-    message:
-      'icon должен быть: flask | docker | helm | helm-advanced | bot | python | python-advanced | git | ansible | kafka | linux | network | cicd | gitops | terraform | sql | sql-advanced | design | system-design | qa-automation | qa-senior',
-  },
-),
+    icon: z.enum(
+      [
+        'flask',
+        'docker',
+        'helm',
+        'helm-advanced',
+        'bot',
+        'python',
+        'python-advanced',
+        'git',
+        'linux',
+        'network',
+        'cicd',
+        'gitops',
+        'terraform',
+        'ansible',
+        'kafka',
+        'sql',
+        'sql-advanced',
+        'design',
+        'system-design',
+        'qa-automation',
+        'qa-senior',
+        'cs',
+        'observability',
+      ],
+      {
+        message:
+          'icon должен быть: flask | docker | helm | helm-advanced | bot | python | python-advanced | git | ansible | kafka | linux | network | observability | cicd | gitops | terraform | sql | sql-advanced | design | system-design | qa-automation | qa-senior',
+      },
+    ),
     modules: z.array(moduleSchema).min(1, 'course: нужен хотя бы 1 модуль'),
     outcomes: z.array(z.string().min(1, 'outcomes: пустой пункт')).min(1, 'outcomes: нужен хотя бы 1 пункт'),
     requirements: z

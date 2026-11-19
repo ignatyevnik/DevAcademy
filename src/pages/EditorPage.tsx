@@ -25,7 +25,7 @@ export default function EditorPage() {
     requirements: ['Желание учиться'],
     modules: [],
   });
-  
+
   const [previewMode, setPreviewMode] = useState(false);
   const isBase = baseSlugs.has(course.slug);
 
@@ -36,16 +36,16 @@ export default function EditorPage() {
   const loadCourse = (slug: string) => {
     if (!slug) {
       setCourse({
-        slug: 'my-custom-course', 
-        title: 'Мой новый курс', 
-        subtitle: 'Описание', 
+        slug: 'my-custom-course',
+        title: 'Мой новый курс',
+        subtitle: 'Описание',
         description: 'Подробное описание',
-        level: 'Новичок', 
-        tags: ['Custom'], 
-        accent: '#4a90d9', 
+        level: 'Новичок',
+        tags: ['Custom'],
+        accent: '#4a90d9',
         icon: 'python',
-        outcomes: ['Чему-то научиться'], 
-        requirements: ['Желание учиться'], 
+        outcomes: ['Чему-то научиться'],
+        requirements: ['Желание учиться'],
         modules: [],
       });
       return;
@@ -118,7 +118,7 @@ export default function EditorPage() {
 
       const cleanedCourse = { ...course, modules: cleanedModules };
       const result = courseSchema.safeParse(cleanedCourse);
-      
+
       if (!result.success) return;
 
       const prev = localStorage.getItem('dev-academy-custom-courses');
@@ -173,14 +173,14 @@ export default function EditorPage() {
     URL.revokeObjectURL(url);
   };
 
-    const generateId = (prefix: string) => 
+  const generateId = (prefix: string) =>
     `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
   const duplicateLesson = (mIdx: number, lIdx: number) => {
     const newModules = [...course.modules];
     const original = newModules[mIdx].lessons[lIdx];
     const clone = JSON.parse(JSON.stringify(original));
-    
+
     clone.id = generateId('les');
     clone.title = `${original.title} (копия)`;
     clone.steps = clone.steps.map((s: any) => ({ ...s, id: generateId('step') }));
@@ -193,7 +193,7 @@ export default function EditorPage() {
     const newModules = [...course.modules];
     const original = newModules[mIdx].lessons[lIdx].steps[sIdx];
     const clone = JSON.parse(JSON.stringify(original));
-    
+
     clone.id = generateId('step');
     clone.title = `${original.title} (копия)`;
 
@@ -276,7 +276,7 @@ export default function EditorPage() {
         <div className="mx-auto flex h-14 max-w-4xl items-center gap-2 px-4">
           <Link to="/" className="grid h-10 w-10 place-items-center rounded-md hover:bg-accent shrink-0"><ArrowLeft className="h-5 w-5" /></Link>
           <h1 className="text-lg font-bold hidden sm:block">Редактор</h1>
-          
+
           <select
             value={courses.some(c => c.slug === course.slug) ? course.slug : ''}
             onChange={(e) => loadCourse(e.target.value)}
@@ -291,9 +291,9 @@ export default function EditorPage() {
           </select>
 
           <div className="ml-auto flex items-center gap-2">
-            <Button 
-              onClick={() => setPreviewMode(!previewMode)} 
-              variant={previewMode ? "secondary" : "outline"} 
+            <Button
+              onClick={() => setPreviewMode(!previewMode)}
+              variant={previewMode ? "secondary" : "outline"}
               className="gap-2"
             >
               {previewMode ? <Edit className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -306,39 +306,39 @@ export default function EditorPage() {
               </Button>
             )}
             {!previewMode && (
-            <>
-              <Button
-                onClick={downloadTemplate}
-                variant="outline"
-                className="gap-2 hidden lg:flex"
-                title="Скачать шаблон JSON"
-              >
-                <FileJson className="h-4 w-4" />
-                <span className="hidden xl:inline">Шаблон</span>
-              </Button>
-              <Button
-                onClick={() => importRef.current?.click()}
-                variant="outline"
-                className="gap-2"
-                title="Импорт курса из JSON"
-              >
-                <Upload className="h-4 w-4" />
-                <span className="hidden sm:inline">Импорт</span>
-              </Button>
-              <input
-                ref={importRef}
-                type="file"
-                accept="application/json,.json"
-                onChange={onImportFile}
-                className="hidden"
-                aria-hidden="true"
-                tabIndex={-1}
-              />
-            <Button onClick={() => saveToLocal()} variant="outline" className="gap-2 hidden sm:flex"><Save className="h-4 w-4" /> Сохранить</Button>
-            <div className="w-24 text-xs text-right">
-            {saveStatus === 'saving' && <span className="text-muted-foreground animate-pulse">Сохранение...</span>}
-            {saveStatus === 'saved' && <span className="text-green-500 font-medium">Сохранено</span>}
-          </div>
+              <>
+                <Button
+                  onClick={downloadTemplate}
+                  variant="outline"
+                  className="gap-2 hidden lg:flex"
+                  title="Скачать шаблон JSON"
+                >
+                  <FileJson className="h-4 w-4" />
+                  <span className="hidden xl:inline">Шаблон</span>
+                </Button>
+                <Button
+                  onClick={() => importRef.current?.click()}
+                  variant="outline"
+                  className="gap-2"
+                  title="Импорт курса из JSON"
+                >
+                  <Upload className="h-4 w-4" />
+                  <span className="hidden sm:inline">Импорт</span>
+                </Button>
+                <input
+                  ref={importRef}
+                  type="file"
+                  accept="application/json,.json"
+                  onChange={onImportFile}
+                  className="hidden"
+                  aria-hidden="true"
+                  tabIndex={-1}
+                />
+                <Button onClick={() => saveToLocal()} variant="outline" className="gap-2 hidden sm:flex"><Save className="h-4 w-4" /> Сохранить</Button>
+                <div className="w-24 text-xs text-right">
+                  {saveStatus === 'saving' && <span className="text-muted-foreground animate-pulse">Сохранение...</span>}
+                  {saveStatus === 'saved' && <span className="text-green-500 font-medium">Сохранено</span>}
+                </div>
                 <Button onClick={downloadJson} className="gap-2"><Download className="h-4 w-4" /></Button>
               </>
             )}
@@ -382,7 +382,7 @@ export default function EditorPage() {
                 </>
               )}
             </div>
-            
+
             {mod.lessons.map((les, lIdx) => (
               <div key={les.id} className="ml-0 sm:ml-6 sm:border-l-2 border-border sm:pl-4 space-y-3 mt-4">
                 <div className="flex items-center gap-2">
@@ -414,7 +414,7 @@ export default function EditorPage() {
                         {step.type === 'theory' ? (
                           <TextBlocks blocks={step.blocks} />
                         ) : (
-                          <QuizView slug={course.slug} step={step} onResult={() => {}} />
+                          <QuizView slug={course.slug} step={step} onResult={() => { }} />
                         )}
                       </div>
                     ) : (
@@ -443,52 +443,52 @@ export default function EditorPage() {
                               />
                             ))}
                             <div className="flex flex-wrap gap-1">
-{(['p', 'h3', 'list', 'code', 'note', 'table', 'image', 'mermaid', 'sandbox', 'python', 'terminal'] as const).map((t) => (
-  <Button key={t} variant="outline" size="sm" onClick={() => {
-    const newBlock: any = { type: t };
-    if (t === 'p' || t === 'h3' || t === 'note') newBlock.text = '';
-    else if (t === 'list') newBlock.items = [''];
-    else if (t === 'code') { newBlock.lang = 'text'; newBlock.code = ''; }
-    else if (t === 'table') { newBlock.head = ['A', 'B']; newBlock.rows = [['', '']]; }
-    else if (t === 'image') {
-      newBlock.src = 'https://placehold.co/600x400?text=Image';
-      newBlock.alt = 'Описание изображения';
-    }
-    else if (t === 'mermaid') { newBlock.code = 'graph TD\n  A --> B'; }
-    else if (t === 'sandbox') {
-      newBlock.sandbox = {
-        schema: 'CREATE TABLE users (id INTEGER, email TEXT);\nINSERT INTO users VALUES (1, \'a@x.com\');',
-        task: 'Выберите все email.',
-        solution: 'SELECT email FROM users;',
-      };
-    }
-    else if (t === 'python') {
-      newBlock.python = {
-        starterCode: '# ваш код\n',
-        task: 'Напечатайте Hello, World!',
-        solution: "print('Hello, World!')",
-        expected: { type: 'stdout', value: 'Hello, World!' },
-      };
-    }
-    else if (t === 'terminal') {
-      newBlock.terminal = {
-        prompt: 'student@devacademy:~$',
-        task: 'Выведите подробный список всех файлов (включая скрытые) в текущей директории.',
-        commands: [
-          {
-            instruction: 'Введите ls с флагами -la',
-            acceptedPatterns: ['^ls\\s+-(la|al)$'],
-            output: 'drwxr-xr-x 2 student student 4096 .bashrc',
-          },
-        ],
-        solution: 'ls -la',
-      };
-    }
-    const n = [...course.modules];
-    (n[mIdx].lessons[lIdx].steps[sIdx] as any).blocks.push(newBlock);
-    setCourse({ ...course, modules: n });
-  }}>+ {t}</Button>
-))}
+                              {(['p', 'h3', 'list', 'code', 'note', 'table', 'image', 'mermaid', 'sandbox', 'python', 'terminal'] as const).map((t) => (
+                                <Button key={t} variant="outline" size="sm" onClick={() => {
+                                  const newBlock: any = { type: t };
+                                  if (t === 'p' || t === 'h3' || t === 'note') newBlock.text = '';
+                                  else if (t === 'list') newBlock.items = [''];
+                                  else if (t === 'code') { newBlock.lang = 'text'; newBlock.code = ''; }
+                                  else if (t === 'table') { newBlock.head = ['A', 'B']; newBlock.rows = [['', '']]; }
+                                  else if (t === 'image') {
+                                    newBlock.src = 'https://placehold.co/600x400?text=Image';
+                                    newBlock.alt = 'Описание изображения';
+                                  }
+                                  else if (t === 'mermaid') { newBlock.code = 'graph TD\n  A --> B'; }
+                                  else if (t === 'sandbox') {
+                                    newBlock.sandbox = {
+                                      schema: 'CREATE TABLE users (id INTEGER, email TEXT);\nINSERT INTO users VALUES (1, \'a@x.com\');',
+                                      task: 'Выберите все email.',
+                                      solution: 'SELECT email FROM users;',
+                                    };
+                                  }
+                                  else if (t === 'python') {
+                                    newBlock.python = {
+                                      starterCode: '# ваш код\n',
+                                      task: 'Напечатайте Hello, World!',
+                                      solution: "print('Hello, World!')",
+                                      expected: { type: 'stdout', value: 'Hello, World!' },
+                                    };
+                                  }
+                                  else if (t === 'terminal') {
+                                    newBlock.terminal = {
+                                      prompt: 'student@devacademy:~$',
+                                      task: 'Выведите подробный список всех файлов (включая скрытые) в текущей директории.',
+                                      commands: [
+                                        {
+                                          instruction: 'Введите ls с флагами -la',
+                                          acceptedPatterns: ['^ls\\s+-(la|al)$'],
+                                          output: 'drwxr-xr-x 2 student student 4096 .bashrc',
+                                        },
+                                      ],
+                                      solution: 'ls -la',
+                                    };
+                                  }
+                                  const n = [...course.modules];
+                                  (n[mIdx].lessons[lIdx].steps[sIdx] as any).blocks.push(newBlock);
+                                  setCourse({ ...course, modules: n });
+                                }}>+ {t}</Button>
+                              ))}
                             </div>
                           </div>
                         )}

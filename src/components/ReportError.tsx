@@ -24,7 +24,7 @@ export function ReportError({ course, lesson, step, stepIndex, context, classNam
       title = `Ошибка на сайте ${context ? `(${context})` : ''}`;
       body = `**Где:** ${context || 'Общий интерфейс'}\n\n**Описание ошибки:**\n<!-- Опишите, что не так -->`;
     }
-    
+
     const repoUrl = 'https://github.com/ignatyevnik/DevAcademy/issues/new';
     const url = `${repoUrl}?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
     window.open(url, '_blank');

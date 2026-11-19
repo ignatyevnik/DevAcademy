@@ -26,7 +26,7 @@ export default function Home() {
   const { totalStats, courseProgress, getDueReviews } = useProgress();
   const dueCount = useMemo(() => getDueReviews().length, [getDueReviews]);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   useEffect(() => {
     // Имитация загрузки (на реальном сервере тут будет fetch)
     const timer = setTimeout(() => setIsLoading(false), 300);
@@ -109,7 +109,7 @@ export default function Home() {
 
   return (
     <div className="min-h-dvh">
-      <Header/>
+      <Header />
 
       <main className="mx-auto max-w-6xl px-4 pb-20">
         <section className="py-10 sm:py-14">
@@ -119,7 +119,7 @@ export default function Home() {
               Работает полностью офлайн
             </p>
           </div>
-          
+
           <h1 className="mt-4 max-w-2xl text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
             Инженерная база знаний: тестирование, Python, Docker, Kubernetes и ИИ-агенты
           </h1>
@@ -127,7 +127,7 @@ export default function Home() {
             Пошаговые уроки с проверочными вопросами. Прогресс сохраняется на устройстве — учитесь
             дома, в метро или на даче без интернета.
           </p>
-          
+
           <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-4 text-sm">
             <div>
               <p className="text-2xl font-extrabold tracking-tight text-primary">{courses.length}</p>
@@ -141,7 +141,7 @@ export default function Home() {
               <p className="text-2xl font-extrabold tracking-tight text-primary">{stats.donePct}%</p>
               <p className="text-muted-foreground">пройдено вами</p>
             </div>
-            
+
             {/* Стрик справа */}
             <div className="sm:ml-auto">
               <StreakWidget />
@@ -215,11 +215,10 @@ export default function Home() {
                   type="button"
                   onClick={() => setTag(t)}
                   aria-pressed={tag === t}
-                  className={`min-h-[36px] rounded-full border px-3.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                    tag === t
+                  className={`min-h-[36px] rounded-full border px-3.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${tag === t
                       ? 'border-primary bg-primary text-primary-foreground'
                       : 'border-border bg-card text-foreground/70 hover:border-primary/40 hover:text-foreground'
-                  }`}
+                    }`}
                 >
                   {t}
                 </button>
@@ -343,7 +342,7 @@ export default function Home() {
             </p>
             <p className="text-xs">Прогресс хранится локально на этом устройстве</p>
           </div>
-          
+
           <div className="flex flex-wrap items-center gap-4">
             <Link
               to="/notes"
@@ -351,8 +350,8 @@ export default function Home() {
             >
               Мои заметки
             </Link>
-            <Link 
-              to="/editor" 
+            <Link
+              to="/editor"
               className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors hover:underline underline-offset-4"
             >
               Создать свой курс

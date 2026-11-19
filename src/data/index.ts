@@ -22,7 +22,8 @@ import { terraformBasicsCourse } from './terraform';
 import { postgresqlDeepCourse } from './postgresql';
 import { ansibleBasicsCourse } from './ansible';
 import { kafkaBasicsCourse } from './kafka';
-import { csBasicsCourse } from './cs-basics';   
+import { csBasicsCourse } from './cs-basics';
+import { observabilityCourse } from './observability';
 import { courseSchema } from './schemas'; // <-- импорт схемы для кастомных курсов
 
 // Базовые курсы, сгруппированные по темам (порядок = отображение в каталоге)
@@ -41,6 +42,7 @@ const baseCourses: Course[] = [
   // 3. Языки программирования
   pythonBasicsCourse,
   pythonAdvancedCourse,
+  observabilityCourse,
 
   // 4. QA
   qaFundamentalsCourse,
@@ -78,7 +80,7 @@ function loadCustomCourses(): Course[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    
+
     const valid: Course[] = [];
     for (const c of parsed) {
       const cleaned: Course = {
@@ -90,9 +92,9 @@ function loadCustomCourses(): Course[] {
           }))
           .filter((m: any) => m.lessons.length > 0),
       };
-      
+
       if (cleaned.modules.length === 0) continue;
-      
+
       const result = courseSchema.safeParse(cleaned);
       if (result.success) valid.push(result.data as Course);
       else console.warn('Кастомный курс не прошёл валидацию:', result.error.issues);

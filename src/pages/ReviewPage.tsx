@@ -54,12 +54,12 @@ export default function ReviewPage() {
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-8 pb-24">
-        <QuizView 
-          slug={current.slug} 
-          step={current.step} 
-          onResult={() => setAnswered(true)} 
+        <QuizView
+          slug={current.slug}
+          step={current.step}
+          onResult={() => setAnswered(true)}
         />
-        
+
         {answered && (
           <div className="mt-6 flex justify-end">
             <Button onClick={handleNext} className="min-h-[44px]">

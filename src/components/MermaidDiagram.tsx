@@ -10,14 +10,14 @@ mermaid.initialize({
   fontFamily: 'inherit',
 });
 
-export function MermaidDiagram({ 
-  code, 
-  caption, 
-  className 
-}: { 
-  code: string; 
-  caption?: string; 
-  className?: string 
+export function MermaidDiagram({
+  code,
+  caption,
+  className
+}: {
+  code: string;
+  caption?: string;
+  className?: string
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -30,9 +30,9 @@ export function MermaidDiagram({
         setError(null);
         // Генерируем уникальный ID для каждого рендера
         const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
-        
+
         const { svg } = await mermaid.render(id, code);
-        
+
         if (containerRef.current) {
           containerRef.current.innerHTML = svg;
         }
@@ -53,9 +53,9 @@ export function MermaidDiagram({
           {error}
         </div>
       ) : (
-        <div 
-          ref={containerRef} 
-          className="w-full flex justify-center overflow-x-auto [&>svg]:max-w-full" 
+        <div
+          ref={containerRef}
+          className="w-full flex justify-center overflow-x-auto [&>svg]:max-w-full"
         />
       )}
       {caption && (

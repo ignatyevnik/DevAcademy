@@ -2281,7 +2281,7 @@ def test_create_user_good(db_session):
       id: 'qa-s-m9',
       title: 'Практикум',
       lessons: [
-{
+        {
           id: 'qa-l115',
           title: 'Комплексный экзамен Senior QA',
           minutes: 35,

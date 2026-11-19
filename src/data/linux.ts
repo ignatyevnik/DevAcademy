@@ -805,7 +805,7 @@ cd -                   # → назад (куда был до этого)`,
             },
           ],
         },
-{
+        {
           id: 'ln-l7',
           title: 'Навигация: pwd, cd, ls, find',
           minutes: 30,
@@ -963,7 +963,7 @@ cd -                   # → назад (куда был до этого)`,
       id: 'ln-m3',
       title: 'Файлы и права доступа',
       lessons: [
-{
+        {
           id: 'ln-l8',
           title: 'Файлы: создание, копирование, удаление',
           minutes: 25,
@@ -1109,7 +1109,7 @@ cd -                   # → назад (куда был до этого)`,
             },
           ],
         },
-{
+        {
           id: 'ln-l9',
           title: 'Права доступа: chmod, chown',
           minutes: 35,
@@ -1278,7 +1278,7 @@ cd -                   # → назад (куда был до этого)`,
             },
           ],
         },
-{
+        {
           id: 'ln-l10',
           title: 'Чтение файлов и поиск по тексту',
           minutes: 25,
@@ -1580,7 +1580,7 @@ zypper search "web server"`,
           ],
         },
       ],
-        },     // ← конец ln-m3
+    },     // ← конец ln-m3
     {
       id: 'ln-m4',
       title: 'Процессы и сервисы',
@@ -1932,7 +1932,7 @@ disown`,
             },
           ],
         },
-{
+        {
           id: 'ln-l14',
           title: 'systemd: управление сервисами',
           minutes: 30,
@@ -2257,7 +2257,7 @@ journalctl _PID=1234`,
         },
       ],
     },
-        {
+    {
       id: 'ln-m5',
       title: 'Пользователи и sudo',
       lessons: [
@@ -2538,12 +2538,12 @@ sudo chown -R anna:developers /var/www/myapp    # и владельца, и гр
           ],
         },
       ],
-        },     // ← конец ln-m5
+    },     // ← конец ln-m5
     {
       id: 'ln-m6',
       title: 'Сеть: диагностика и удалённый доступ',
       lessons: [
-{
+        {
           id: 'ln-l18',
           title: 'Диагностика сети: ip, ss, ping, dig',
           minutes: 25,
@@ -2844,7 +2844,7 @@ rsync -av --dry-run folder/ user@server:/backup/`,
         },
       ],
     },
-        {
+    {
       id: 'ln-m7',
       title: 'Bash-скрипты',
       lessons: [
@@ -3226,15 +3226,15 @@ command > /dev/null 2>&1`,
               type: 'theory',
               blocks: [
                 {
-  type: 'mermaid',
-  caption: 'Поток данных через pipe: ps → grep → awk → head',
-  code: `graph LR
+                  type: 'mermaid',
+                  caption: 'Поток данных через pipe: ps → grep → awk → head',
+                  code: `graph LR
     PS["ps aux"] -->|"все процессы"| Grep["grep nginx"]
     Grep -->|"только nginx"| Grep2["grep -v grep"]
     Grep2 -->|"без самого grep"| Awk["awk — второй столбец"]
     Awk -->|"PID"| Head["head -1"]
     Head --> Result["PID первой<br/>nginx-процесса"]`
-},
+                },
                 {
                   type: 'code',
                   lang: 'bash',
@@ -3333,7 +3333,7 @@ wc -l < file.txt              # то же, но без «cat file.txt»`,
         },
       ],
     },
-        {
+    {
       id: 'ln-m8',
       title: 'Диски, архивы, cron',
       lessons: [
@@ -3789,11 +3789,11 @@ journalctl -u backup -f              # логи`,
         },
       ],
     },
-        {
+    {
       id: 'ln-m9',
       title: 'Практикум',
       lessons: [
-{
+        {
           id: 'ln-l26',
           title: 'Практика: от простого к сложному',
           minutes: 35,

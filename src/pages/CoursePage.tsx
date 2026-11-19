@@ -8,9 +8,9 @@ import {
   PlayCircle,
   RotateCcw,
   Target,
-  ListChecks, 
-  Bookmark, 
-  Trophy 
+  ListChecks,
+  Bookmark,
+  Trophy
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getCourse, courseStats, allLessons, findLesson } from '@/data';
@@ -28,8 +28,8 @@ export default function CoursePage() {
   const { courseProgress, lessonProgress, state, resetCourse, isBookmarked } = useProgress();
   const [openModules, setOpenModules] = useState<Record<string, boolean>>({});
   const [confirmReset, setConfirmReset] = useState(false);
-  
-    // 1. Сначала useMemo
+
+  // 1. Сначала useMemo
   const quizCount = useMemo(() => {
     let n = 0;
     if (!course) return 0; // Добавь защиту внутри

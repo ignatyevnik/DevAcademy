@@ -20,7 +20,7 @@ function load(): StreakState {
     if (!raw) return { lastDay: '', streak: 0, todayMinutes: 0 };
     const parsed = JSON.parse(raw) as StreakState;
     const today = getToday();
-    
+
     // Если это новый день, но не сегодня, сбрасываем todayMinutes.
     // Сам стрик проверим при первом действии.
     if (parsed.lastDay !== today) {
@@ -50,7 +50,7 @@ export function useStreak() {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         const yStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
-        
+
         if (prev.lastDay === yStr) {
           newStreak += 1; // Продолжаем стрик
         } else {

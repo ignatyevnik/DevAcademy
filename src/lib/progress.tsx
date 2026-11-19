@@ -50,7 +50,7 @@ interface ProgressApi {
   replaceState: (newState: ProgressState) => void;
   totalStats: () => { started: number; donePct: number };
   isBookmarked: (slug: string, lessonId: string) => boolean;
-  toggleBookmark: (slug: string, lessonId: string) => void;  
+  toggleBookmark: (slug: string, lessonId: string) => void;
   getNote: (slug: string, stepId: string) => string;
   setNote: (slug: string, stepId: string, text: string) => void;
   recordSrsAnswer: (slug: string, stepId: string, isCorrect: boolean) => void;
@@ -65,17 +65,17 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const prevDoneRef = useRef(state.done);
 
   useEffect(() => {
-  const prev = prevDoneRef.current;
-  const curr = state.done;
-  let added = 0;
-  for (const k in curr) {
-    if (!prev[k]) added++;
-  }
-  if (added > 0) {
-    recordActivity(added * 2); // Считаем каждый шаг за 2 минуты
-  }
-  prevDoneRef.current = curr;
-}, [state.done, recordActivity]);
+    const prev = prevDoneRef.current;
+    const curr = state.done;
+    let added = 0;
+    for (const k in curr) {
+      if (!prev[k]) added++;
+    }
+    if (added > 0) {
+      recordActivity(added * 2); // Считаем каждый шаг за 2 минуты
+    }
+    prevDoneRef.current = curr;
+  }, [state.done, recordActivity]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -137,7 +137,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
           srs: newState.srs ?? {}
         });
       },
-      
+
       courseProgress: (slug) => {
         const { done, total } = countDoneInCourse(slug);
         return { done, total, pct: total ? Math.round((done / total) * 100) : 0 };
@@ -153,7 +153,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
           const quizResults: Record<string, QuizResult> = {};
           for (const k of Object.keys(s.done)) if (!k.startsWith(slug + ':')) done[k] = true;
           for (const [k, v] of Object.entries(s.quizResults)) if (!k.startsWith(slug + ':')) quizResults[k] = v;
-          
+
           const lastVisited = { ...s.lastVisited };
           delete lastVisited[slug];
 
@@ -200,7 +200,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       getDueReviews: () => {
         const now = Date.now();
         const due: { slug: string; lessonId: string; step: Step; courseTitle: string }[] = [];
-        
+
         for (const course of courses) {
           for (const mod of course.modules) {
             for (const lesson of mod.lessons) {

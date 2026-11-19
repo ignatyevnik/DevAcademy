@@ -1,7 +1,7 @@
 import { Link, useParams, useSearchParams, Navigate, useNavigate } from 'react-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ArrowLeft, ArrowRight, Check, CheckCircle2, CircleHelp, FileText, ListTree, X, Bookmark, BookmarkCheck, StickyNote, Library, ChevronRight 
+  ArrowLeft, ArrowRight, Check, CheckCircle2, CircleHelp, FileText, ListTree, X, Bookmark, BookmarkCheck, StickyNote, Library, ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getCourse, findLesson, allLessons } from '@/data';
@@ -59,9 +59,9 @@ export default function LessonPage() {
   const course = getCourse(slug ?? '');
   const found = course && lessonId ? findLesson(course, lessonId) : null;
   const {
-  isStepDone, completeStep, setQuizResult, visit,
-  state, isBookmarked, toggleBookmark,
-} = useProgress();
+    isStepDone, completeStep, setQuizResult, visit,
+    state, isBookmarked, toggleBookmark,
+  } = useProgress();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const h1Ref = useRef<HTMLHeadingElement>(null);
 
@@ -85,21 +85,21 @@ export default function LessonPage() {
     if (course && lesson) visit(course.slug, lesson.id, stepIndex);
   }, [course?.slug, lesson?.id, stepIndex, visit]);
 
-const hasSandbox =
-  step?.type === "theory" &&
-  step.blocks.some((b) => b.type === "sandbox" || b.type === "python" || b.type === "terminal");
-  
-useEffect(() => {
-  if (
-    course &&
-    step &&
-    step.type === 'theory' &&
-    !hasSandbox &&
-    !isStepDone(course.slug, step.id)
-  ) {
-    completeStep(course.slug, step.id);
-  }
-}, [course?.slug, step?.id, step?.type, hasSandbox, isStepDone, completeStep, step]);
+  const hasSandbox =
+    step?.type === "theory" &&
+    step.blocks.some((b) => b.type === "sandbox" || b.type === "python" || b.type === "terminal");
+
+  useEffect(() => {
+    if (
+      course &&
+      step &&
+      step.type === 'theory' &&
+      !hasSandbox &&
+      !isStepDone(course.slug, step.id)
+    ) {
+      completeStep(course.slug, step.id);
+    }
+  }, [course?.slug, step?.id, step?.type, hasSandbox, isStepDone, completeStep, step]);
 
   useEffect(() => {
     if (step) h1Ref.current?.focus();
@@ -113,10 +113,10 @@ useEffect(() => {
       `/course/${course.slug}/lesson/${lessons[lessonIdx].id}?step=${stepIdx}`;
     const prev =
       stepIndex > 0 ? goTo(li, stepIndex - 1) :
-      li > 0 ? goTo(li - 1, lessons[li - 1].steps.length - 1) : null;
+        li > 0 ? goTo(li - 1, lessons[li - 1].steps.length - 1) : null;
     const next =
       stepIndex < lesson.steps.length - 1 ? goTo(li, stepIndex + 1) :
-      li < lessons.length - 1 ? goTo(li + 1, 0) : null;
+        li < lessons.length - 1 ? goTo(li + 1, 0) : null;
     return { prev, next, isLast: !next, isLastInCourse: !next };
   }, [course, lesson, stepIndex]);
 
@@ -177,7 +177,7 @@ useEffect(() => {
               className={cn(
                 'grid h-6 w-6 shrink-0 place-items-center rounded-full border text-[11px] font-bold',
                 done ? 'border-primary bg-primary text-primary-foreground' :
-                active ? 'border-primary text-primary' : 'border-muted-foreground/40 text-muted-foreground'
+                  active ? 'border-primary text-primary' : 'border-muted-foreground/40 text-muted-foreground'
               )}
               aria-hidden="true"
             >
@@ -214,15 +214,15 @@ useEffect(() => {
               Каталог
             </Link>
             <ChevronRight className="h-3 w-3 shrink-0 hidden sm:block" />
-            
+
             <Link to={`/course/${course.slug}`} className="hover:text-primary transition-colors truncate">
               {course.title}
             </Link>
             <ChevronRight className="h-3 w-3 shrink-0" />
-            
+
             <span className="truncate hidden md:block">{found.module.title}</span>
             <ChevronRight className="h-3 w-3 shrink-0 hidden md:block" />
-            
+
             <span className="truncate font-semibold text-foreground">{lesson.title}</span>
           </div>
           <button
@@ -287,31 +287,31 @@ useEffect(() => {
 
           <div className="mt-6">
             {step.type === 'theory' ? (
-<TextBlocks
-  blocks={step.blocks}
-  onResult={(result: QuizResult) => {
-    if (result === 'ok') {
-      completeStep(course.slug, step.id);
-    } else if (result === 'fail') {
-      setQuizResult(course.slug, step.id, 'fail');
-    }
-  }}
-/>
-) : (
-  <QuizView slug={course.slug} step={step} />
-)}
+              <TextBlocks
+                blocks={step.blocks}
+                onResult={(result: QuizResult) => {
+                  if (result === 'ok') {
+                    completeStep(course.slug, step.id);
+                  } else if (result === 'fail') {
+                    setQuizResult(course.slug, step.id, 'fail');
+                  }
+                }}
+              />
+            ) : (
+              <QuizView slug={course.slug} step={step} />
+            )}
           </div>
-          
+
           <StepNotes slug={course.slug} stepId={step.id} />
-          
-          <ReportError 
-            course={course} 
-            lesson={lesson} 
-            step={step} 
-            stepIndex={stepIndex} 
+
+          <ReportError
+            course={course}
+            lesson={lesson}
+            step={step}
+            stepIndex={stepIndex}
           />
-          
-           {/* Навигация */}
+
+          {/* Навигация */}
           <div className="mt-10 flex items-center justify-between gap-3 border-t border-border pt-6">
             {nav?.prev ? (
               <Button asChild variant="outline" className="min-h-[44px]">

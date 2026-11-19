@@ -49,7 +49,7 @@ export default function App() {
     <ThemeProvider>
       <ProgressProvider>
         <SearchProvider>
-        <AppContent />
+          <AppContent />
         </SearchProvider>
       </ProgressProvider>
     </ThemeProvider>

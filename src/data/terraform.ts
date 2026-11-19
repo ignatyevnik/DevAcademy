@@ -137,7 +137,7 @@ export const terraformBasicsCourse: Course = {
             },
           ],
         },
-{
+        {
           id: 'tf-l2',
           title: 'Первый запуск: init, plan, apply',
           minutes: 25,
@@ -1982,7 +1982,7 @@ export const terraformBasicsCourse: Course = {
       id: 'tf-m7',
       title: 'Практикум',
       lessons: [
-{
+        {
           id: 'tf-l18',
           title: 'Практика: от HCL и state до CI/CD',
           minutes: 35,

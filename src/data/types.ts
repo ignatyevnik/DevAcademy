@@ -87,14 +87,15 @@ export type CourseIcon =
   | 'gitops'
   | 'terraform'
   | 'ansible'
-  | 'kafka' 
+  | 'kafka'
   | 'sql'
   | 'sql-advanced'
   | 'design'
   | 'system-design'
   | 'qa-automation'
   | 'qa-senior'
-  | 'cs';
+  | 'cs'
+  | 'observability';
 
 export interface Course {
   slug: string;
@@ -190,8 +191,8 @@ export interface PythonBlock {
   task: string;
   solution: string;
   expected:
-    | { type: 'stdout'; value: string; normalize?: 'trim' | 'lines' }
-    | { type: 'variable'; name: string; value: string | number | boolean };
+  | { type: 'stdout'; value: string; normalize?: 'trim' | 'lines' }
+  | { type: 'variable'; name: string; value: string | number | boolean };
   hint?: string;
   forbidden?: string[];
   caption?: string;

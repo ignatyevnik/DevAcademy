@@ -11,7 +11,7 @@ export function Header() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { openSearch } = useSearch();
-  const { state } = useProgress(); 
+  const { state } = useProgress();
 
   // Считаем общий прогресс по всем курсам
   const globalPct = useMemo(() => {
@@ -56,7 +56,7 @@ export function Header() {
             Dev<span className="text-primary">Академия</span>
           </span>
         </Link>
-        
+
         {globalPct > 0 && (
           <div className="hidden md:flex items-center gap-2 ml-2 pl-4 border-l border-border/50">
             <div className="w-16 h-1.5 bg-secondary rounded-full overflow-hidden">
@@ -86,7 +86,7 @@ export function Header() {
           >
             Моё обучение
           </button>
-          
+
           {/* ВОЗВРАЩАЕМ ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ СЮДА */}
           <ThemeToggle />
 
@@ -152,9 +152,9 @@ export function Header() {
             </button>
             {/* Переключатель в мобильном меню */}
             <div className="flex items-center px-3 py-1">
-               <ThemeToggle />
-               <span className="ml-2 text-sm font-medium">Сменить тему</span>
-               <Link
+              <ThemeToggle />
+              <span className="ml-2 text-sm font-medium">Сменить тему</span>
+              <Link
                 to="/notes"
                 onClick={() => setMobileOpen(false)}
                 className="rounded-md px-3 py-3 text-left text-sm font-medium hover:bg-accent"

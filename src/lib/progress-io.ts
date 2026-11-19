@@ -18,7 +18,7 @@ const exportedStateSchema = z.object({
   quizResults: z.record(z.string(), z.enum(['ok', 'partial', 'fail'])),
   bookmarks: z.record(z.string(), z.literal(true)).optional().default({}),
   notes: z.record(z.string(), z.string()).optional().default({}), // <-- ДОБАВИТЬ
-    srs: z.record(z.string(), z.object({
+  srs: z.record(z.string(), z.object({
     interval: z.number(),
     nextReview: z.number(),
     ease: z.number(),

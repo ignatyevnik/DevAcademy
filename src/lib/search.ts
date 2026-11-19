@@ -26,7 +26,7 @@ function extractText(blocks: TextBlock[]): string {
         case 'code':
           return b.code;
         case 'sandbox':                                        // ← добавить
-          return `${b.sandbox.task} ${b.sandbox.solution}`; 
+          return `${b.sandbox.task} ${b.sandbox.solution}`;
         case 'python':
           return `${b.python.task} ${b.python.solution}`;
         case 'table':

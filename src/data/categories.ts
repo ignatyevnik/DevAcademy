@@ -17,48 +17,49 @@ export interface Category {
 
 /** Порядок категорий на главной */
 export const categories: Category[] = [
-  { id: 'fundamentals', title: 'Фундамент',          description: 'Git, Linux, сети — нужны везде' },
-  { id: 'data',         title: 'Данные',             description: 'SQL и PostgreSQL' },
-  { id: 'languages',    title: 'Языки',              description: 'Python от основ до продвинутого' },
-  { id: 'qa',           title: 'QA',                 description: 'Тестирование, автоматизация, senior' },
-  { id: 'containers',   title: 'Контейнеры',         description: 'Docker и Kubernetes' },
-  { id: 'iac',          title: 'IaC и автоматизация',description: 'Terraform и Ansible' },
-  { id: 'delivery',     title: 'CI/CD и доставка',   description: 'Пайплайны, GitOps, Kafka' },
-  { id: 'ai',           title: 'AI',                 description: 'LLM-агенты' },
-  { id: 'architecture', title: 'Архитектура',        description: 'SOLID и паттерны' },
+  { id: 'fundamentals', title: 'Фундамент', description: 'Git, Linux, сети — нужны везде' },
+  { id: 'data', title: 'Данные', description: 'SQL и PostgreSQL' },
+  { id: 'languages', title: 'Языки', description: 'Python от основ до продвинутого' },
+  { id: 'qa', title: 'QA', description: 'Тестирование, автоматизация, senior' },
+  { id: 'containers', title: 'Контейнеры', description: 'Docker и Kubernetes' },
+  { id: 'iac', title: 'IaC и автоматизация', description: 'Terraform и Ansible' },
+  { id: 'delivery', title: 'CI/CD и доставка', description: 'Пайплайны, GitOps, Kafka' },
+  { id: 'ai', title: 'AI', description: 'LLM-агенты' },
+  { id: 'architecture', title: 'Архитектура', description: 'SOLID и паттерны' },
 ];
 
 /** slug → category. Кастомные курсы без записи попадают в «Мои курсы» */
 export const courseCategory: Record<string, CategoryId> = {
-  'cs-basics':           'fundamentals',
-  'git-basics':          'fundamentals',
-  'linux-basics':        'fundamentals',
-  'networks-http':       'fundamentals',
+  'cs-basics': 'fundamentals',
+  'git-basics': 'fundamentals',
+  'linux-basics': 'fundamentals',
+  'networks-http': 'fundamentals',
 
-  'sql-basics':          'data',
-  'sql-advanced':        'data',
-  'postgresql-deep':     'data',
+  'sql-basics': 'data',
+  'sql-advanced': 'data',
+  'postgresql-deep': 'data',
 
-  'python-basics':       'languages',
-  'python-advanced':     'languages',
+  'python-basics': 'languages',
+  'python-advanced': 'languages',
 
-  'qa-fundamentals':     'qa',
-  'qa-automation':       'qa',
-  'qa-senior':           'qa',
+  'qa-fundamentals': 'qa',
+  'qa-automation': 'qa',
+  'qa-senior': 'qa',
 
-  'docker-basics':       'containers',
-  'kubernetes-basics':   'containers',
+  'docker-basics': 'containers',
+  'kubernetes-basics': 'containers',
   'kubernetes-advanced': 'containers',
+  'observability': 'containers',
 
-  'terraform-basics':    'iac',
-  'ansible-basics':      'iac',
+  'terraform-basics': 'iac',
+  'ansible-basics': 'iac',
 
-  'cicd-basics':         'delivery',
-  'gitops':              'delivery',
-  'kafka-basics':        'delivery',
+  'cicd-basics': 'delivery',
+  'gitops': 'delivery',
+  'kafka-basics': 'delivery',
 
-  'ai-agents':           'ai',
+  'ai-agents': 'ai',
 
-  'design-patterns':     'architecture',
-  'system-design':       'architecture', 
+  'design-patterns': 'architecture',
+  'system-design': 'architecture',
 };

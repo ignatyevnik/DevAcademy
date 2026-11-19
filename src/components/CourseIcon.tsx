@@ -137,20 +137,20 @@ export function CourseIcon({
         </svg>
       );
 
-case 'python':
-  return (
-    <svg viewBox="0 0 48 48" className={cls} aria-hidden="true">
-      <rect x="4" y="4" width="40" height="40" rx="10" fill="#3776ab" />
-      <path
-        d="M23.5 12c-4 0-6.5 1.7-6.5 5v3h10v1.5h-13c-3 0-5 2.2-5 6s2 6.5 5 6.5h2.5V30c0-3.3 2.5-5 6-5h6c3 0 5-2 5-5v-3c0-3-2.3-5-6-5h-4zm-2.5 2.5a1.3 1.3 0 1 1 0 2.6 1.3 1.3 0 0 1 0-2.6z"
-        fill="#ffd43b"
-      />
-      <path
-        d="M24.5 36c4 0 6.5-1.7 6.5-5v-3H21v-1.5h13c3 0 5-2.2 5-6s-2-6.5-5-6.5h-2.5V18c0 3.3-2.5 5-6 5h-6c-3 0-5 2-5 5v3c0 3 2.3 5 6 5h4zm2.5-2.5a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6z"
-        fill="#ffffff"
-      />
-    </svg>
-  );
+    case 'python':
+      return (
+        <svg viewBox="0 0 48 48" className={cls} aria-hidden="true">
+          <rect x="4" y="4" width="40" height="40" rx="10" fill="#3776ab" />
+          <path
+            d="M23.5 12c-4 0-6.5 1.7-6.5 5v3h10v1.5h-13c-3 0-5 2.2-5 6s2 6.5 5 6.5h2.5V30c0-3.3 2.5-5 6-5h6c3 0 5-2 5-5v-3c0-3-2.3-5-6-5h-4zm-2.5 2.5a1.3 1.3 0 1 1 0 2.6 1.3 1.3 0 0 1 0-2.6z"
+            fill="#ffd43b"
+          />
+          <path
+            d="M24.5 36c4 0 6.5-1.7 6.5-5v-3H21v-1.5h13c3 0 5-2.2 5-6s-2-6.5-5-6.5h-2.5V18c0 3.3-2.5 5-6 5h-6c-3 0-5 2-5 5v3c0 3 2.3 5 6 5h4zm2.5-2.5a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6z"
+            fill="#ffffff"
+          />
+        </svg>
+      );
 
     case 'python-advanced':
       return (
@@ -251,7 +251,7 @@ case 'python':
         </svg>
       );
 
-      case 'gitops':
+    case 'gitops':
       return (
         <svg viewBox="0 0 48 48" className={cls} aria-hidden="true">
           <rect x="4" y="4" width="40" height="40" rx="10" fill={accent} />
@@ -323,7 +323,7 @@ case 'python':
           </g>
           <GearBadge accent={accent} />
         </svg>
-      );  
+      );
 
     case 'qa-automation':
       return (
@@ -359,35 +359,35 @@ case 'python':
         </svg>
       );
 
-case 'terraform':
-  return (
-    <svg viewBox="0 0 48 48" className={cls} aria-hidden="true">
-      <rect x="4" y="4" width="40" height="40" rx="10" fill={accent} />
-      <g transform="translate(6 6) scale(1.5)" fill="#fff">
-        <path d="M21 5.4V11.8L15.4 15V8.7L21 5.4M14.8 8.7V15L9.2 11.8V5.4L14.8 8.7M14.8 15.7V22.1L9.2 18.9V12.5L14.8 15.7M8.6 5.1V11.5L3 8.3V1.9L8.6 5.1Z" />
-      </g>
-    </svg>
-  );
+    case 'terraform':
+      return (
+        <svg viewBox="0 0 48 48" className={cls} aria-hidden="true">
+          <rect x="4" y="4" width="40" height="40" rx="10" fill={accent} />
+          <g transform="translate(6 6) scale(1.5)" fill="#fff">
+            <path d="M21 5.4V11.8L15.4 15V8.7L21 5.4M14.8 8.7V15L9.2 11.8V5.4L14.8 8.7M14.8 15.7V22.1L9.2 18.9V12.5L14.8 15.7M8.6 5.1V11.5L3 8.3V1.9L8.6 5.1Z" />
+          </g>
+        </svg>
+      );
 
-  case 'ansible':
-  return (
-    <svg viewBox="0 0 48 48" className={cls} aria-hidden="true">
-      <rect x="4" y="4" width="40" height="40" rx="10" fill={accent} />
-      <g transform="translate(6 6) scale(1.5)" fill="#fff">
-        <path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2m0 2a8 8 0 0 1 8 8 8 8 0 0 1-8 8 8 8 0 0 1-8-8 8 8 0 0 1 8-8m0 2.5L7 17.5h2.5L12 12l2.5 5.5H17z" />
-      </g>
-    </svg>
-  );
-  case 'kafka':
-  return (
-    <svg viewBox="0 0 48 48" className={cls} aria-hidden="true">
-      <rect x="4" y="4" width="40" height="40" rx="10" fill={accent} />
-      <g transform="translate(6 6) scale(1.5)" fill="#fff">
-        <path d="M9.5 3.5A2.5 2.5 0 0 1 7 6a2.5 2.5 0 0 1-2.5-2.5A2.5 2.5 0 0 1 7 1a2.5 2.5 0 0 1 2.5 2.5m0 17A2.5 2.5 0 0 1 7 23a2.5 2.5 0 0 1-2.5-2.5A2.5 2.5 0 0 1 7 18a2.5 2.5 0 0 1 2.5 2.5M22 12a2.5 2.5 0 0 1-2.5 2.5A2.5 2.5 0 0 1 17 12a2.5 2.5 0 0 1 2.5-2.5A2.5 2.5 0 0 1 22 12M10 12a3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3Z" />
-      </g>
-    </svg>
-  );
-      case 'cs':
+    case 'ansible':
+      return (
+        <svg viewBox="0 0 48 48" className={cls} aria-hidden="true">
+          <rect x="4" y="4" width="40" height="40" rx="10" fill={accent} />
+          <g transform="translate(6 6) scale(1.5)" fill="#fff">
+            <path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2m0 2a8 8 0 0 1 8 8 8 8 0 0 1-8 8 8 8 0 0 1-8-8 8 8 0 0 1 8-8m0 2.5L7 17.5h2.5L12 12l2.5 5.5H17z" />
+          </g>
+        </svg>
+      );
+    case 'kafka':
+      return (
+        <svg viewBox="0 0 48 48" className={cls} aria-hidden="true">
+          <rect x="4" y="4" width="40" height="40" rx="10" fill={accent} />
+          <g transform="translate(6 6) scale(1.5)" fill="#fff">
+            <path d="M9.5 3.5A2.5 2.5 0 0 1 7 6a2.5 2.5 0 0 1-2.5-2.5A2.5 2.5 0 0 1 7 1a2.5 2.5 0 0 1 2.5 2.5m0 17A2.5 2.5 0 0 1 7 23a2.5 2.5 0 0 1-2.5-2.5A2.5 2.5 0 0 1 7 18a2.5 2.5 0 0 1 2.5 2.5M22 12a2.5 2.5 0 0 1-2.5 2.5A2.5 2.5 0 0 1 17 12a2.5 2.5 0 0 1 2.5-2.5A2.5 2.5 0 0 1 22 12M10 12a3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3Z" />
+          </g>
+        </svg>
+      );
+    case 'cs':
       return (
         <svg viewBox="0 0 48 48" className={cls} aria-hidden="true">
           <rect x="4" y="4" width="40" height="40" rx="10" fill={accent} />
@@ -402,6 +402,26 @@ case 'terraform':
             <path d="M30 17l3 4-3 4" />
             <path d="M26 15l-4 12" />
           </g>
+        </svg>
+      );
+
+    case 'observability':
+      return (
+        <svg viewBox="0 0 48 48" className={cls} aria-hidden="true">
+          <rect x="4" y="4" width="40" height="40" rx="10" fill={accent} />
+          <g
+            stroke="#fff"
+            strokeWidth="2.4"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            transform="translate(2.4, 2.4) scale(0.9)"
+          >
+            {/* Пульс / метрики */}
+            <path d="M9 26h6l3-8 6 14 4-10h10" />
+            <circle cx="35" cy="14" r="3" />
+          </g>
+          <GearBadge accent={accent} />
         </svg>
       );
   }

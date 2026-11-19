@@ -22,7 +22,7 @@ export const dockerCourse: Course = {
       id: 'dk-m1',
       title: 'Контейнеры и образы',
       lessons: [
-{
+        {
           id: 'dk-l1',
           title: 'Что такое контейнер',
           minutes: 20,
@@ -940,7 +940,7 @@ export const dockerCourse: Course = {
           ],
         },
       ],
-        },     // ← конец dk-m3
+    },     // ← конец dk-m3
     {
       id: 'dk-m4',
       title: 'Registry и публикация образов',
@@ -1411,7 +1411,7 @@ export const dockerCourse: Course = {
         },
       ],
     },
-        {
+    {
       id: 'dk-m5',
       title: 'Buildx, кэш и multi-arch',
       lessons: [
@@ -1860,7 +1860,7 @@ export const dockerCourse: Course = {
         },
       ],
     },
-        {
+    {
       id: 'dk-m6',
       title: 'Безопасность образов',
       lessons: [
@@ -2333,7 +2333,7 @@ export const dockerCourse: Course = {
         },
       ],
     },
-        {
+    {
       id: 'dk-m7',
       title: 'Логи, отладка, мониторинг',
       lessons: [
@@ -2804,11 +2804,11 @@ export const dockerCourse: Course = {
         },
       ],
     },
-        {
+    {
       id: 'dk-m8',
       title: 'Практикум',
       lessons: [
-{
+        {
           id: 'dk-l25',
           title: 'Практика: образы, Dockerfile, compose',
           minutes: 35,

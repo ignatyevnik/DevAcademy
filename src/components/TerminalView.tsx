@@ -233,10 +233,10 @@ export function TerminalView({ terminal, onResult }: Props) {
                     item.status === 'error'
                       ? 'whitespace-pre-wrap text-xs text-red-400'
                       : item.status === 'mistake'
-                      ? 'whitespace-pre-wrap text-xs text-amber-400'
-                      : item.status === 'ok'
-                      ? 'whitespace-pre-wrap text-xs text-zinc-300'
-                      : 'whitespace-pre-wrap text-xs text-zinc-400'
+                        ? 'whitespace-pre-wrap text-xs text-amber-400'
+                        : item.status === 'ok'
+                          ? 'whitespace-pre-wrap text-xs text-zinc-300'
+                          : 'whitespace-pre-wrap text-xs text-zinc-400'
                   }
                 >
                   {item.output}

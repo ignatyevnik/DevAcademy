@@ -362,7 +362,8 @@ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/
               title: 'Ingress Controller: какой выбрать',
               type: 'theory',
               blocks: [
-                { type: 'table',
+                {
+                  type: 'table',
                   caption: 'Популярные Ingress Controller',
                   head: ['Controller', 'Плюсы', 'Минусы'],
                   rows: [
@@ -2124,7 +2125,7 @@ spec:
             },
           ],
         },
-{
+        {
           id: 'k8-l28',
           title: 'Управление релизами (install, upgrade, rollback)',
           minutes: 30,
@@ -2457,178 +2458,178 @@ kustomize edit add resource ../base
       ],
     },
     {
-  id: 'k8-a-m5',
-  title: 'Практикум',
-  lessons: [
-    {
-      id: 'k8-l30',
-      title: 'Практика: сеть, хранилища, RBAC, Helm',
-      minutes: 35,
-      steps: [
+      id: 'k8-a-m5',
+      title: 'Практикум',
+      lessons: [
         {
-          id: 'k8-l30-s1',
-          title: 'Service types',
-          type: 'quiz',
-          quiz: {
-            kind: 'matching',
-            question: 'Сопоставьте тип Service и его назначение',
-            pairs: [
-              { left: 'ClusterIP', right: 'Только внутри кластера' },
-              { left: 'NodePort', right: 'Порт на каждом узле (30000–32767)' },
-              { left: 'LoadBalancer', right: 'Публичный IP через облако' },
-              { left: 'Headless (clusterIP: None)', right: 'DNS-запись на каждый под (для StatefulSet)' },
-            ],
-            explanation: 'ClusterIP — дефолт для межсервисного общения. NodePort — быстрый доступ без облака. LoadBalancer — один публичный IP на сервис (дорого). Headless — не балансирует, а даёт DNS на каждый под.',
-          },
-        },
-        {
-          id: 'k8-l30-s2',
-          title: 'FQDN сервиса',
-          type: 'quiz',
-          quiz: {
-            kind: 'fill',
-            question: 'Какое полное DNS-имя (FQDN) у сервиса `backend` в namespace `production`?',
-            accepted: [
-              'backend.production.svc.cluster.local',
-              'backend.production.svc.cluster.local.',
-            ],
-            placeholder: 'полное имя',
-            hint: 'формат: <service>.<namespace>.svc.cluster.local',
-            explanation: 'backend.production.svc.cluster.local. Внутри того же namespace достаточно backend (или backend.production). FQDN нужен при обращении из другого namespace.',
-          },
-        },
-        {
-          id: 'k8-l30-s3',
-          title: 'Ingress vs LoadBalancer',
-          type: 'quiz',
-          quiz: {
-            kind: 'single',
-            question: 'Чем Ingress отличается от LoadBalancer Service?',
-            options: [
-              { id: 'a', text: 'Это одно и то же' },
-              { id: 'b', text: 'Ingress — единая точка входа с маршрутизацией по host/path; LoadBalancer — отдельный публичный IP на каждый сервис' },
-              { id: 'c', text: 'Ingress работает только с HTTPS' },
-              { id: 'd', text: 'LoadBalancer быстрее' },
-            ],
-            correct: ['b'],
-            explanation: 'LoadBalancer — по публичному IP на каждый сервис (дорого). Ingress — один LB с правилами: example.com/api → backend, example.com/ → frontend. Внутри кластера — ClusterIP.',
-          },
-        },
-        {
-          id: 'k8-l30-s4',
-          title: 'NetworkPolicy',
-          type: 'quiz',
-          quiz: {
-            kind: 'multiple',
-            question: 'Что нужно для работы NetworkPolicy в кластере?',
-            options: [
-              { id: 'a', text: 'CNI-плагин с поддержкой NetworkPolicy (Calico, Cilium, Antrea)' },
-              { id: 'b', text: 'Ingress Controller' },
-              { id: 'c', text: 'Правила применены через kubectl apply' },
-              { id: 'd', text: 'При default-deny egress — разрешить DNS (UDP 53) в egress' },
-            ],
-            correct: ['a', 'c', 'd'],
-            explanation: 'NetworkPolicy работает только с CNI, который её поддерживает. Flannel, например, не поддерживает. Плюс при default-deny egress не забудьте разрешить DNS.',
-          },
-        },
-        {
-          id: 'k8-l30-s5',
-          title: 'PV vs PVC',
-          type: 'quiz',
-          quiz: {
-            kind: 'single',
-            question: 'Чем PV отличается от PVC?',
-            options: [
-              { id: 'a', text: 'PV — для БД, PVC — для статики' },
-              { id: 'b', text: 'PV — «диск» в кластере; PVC — заявка от пода на диск' },
-              { id: 'c', text: 'Это синонимы' },
-              { id: 'd', text: 'PVC работает только в облаке' },
-            ],
-            correct: ['b'],
-            explanation: 'PV — ресурс кластера, создаётся админом (или автоматически по StorageClass). PVC — запрос от пода («мне нужен диск 20Gi»). Kubernetes находит подходящий PV и связывает их.',
-          },
-        },
-        {
-          id: 'k8-l30-s6',
-          title: 'Удаление StatefulSet',
-          type: 'quiz',
-          quiz: {
-            kind: 'single',
-            question: 'Что произойдёт с PVC при удалении StatefulSet с volumeClaimTemplates?',
-            options: [
-              { id: 'a', text: 'Удалятся вместе со StatefulSet' },
-              { id: 'b', text: 'Останутся, данные сохранятся, удалять вручную' },
-              { id: 'c', text: 'StatefulSet нельзя удалить, пока есть PVC' },
-              { id: 'd', text: 'PVC удалятся только через kubectl delete pvc --all' },
-            ],
-            correct: ['b'],
-            explanation: 'Защита от случайной потери данных: StatefulSet удалили — PVC остались. Удалять вручную: kubectl delete pvc data-postgres-0, data-postgres-1 и т.д.',
-          },
-        },
-        {
-          id: 'k8-l30-s7',
-          title: 'Headless Service',
-          type: 'quiz',
-          quiz: {
-            kind: 'cloze',
-            question: 'Заполните манифест Headless Service (одно поле, чтобы Service не балансировал трафик)',
-            text: 'apiVersion: v1\nkind: Service\nmetadata:\n  name: postgres-headless\nspec:\n  ____: None\n  selector:\n    app: postgres',
-            blanks: [
-              { accepted: ['clusterIP'], hint: 'IP-адрес, но None = «без IP»' },
-            ],
-            explanation: 'clusterIP: None отключает балансировку — Service начинает возвращать DNS-записи на каждый под: postgres-0.postgres-headless, postgres-1.postgres-headless. Обязательно для StatefulSet.',
-          },
-        },
-        {
-          id: 'k8-l30-s8',
-          title: 'readOnlyRootFilesystem',
-          type: 'quiz',
-          quiz: {
-            kind: 'single',
-            question: 'Зачем в securityContext ставят readOnlyRootFilesystem: true?',
-            options: [
-              { id: 'a', text: 'Ускоряет чтение файлов' },
-              { id: 'b', text: 'Запрещает приложению изменять файлы в контейнере — защита от подмены' },
-              { id: 'c', text: 'Уменьшает размер образа' },
-              { id: 'd', text: 'Это требование Kubernetes' },
-            ],
-            correct: ['b'],
-            explanation: 'Корневая ФС только на чтение — злоумышленник не сможет подменить бинарник, дописать скрипт в PATH, установить бэкдор. Для временных файлов — отдельный emptyDir на /tmp.',
-          },
-        },
-        {
-          id: 'k8-l30-s9',
-          title: 'ServiceAccount для пода',
-          type: 'quiz',
-          quiz: {
-            kind: 'single',
-            question: 'Какой kind использовать в subject, чтобы дать права поду (а не человеку)?',
-            options: [
-              { id: 'a', text: 'User' },
-              { id: 'b', text: 'Group' },
-              { id: 'c', text: 'ServiceAccount' },
-              { id: 'd', text: 'Namespace' },
-            ],
-            correct: ['c'],
-            explanation: 'Поды аутентифицируются как ServiceAccount. Чтобы под мог читать узлы, нужно дать права ServiceAccount через ClusterRoleBinding с kind: ServiceAccount.',
-          },
-        },
-        {
-          id: 'k8-l30-s10',
-          title: 'Синтаксис Helm',
-          type: 'quiz',
-          quiz: {
-            kind: 'fill',
-            question: 'Как в шаблоне Helm обратиться к параметру `replicaCount` из values.yaml?',
-            accepted: ['{{ .Values.replicaCount }}', '{{.Values.replicaCount}}', '.Values.replicaCount'],
-            placeholder: '{{ ... }}',
-            hint: 'Точка, Values, точка, имя',
-            explanation: '{{ .Values.replicaCount }} — стандартный доступ. .Values — корневой объект с values.yaml. .Release.Name — имя релиза, .Chart.Name — имя чарта.',
-          },
+          id: 'k8-l30',
+          title: 'Практика: сеть, хранилища, RBAC, Helm',
+          minutes: 35,
+          steps: [
+            {
+              id: 'k8-l30-s1',
+              title: 'Service types',
+              type: 'quiz',
+              quiz: {
+                kind: 'matching',
+                question: 'Сопоставьте тип Service и его назначение',
+                pairs: [
+                  { left: 'ClusterIP', right: 'Только внутри кластера' },
+                  { left: 'NodePort', right: 'Порт на каждом узле (30000–32767)' },
+                  { left: 'LoadBalancer', right: 'Публичный IP через облако' },
+                  { left: 'Headless (clusterIP: None)', right: 'DNS-запись на каждый под (для StatefulSet)' },
+                ],
+                explanation: 'ClusterIP — дефолт для межсервисного общения. NodePort — быстрый доступ без облака. LoadBalancer — один публичный IP на сервис (дорого). Headless — не балансирует, а даёт DNS на каждый под.',
+              },
+            },
+            {
+              id: 'k8-l30-s2',
+              title: 'FQDN сервиса',
+              type: 'quiz',
+              quiz: {
+                kind: 'fill',
+                question: 'Какое полное DNS-имя (FQDN) у сервиса `backend` в namespace `production`?',
+                accepted: [
+                  'backend.production.svc.cluster.local',
+                  'backend.production.svc.cluster.local.',
+                ],
+                placeholder: 'полное имя',
+                hint: 'формат: <service>.<namespace>.svc.cluster.local',
+                explanation: 'backend.production.svc.cluster.local. Внутри того же namespace достаточно backend (или backend.production). FQDN нужен при обращении из другого namespace.',
+              },
+            },
+            {
+              id: 'k8-l30-s3',
+              title: 'Ingress vs LoadBalancer',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Чем Ingress отличается от LoadBalancer Service?',
+                options: [
+                  { id: 'a', text: 'Это одно и то же' },
+                  { id: 'b', text: 'Ingress — единая точка входа с маршрутизацией по host/path; LoadBalancer — отдельный публичный IP на каждый сервис' },
+                  { id: 'c', text: 'Ingress работает только с HTTPS' },
+                  { id: 'd', text: 'LoadBalancer быстрее' },
+                ],
+                correct: ['b'],
+                explanation: 'LoadBalancer — по публичному IP на каждый сервис (дорого). Ingress — один LB с правилами: example.com/api → backend, example.com/ → frontend. Внутри кластера — ClusterIP.',
+              },
+            },
+            {
+              id: 'k8-l30-s4',
+              title: 'NetworkPolicy',
+              type: 'quiz',
+              quiz: {
+                kind: 'multiple',
+                question: 'Что нужно для работы NetworkPolicy в кластере?',
+                options: [
+                  { id: 'a', text: 'CNI-плагин с поддержкой NetworkPolicy (Calico, Cilium, Antrea)' },
+                  { id: 'b', text: 'Ingress Controller' },
+                  { id: 'c', text: 'Правила применены через kubectl apply' },
+                  { id: 'd', text: 'При default-deny egress — разрешить DNS (UDP 53) в egress' },
+                ],
+                correct: ['a', 'c', 'd'],
+                explanation: 'NetworkPolicy работает только с CNI, который её поддерживает. Flannel, например, не поддерживает. Плюс при default-deny egress не забудьте разрешить DNS.',
+              },
+            },
+            {
+              id: 'k8-l30-s5',
+              title: 'PV vs PVC',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Чем PV отличается от PVC?',
+                options: [
+                  { id: 'a', text: 'PV — для БД, PVC — для статики' },
+                  { id: 'b', text: 'PV — «диск» в кластере; PVC — заявка от пода на диск' },
+                  { id: 'c', text: 'Это синонимы' },
+                  { id: 'd', text: 'PVC работает только в облаке' },
+                ],
+                correct: ['b'],
+                explanation: 'PV — ресурс кластера, создаётся админом (или автоматически по StorageClass). PVC — запрос от пода («мне нужен диск 20Gi»). Kubernetes находит подходящий PV и связывает их.',
+              },
+            },
+            {
+              id: 'k8-l30-s6',
+              title: 'Удаление StatefulSet',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Что произойдёт с PVC при удалении StatefulSet с volumeClaimTemplates?',
+                options: [
+                  { id: 'a', text: 'Удалятся вместе со StatefulSet' },
+                  { id: 'b', text: 'Останутся, данные сохранятся, удалять вручную' },
+                  { id: 'c', text: 'StatefulSet нельзя удалить, пока есть PVC' },
+                  { id: 'd', text: 'PVC удалятся только через kubectl delete pvc --all' },
+                ],
+                correct: ['b'],
+                explanation: 'Защита от случайной потери данных: StatefulSet удалили — PVC остались. Удалять вручную: kubectl delete pvc data-postgres-0, data-postgres-1 и т.д.',
+              },
+            },
+            {
+              id: 'k8-l30-s7',
+              title: 'Headless Service',
+              type: 'quiz',
+              quiz: {
+                kind: 'cloze',
+                question: 'Заполните манифест Headless Service (одно поле, чтобы Service не балансировал трафик)',
+                text: 'apiVersion: v1\nkind: Service\nmetadata:\n  name: postgres-headless\nspec:\n  ____: None\n  selector:\n    app: postgres',
+                blanks: [
+                  { accepted: ['clusterIP'], hint: 'IP-адрес, но None = «без IP»' },
+                ],
+                explanation: 'clusterIP: None отключает балансировку — Service начинает возвращать DNS-записи на каждый под: postgres-0.postgres-headless, postgres-1.postgres-headless. Обязательно для StatefulSet.',
+              },
+            },
+            {
+              id: 'k8-l30-s8',
+              title: 'readOnlyRootFilesystem',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Зачем в securityContext ставят readOnlyRootFilesystem: true?',
+                options: [
+                  { id: 'a', text: 'Ускоряет чтение файлов' },
+                  { id: 'b', text: 'Запрещает приложению изменять файлы в контейнере — защита от подмены' },
+                  { id: 'c', text: 'Уменьшает размер образа' },
+                  { id: 'd', text: 'Это требование Kubernetes' },
+                ],
+                correct: ['b'],
+                explanation: 'Корневая ФС только на чтение — злоумышленник не сможет подменить бинарник, дописать скрипт в PATH, установить бэкдор. Для временных файлов — отдельный emptyDir на /tmp.',
+              },
+            },
+            {
+              id: 'k8-l30-s9',
+              title: 'ServiceAccount для пода',
+              type: 'quiz',
+              quiz: {
+                kind: 'single',
+                question: 'Какой kind использовать в subject, чтобы дать права поду (а не человеку)?',
+                options: [
+                  { id: 'a', text: 'User' },
+                  { id: 'b', text: 'Group' },
+                  { id: 'c', text: 'ServiceAccount' },
+                  { id: 'd', text: 'Namespace' },
+                ],
+                correct: ['c'],
+                explanation: 'Поды аутентифицируются как ServiceAccount. Чтобы под мог читать узлы, нужно дать права ServiceAccount через ClusterRoleBinding с kind: ServiceAccount.',
+              },
+            },
+            {
+              id: 'k8-l30-s10',
+              title: 'Синтаксис Helm',
+              type: 'quiz',
+              quiz: {
+                kind: 'fill',
+                question: 'Как в шаблоне Helm обратиться к параметру `replicaCount` из values.yaml?',
+                accepted: ['{{ .Values.replicaCount }}', '{{.Values.replicaCount}}', '.Values.replicaCount'],
+                placeholder: '{{ ... }}',
+                hint: 'Точка, Values, точка, имя',
+                explanation: '{{ .Values.replicaCount }} — стандартный доступ. .Values — корневой объект с values.yaml. .Release.Name — имя релиза, .Chart.Name — имя чарта.',
+              },
+            },
+          ],
         },
       ],
     },
-  ],
-},
   ],
 };

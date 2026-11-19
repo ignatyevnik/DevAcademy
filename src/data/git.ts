@@ -157,7 +157,7 @@ export const gitCourse: Course = {
             },
           ],
         },
-{
+        {
           id: 'git-l2',
           title: 'Первый репозиторий',
           minutes: 25,
@@ -398,7 +398,7 @@ export const gitCourse: Course = {
             },
           ],
         },
-{
+        {
           id: 'git-l4',
           title: 'Ветки: branch, switch, merge',
           minutes: 30,
@@ -1865,11 +1865,11 @@ export const gitCourse: Course = {
     // ─────────────────────────────────────────────
     // m5 — Практикум (не трогаю, там уже 10 шагов)
     // ─────────────────────────────────────────────
-            {
+    {
       id: 'git-m5',
       title: 'Практикум',
       lessons: [
-{
+        {
           id: 'git-l11',
           title: 'Практика: от init до PR',
           minutes: 35,

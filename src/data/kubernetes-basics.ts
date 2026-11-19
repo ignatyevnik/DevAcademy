@@ -158,7 +158,7 @@ kubectl delete pod web-xxx          # удалить (деплоймент пе�
             },
           ],
         },
-{
+        {
           id: 'k8-l2',
           title: 'Deployment: желаемое состояние приложения',
           minutes: 30,
@@ -1719,7 +1719,7 @@ spec:
       id: 'k8-b-m5',
       title: 'Практикум',
       lessons: [
-{
+        {
           id: 'k8-l29',
           title: 'Практика: поды, деплойменты, сервисы',
           minutes: 35,

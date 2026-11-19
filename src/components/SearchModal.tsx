@@ -10,10 +10,10 @@ function highlightMatch(text: string, query: string) {
   const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const regex = new RegExp(`(${safeQuery})`, 'gi');
   const parts = text.split(regex);
-  
-  return parts.map((part, i) => 
-    regex.test(part) 
-      ? <mark key={i} className="bg-yellow-200/80 text-black rounded-sm px-0.5">{part}</mark> 
+
+  return parts.map((part, i) =>
+    regex.test(part)
+      ? <mark key={i} className="bg-yellow-200/80 text-black rounded-sm px-0.5">{part}</mark>
       : part
   );
 }
@@ -76,7 +76,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 pt-[10vh] px-4" role="dialog" aria-modal="true" aria-label="Поиск">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      
+
       <div className="relative w-full max-w-2xl overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
         <div className="flex items-center border-b border-border px-4">
           <Search className="h-5 w-5 text-muted-foreground shrink-0" />
@@ -138,7 +138,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             </ul>
           )}
         </div>
-        
+
         <div className="border-t border-border bg-muted/30 px-4 py-2 text-xs text-muted-foreground flex justify-between">
           <span>↑ ↓ — навигация</span>
           <span>Enter — перейти</span>

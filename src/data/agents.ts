@@ -115,7 +115,7 @@ export const agentsCourse: Course = {
             },
           ],
         },
-{
+        {
           id: 'ai-l2',
           title: 'Инструменты, Function Calling и Responses API',
           minutes: 30,
@@ -1364,11 +1364,11 @@ export const agentsCourse: Course = {
         },
       ],
     },
-        {
+    {
       id: 'ai-m5',
       title: 'Векторные БД и RAG на практике',
       lessons: [
-{
+        {
           id: 'ai-l13',
           title: 'Model Context Protocol (MCP): архитектура, Streamable HTTP и OAuth 2.1',
           minutes: 30,
@@ -1833,7 +1833,7 @@ export const agentsCourse: Course = {
         },
       ],
     },
-        {
+    {
       id: 'ai-m6',
       title: 'MCP и интеграции',
       lessons: [
@@ -2064,11 +2064,11 @@ export const agentsCourse: Course = {
         },
       ],
     },
-        {
+    {
       id: 'ai-m8',
       title: 'Мультиагентные фреймворки',
       lessons: [
-       {
+        {
           id: 'ai-l23',
           title: 'CrewAI: ролевые агенты',
           minutes: 25,
@@ -2245,7 +2245,7 @@ export const agentsCourse: Course = {
         },
       ],
     },
-        {
+    {
       id: 'ai-m9',
       title: 'Практикум',
       lessons: [

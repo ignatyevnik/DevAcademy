@@ -304,7 +304,7 @@ def new_checkout(user):
       id: 'cd-g-m2',
       title: 'GitOps: ArgoCD и Flux',
       lessons: [
-{
+        {
           id: 'cd-l14',
           title: 'ArgoCD: установка, Application, sync (Argo CD 3.0)',
           minutes: 35,
@@ -1023,7 +1023,7 @@ stringData:
       id: 'cd-g-m5',
       title: 'Практикум',
       lessons: [
-{
+        {
           id: 'cd-l20',
           title: 'Практика: GitOps, supply chain, secrets',
           minutes: 35,

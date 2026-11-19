@@ -1368,7 +1368,7 @@ export const designCourse: Course = {
         },
       ],
     },
-        {
+    {
       id: 'dp-m4',
       title: 'Практикум',
       lessons: [

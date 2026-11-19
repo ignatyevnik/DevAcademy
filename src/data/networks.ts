@@ -1202,7 +1202,7 @@ Set-Cookie: session=def456; HttpOnly
             },
           ],
         },
-{
+        {
           id: 'nw-l10',
           title: 'Диагностика: curl, traceroute, tcpdump',
           minutes: 35,
@@ -1345,7 +1345,7 @@ Set-Cookie: session=def456; HttpOnly
         },
       ],
     },
-        {
+    {
       id: 'nw-m4',
       title: 'Практикум',
       lessons: [
@@ -1409,7 +1409,7 @@ Set-Cookie: session=def456; HttpOnly
                 explanation: 'GET /api/users HTTP/1.1 — строка запроса. Host: example.com — обязательный заголовок для HTTP/1.1.',
               },
             },
-                        {
+            {
               id: 'nw-l11-s5',
               title: 'TCP vs UDP',
               type: 'quiz',

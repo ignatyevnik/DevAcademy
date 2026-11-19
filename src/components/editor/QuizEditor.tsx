@@ -9,12 +9,12 @@ import type {
 interface Props { quiz: Quiz; onChange: (q: Quiz) => void; }
 
 const DEFAULT_QUIZ: Record<Quiz['kind'], (q: Partial<Quiz>) => Quiz> = {
-  single: (q) => ({ 
-    kind: 'single', 
-    question: q.question || '', 
-    explanation: q.explanation || '', 
-    options: [{ id: 'a', text: 'Вариант A' }, { id: 'b', text: 'Вариант B' }], 
-    correct: ['a'] 
+  single: (q) => ({
+    kind: 'single',
+    question: q.question || '',
+    explanation: q.explanation || '',
+    options: [{ id: 'a', text: 'Вариант A' }, { id: 'b', text: 'Вариант B' }],
+    correct: ['a']
   }) as SingleQuiz,
   multiple: (q) => ({ kind: 'multiple', question: q.question || '', explanation: q.explanation || '', options: [{ id: 'a', text: 'Вариант A' }, { id: 'b', text: 'Вариант B' }], correct: [] }) as MultipleQuiz,
   fill: (q) => ({ kind: 'fill', question: q.question || '', explanation: q.explanation || '', accepted: ['ответ'] }) as FillQuiz,
@@ -259,7 +259,7 @@ export function QuizEditor({ quiz, onChange }: Props) {
         </div>
       )}
 
-        <div>
+      <div>
         <label className="text-xs font-medium block mb-1">Объяснение (показывается после ответа):</label>
         <textarea
           value={quiz.explanation}

@@ -33,7 +33,7 @@ export const pythonAdvancedCourse: Course = {
       id: 'py-a-m1',
       title: 'ООП: классы и объекты',
       lessons: [
-                {
+        {
           id: 'py-l15',
           title: 'Классы и экземпляры',
           minutes: 25,
@@ -2429,7 +2429,7 @@ export const pythonAdvancedCourse: Course = {
       id: 'py-a-m6',
       title: 'Практикум',
       lessons: [
-{
+        {
           id: 'py-l34',
           title: 'Практика: ООП, декораторы, генераторы, async и GIL',
           minutes: 35,

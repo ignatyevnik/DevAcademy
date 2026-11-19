@@ -65,7 +65,7 @@ export function SandboxView({ sandbox, onResult }: Props) {
       throw new Error('В песочнице разрешены только SELECT-запросы (без DDL/DML).');
     }
 
-        // Запрещаем CREATE TABLE, но разрешаем CREATE TEMP TABLE
+    // Запрещаем CREATE TABLE, но разрешаем CREATE TEMP TABLE
     const createTableRegex = /\bCREATE\s+(?!TEMP(ORARY)?\s+TABLE)\w+/i;
     if (createTableRegex.test(text)) {
       throw new Error('Создание постоянных таблиц запрещено. Используйте CREATE TEMP TABLE.');

@@ -77,8 +77,8 @@ describe('минимум 5 шагов в уроке', () => {
     if (violations.length > 0) {
       throw new Error(
         `\n\n❌ Уроки с < 5 шагов (${violations.length}):\n` +
-          violations.join('\n') +
-          '\n\nДобавьте шаги или пометьте урок как вводный (*-l0).\n',
+        violations.join('\n') +
+        '\n\nДобавьте шаги или пометьте урок как вводный (*-l0).\n',
       );
     }
 
